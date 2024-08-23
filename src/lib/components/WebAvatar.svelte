@@ -43,6 +43,7 @@
   let repository: RepositoryConfigDto;
 
   let background: string = "";
+  let backgroundImageUrl: string = "";
 
   const logger = new Logger("WebAvatar");
 
@@ -94,9 +95,32 @@
     avatarModel?.setAnimationEnabled(enable);
   };
 
+  const toBase64 = (blob: Blob): Promise<string> => {
+    const fileReaderInstance = new FileReader();
+    fileReaderInstance.readAsDataURL(blob);
+    return new Promise((resolve, reject) => {
+      let done = false;
+      fileReaderInstance.onload = () => {
+        if (done) return;
+        done = true;
+        resolve(fileReaderInstance.result as string);
+      };
+      fileReaderInstance.onerror = (err) => {
+        if (done) return;
+        done = true;
+        reject(err);
+      };
+    });
+  }
+
   const setBackground = async (background: string) => {
     logger.debug(`Set background: ${background}`);
-    await avatarModel?.setBackground(background);
+    let config = await toolkit.getAssetConfig('backgrounds', background);
+    if (!config) return
+    const blob = await toolkit.getApi().getAsset(config.type, config.id)
+    if (blob) {
+      backgroundImageUrl = `${await toBase64(blob)}`
+    }
   };
 
   const enableMirror = (enable = false) => {
@@ -234,7 +258,10 @@
 <div
   id="web-avatar"
   class={$appSettingsStore.devMode ? "controls-enabled" : ""}
+  style={'background-image: url(' + backgroundImageUrl + ');'}
 >
+  <!-- <div id="avatar-container"></div> -->
+  <!-- <div id="background" style={'background-image: url(' + backgroundImageUrl + ');'}></div> -->
 </div>
 <SessionHelpers />
 <div id="blendshape-controls" />
@@ -272,8 +299,22 @@
   #web-avatar {
     width: 100%;
     height: 100%;
+  }
+
+  #web-avatar{
     // disable canvas mouse controls
     pointer-events: none;
+    background-color: transparent;
+  }
+
+  #web-avatar {
+    width: 100vw;
+    height: 100vh;
+    background-color: grey;
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-position: center;
+    // filter: blur(3px);
   }
 
   #web-avatar.controls-enabled {

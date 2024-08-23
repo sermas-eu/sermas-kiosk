@@ -295,7 +295,7 @@
         <p class="is-size-1 sermas-title">
           {app.name || ""}
         </p>
-        <p class="is-size-3 has-text-secondary-dark">
+        <p class="is-size-4 has-text-secondary-dark">
           {app.description || ""}
         </p>
       {/if}
@@ -567,9 +567,12 @@
       border: 0px !important;
     }
 
-    .welcome-box .is-size-1,
-    .welcome-box .is-size-3 {
-      font-size: 100% !important;
+    .welcome-box .is-size-1{
+      font-size: 2em !important;
+    }
+
+    .welcome-box .is-size-4 {
+      font-size: 1.3em !important;
     }
 
     .welcome-box {

@@ -6,6 +6,8 @@ services:
   kiosk:
     entrypoint: npm
     command: run dev
+    environment:
+      - BUILD_FROM_TS=${BUILD_FROM_TS}
     networks:
       default:
         aliases:
@@ -16,3 +18,4 @@ services:
     image: ghcr.io/sermas-eu/kiosk:dev
     volumes:
       - ./:/app
+      - ../sermas-toolkit-web:/sermas-toolkit-web

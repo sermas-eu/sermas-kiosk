@@ -1,4 +1,10 @@
 
+BUILD_FROM_TS?=0
+
 dev:
-	docker rm -f sermas-toolkit-api-kiosk-1 | true
-	docker compose up
+	docker compose kill || true
+	docker compose rm || true
+	docker rm -f sermas-toolkit-api-kiosk-1 || true
+	BUILD_FROM_TS=${BUILD_FROM_TS} docker compose up -d
+	docker restart sermas-toolkit-api-proxy-1
+	docker compose logs -f

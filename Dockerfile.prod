@@ -1,0 +1,25 @@
+FROM node:18 AS build
+
+ARG BUILD_FROM_TS=0
+
+WORKDIR /app
+ADD ./package.json .
+RUN npm i
+ADD ./ .
+
+RUN BUILD_FROM_TS=${BUILD_FROM_TS} npm run build
+
+FROM node:18 AS prod
+
+ARG APP
+WORKDIR /app
+
+ADD ./package.json .
+ADD ./package-lock.json .
+RUN npm i --omit-dev
+
+COPY --from=build /app/build ./build
+COPY --from=build /app/static ./static
+
+ENTRYPOINT [ "node" ]
+CMD [ "-r", "dotenv/config", "./build" ]

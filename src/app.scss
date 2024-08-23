@@ -1,0 +1,40 @@
+//https://bulma.io/documentation/customize/with-sass-cli/
+@charset "utf-8";
+
+// Import a Google Font
+@import url('https://fonts.googleapis.com/css?family=Nunito:400,700');
+
+@import './variables.scss';
+
+$widescreen-enabled: false;
+$fullhd-enabled: false;
+
+// Update some of Bulma's component variables
+$body-background-color: $grey-dark;
+$control-border-width: 2px;
+$input-border-color: transparent;
+$input-shadow: none;
+
+@import "../node_modules/bulma/bulma.sass";
+
+html {
+    overflow-y: hidden !important;
+}
+
+body {
+    --footer-height: 75px;
+    width: 100vw;
+    height: 100vh;
+    padding: 0px;
+    margin: 0px;
+    position: fixed;
+    bottom: 0px;
+    left: 0px;
+    top: 0px;
+}
+
+@include mobile-view {
+    body {
+        --footer-height: 50px !important;
+    }
+}

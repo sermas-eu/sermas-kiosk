@@ -1,0 +1,18 @@
+networks:
+  sermas_dev:
+    external: true
+
+services:
+  kiosk:
+    entrypoint: npm
+    command: run dev
+    networks:
+      default:
+        aliases:
+          - kiosk
+          - sermas-toolkit-api-kiosk-1
+      sermas_dev:
+    build: .
+    image: ghcr.io/sermas-eu/kiosk:dev
+    volumes:
+      - ./:/app

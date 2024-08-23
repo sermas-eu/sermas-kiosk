@@ -1,0 +1,48 @@
+{
+	"name": "kiosk",
+	"version": "0.0.412",
+	"private": true,
+	"type": "module",
+	"scripts": {
+		"dev": "NODE_ENV=development vite dev --host 0.0.0.0 ",
+		"build": "vite build",
+		"preview": "vite preview",
+		"check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
+		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
+		"lint": "eslint ."
+	},
+	"devDependencies": {
+		"@sveltejs/adapter-auto": "^2.0.0",
+		"@sveltejs/kit": "^1.20.4",
+		"@types/dompurify": "^3.0.5",
+		"@typescript-eslint/eslint-plugin": "^5.45.0",
+		"@typescript-eslint/parser": "^5.45.0",
+		"autoprefixer": "^10.4.15",
+		"eslint": "^8.28.0",
+		"eslint-plugin-svelte": "^2.30.0",
+		"postcss": "^8.4.29",
+		"sass": "^1.69.5",
+		"svelte": "^4.0.5",
+		"svelte-check": "^3.4.3",
+		"tslib": "^2.4.1",
+		"typescript": "^5.0.0",
+		"vite": "^4.4.9",
+		"vite-plugin-mediapipe": "^0.1.0",
+		"vite-plugin-static-copy": "^0.17.0"
+	},
+	"dependencies": {
+		"@sermas/api-client": "^1.0.0-alpha.61",
+		"@sermas/sermas-toolkit-node-sdk": "^1.0.0-alpha.46",
+		"@sermas/toolkit": "^1.0.0-alpha.115",
+		"@sveltejs/adapter-node": "^1.3.1",
+		"@sveltejs/adapter-static": "^2.0.2",
+		"@types/three": "^0.160.0",
+		"axios": "^1.6.0",
+		"bulma": "^0.9.4",
+		"dompurify": "^3.1.2",
+		"dotenv": "^16.3.1",
+		"kioskboard": "^2.3.0",
+		"marked": "^12.0.2",
+		"svelte-icons": "^2.1.0"
+	}
+}

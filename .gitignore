@@ -11,7 +11,7 @@ vite.config.ts.timestamp-*
 public/unity
 src/lib/models
 static/models*
-static/animations*
+# static/animations*
 static/*.onnx
 static/*.wasm
 static/backgrounds

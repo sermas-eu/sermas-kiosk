@@ -7,15 +7,15 @@ const nodeModulesBasePath = './'
 const copyFiles = [
 
     // @vladmandic/human
-    [`${nodeModulesBasePath}node_modules/@vladmandic/human/models/*.json`, "/human/models"],
-    [`${nodeModulesBasePath}node_modules/@vladmandic/human/models/*.bin`, "/human/models"],
-    [`${nodeModulesBasePath}node_modules/@tensorflow/tfjs-backend-wasm/wasm-out/*.wasm`, "/tfjs-backend-wasm/wasm-out"],
+    [`${nodeModulesBasePath}node_modules/@vladmandic/human/models/*.json`, "./human/models"],
+    [`${nodeModulesBasePath}node_modules/@vladmandic/human/models/*.bin`, "./human/models"],
+    [`${nodeModulesBasePath}node_modules/@tensorflow/tfjs-backend-wasm/wasm-out/*.wasm`, "./tfjs-backend-wasm/wasm-out"],
 
     //ricky0123/vad-web
-    [`${nodeModulesBasePath}node_modules/@ricky0123/vad-web/dist/silero_vad.onnx`, '/'],
-    [`${nodeModulesBasePath}node_modules/@ricky0123/vad-web/dist/vad.worklet.bundle.min.js`, '/'],
+    [`${nodeModulesBasePath}node_modules/@ricky0123/vad-web/dist/silero_vad.onnx`, './'],
+    [`${nodeModulesBasePath}node_modules/@ricky0123/vad-web/dist/vad.worklet.bundle.min.js`, './'],
     //onnxruntime-web
-    [`${nodeModulesBasePath}node_modules/onnxruntime-web/dist/*.wasm`, '/'],
+    [`${nodeModulesBasePath}node_modules/onnxruntime-web/dist/*.wasm`, './'],
 
     
 ]

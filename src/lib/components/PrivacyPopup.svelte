@@ -15,7 +15,7 @@
     radio2 = false;
 
   const checkPrivacy = () => {
-    console.warn($page.url.pathname);
+    // console.warn($page.url.pathname);
     isPrivacyPage = $page.url.pathname.startsWith(noPrivacyPage);
     if (isPrivacyPage) return;
     privacy = localStorage.getItem("privacy") as PrivacyOptions;

@@ -8,4 +8,3 @@ vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
 public/unity
 src/lib/models
-static*

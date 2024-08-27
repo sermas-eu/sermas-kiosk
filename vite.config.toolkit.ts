@@ -15,9 +15,11 @@ const copyFiles = [
     [`${nodeModulesBasePath}node_modules/@ricky0123/vad-web/dist/silero_vad.onnx`, ''],
     [`${nodeModulesBasePath}node_modules/@ricky0123/vad-web/dist/vad.worklet.bundle.min.js`, ''],
     //onnxruntime-web
-    [`${nodeModulesBasePath}node_modules/onnxruntime-web/dist/*.wasm`, ''],
-    [`${nodeModulesBasePath}node_modules/onnxruntime-web/dist/*.mjs`, ''],
-    [`${nodeModulesBasePath}node_modules/onnxruntime-web/dist/*.mjs.map`, ''],
+
+    // [`${nodeModulesBasePath}node_modules/onnxruntime-web/dist/*.wasm`, ''],
+    // [`${nodeModulesBasePath}node_modules/onnxruntime-web/dist/*.mjs`, ''],
+
+    [`${nodeModulesBasePath}node_modules/onnxruntime-web/dist/ort*`, ''],
    
 ]
 

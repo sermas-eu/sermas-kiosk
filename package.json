@@ -2,7 +2,7 @@
 	"name": "@sermas/kiosk",
 	"description": "SERMAS Kiosk",
 	"author": "SpindoxLabs",
-	"version": "1.0.8",
+	"version": "1.0.9",
 	"private": true,
 	"type": "module",
 	"license": "Apache-2.0",

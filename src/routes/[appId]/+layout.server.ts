@@ -4,11 +4,11 @@ import { env as envPublic } from '$env/dynamic/public';
 import { getAvatarToken } from "@sermas/sermas-toolkit-node-sdk";
 
 export const load: LayoutServerLoad = async ({ params, setHeaders }) => {
-  setHeaders({
-    'Cross-Origin-Opener-Policy': 'same-origin',
-    'Cross-Origin-Embedder-Policy': 'require-corp',
-    'Cross-origin-resource-policy': 'cross-origin'
-  })
+  // setHeaders({
+  //   'Cross-Origin-Opener-Policy': 'same-origin',
+  //   'Cross-Origin-Embedder-Policy': 'require-corp',
+  //   'Cross-origin-resource-policy': 'cross-origin'
+  // })
   return await getAvatarToken(params.appId, {
     PUBLIC_AUTH_URL: envPublic.PUBLIC_AUTH_URL,
     PUBLIC_AUTH_REALM: envPublic.PUBLIC_AUTH_REALM,

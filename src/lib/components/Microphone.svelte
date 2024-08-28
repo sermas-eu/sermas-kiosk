@@ -18,6 +18,8 @@
   let started = false;
   let mounted = false;
 
+  let listening = false;
+
   $: enableMic ? start() : stop();
 
   $: if ($appSettingsStore && $appSettingsStore.enableMic !== enableMic) {
@@ -27,13 +29,25 @@
   let detection: AudioDetection | undefined;
 
   const onPlaybackChange = async (ev: AvatarAudioPlaybackStatus) => {
-    const speechEnd = ev.status === "ended";
-    if (speechEnd) {
+    const avatarSpeechEnded = ev.status === "ended";
+
+    if (avatarSpeechEnded) {
       detection?.restore();
     } else {
       detection?.pause();
     }
-    sendStatus(speechEnd ? "Microphone started" : "Microphone stopped");
+
+    listening = avatarSpeechEnded;
+    sendStatus(listening ? "" : "Microphone stopped");
+  };
+
+  const onSpeaking = (isSpeaking: boolean) => {
+    if (!listening) return;
+    if (isSpeaking) {
+      sendStatus("Listening...");
+    } else {
+      sendStatus("");
+    }
   };
 
   const onButtonStartSession = async (ev: any) => {
@@ -63,6 +77,7 @@
       logger.debug(`Load audio detection`);
       detection = toolkit.getAudioDetection();
       detection.on("speech", onDetection);
+      detection.on("speaking", onSpeaking);
       detection.on("classification", onAudioClassification);
       await detection.start();
     }

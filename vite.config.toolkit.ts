@@ -1,5 +1,5 @@
 
-const apiProxy = process.env.API_PROXY || 'http://traefik'
+const apiProxy = process.env.API_PROXY || 'http://172.17.0.1:8080'
 const mqttProxy = process.env.MQTT_PROXY || 'http://mqtt:1884'
 
 const nodeModulesBasePath = './'
@@ -19,7 +19,7 @@ const copyFiles = [
     // [`${nodeModulesBasePath}node_modules/onnxruntime-web/dist/*.wasm`, ''],
     // [`${nodeModulesBasePath}node_modules/onnxruntime-web/dist/*.mjs`, ''],
 
-    [`${nodeModulesBasePath}node_modules/onnxruntime-web/dist/ort*`, ''],
+    [`${nodeModulesBasePath}node_modules/onnxruntime-web/dist/*`, ''],
    
 ]
 

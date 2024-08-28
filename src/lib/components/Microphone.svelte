@@ -18,7 +18,7 @@
   let started = false;
   let mounted = false;
 
-  let listening = false;
+  let detectionEnabled = false;
 
   $: enableMic ? start() : stop();
 
@@ -37,12 +37,12 @@
       detection?.pause();
     }
 
-    listening = avatarSpeechEnded;
-    sendStatus(listening ? "" : "Microphone stopped");
+    detectionEnabled = avatarSpeechEnded;
+    sendStatus(detectionEnabled ? "" : "Microphone stopped");
   };
 
   const onSpeaking = (isSpeaking: boolean) => {
-    if (!listening) return;
+    if (!detectionEnabled) return;
     if (isSpeaking) {
       sendStatus("Listening...");
     } else {

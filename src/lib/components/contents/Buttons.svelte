@@ -61,7 +61,8 @@
             >
                 <button
                     on:click={() => clicked(b, idx)}
-                    class="button sermas-button is-multiline {b.classes && b.classes.length
+                    class="button sermas-button is-multiline {b.classes &&
+                    b.classes.length
                         ? b.classes.join(' ')
                         : 'is-primary'}"
                 >
@@ -73,6 +74,20 @@
 </span>
 
 <style>
+    .is-primary,
+    .is-primary:hover,
+    .is-secondary:hover,
+    .is-secondary {
+        border: 2px solid rgba(0, 0, 0, 0.1);
+    }
+
+    .is-secondary {
+        opacity: 0.7;
+    }
+    .is-secondary:hover {
+        opacity: 1;
+    }
+
     .buttons-widget {
         min-width: 250px;
     }
@@ -86,5 +101,4 @@
         height: auto;
         flex-direction: column;
     }
-
 </style>

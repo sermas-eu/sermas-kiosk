@@ -28,7 +28,7 @@
   let showStopButton = false;
   let sessionOpened: boolean = false;
   let navigationFrameEnabled = false;
-  let showSessionClose = false
+  let showSessionClose = false;
 
   let chatMessage = "";
   let sendingMessage = false;
@@ -36,7 +36,7 @@
   let avatar: RepositoryAvatarDto | undefined;
   let gender: string | undefined;
   let language: string | undefined;
-  let llm: string | undefined;
+  let llm: Record<string, string | undefined> | undefined;
   let enableMic: boolean;
   let enableAudio: boolean;
 
@@ -103,7 +103,7 @@
   };
 
   const startInteraction = () => {
-    toolkit?.triggerInteraction("ui", 'start');
+    toolkit?.triggerInteraction("ui", "start");
   };
 
   $: if (!sessionOpened && (!history || !history?.length)) showHomepage = true;
@@ -162,8 +162,8 @@
   });
 
   const hideSessionCloser = () => {
-    showSessionClose = false
-  }
+    showSessionClose = false;
+  };
 
   onDestroy(async () => {
     await ui.destroy();
@@ -191,6 +191,7 @@
       const gender = await loadAvatarGender();
       const avatar = await loadAvatar();
       const chunkId = getChunkId();
+      const settings = toolkit.getSettings().get();
       await toolkit.getApi().sendChatMessage({
         appId: toolkit.getAppId(),
         sessionId: toolkit.getSessionId(),
@@ -201,6 +202,7 @@
         avatar: avatar?.id,
         gender,
         llm,
+        ttsEnabled: settings.ttsEnabled,
       });
       const content: TextUIContentDto = {
         contentType: "text",
@@ -231,9 +233,7 @@
 </script>
 
 <div
-  class="ui-content is-flex {history.length
-    ? ''
-    : 'is-align-items-center'}
+  class="ui-content is-flex {history.length ? '' : 'is-align-items-center'}
     with-input-bar
     : ''} {$avatarLoadedStore ? '' : 'is-hidden'}"
 >
@@ -325,7 +325,8 @@
       <button
         disabled={(enableAudio && !showStopButton) || !enableAudio}
         class="button is-medium is-primary ml-2 sermas-button"
-        on:click={() => ui.stopAvatarSpeech()}>
+        on:click={() => ui.stopAvatarSpeech()}
+      >
         <span class="icon is-medium">
           <i class="fas fa-stop"></i>
         </span>
@@ -567,7 +568,7 @@
       border: 0px !important;
     }
 
-    .welcome-box .is-size-1{
+    .welcome-box .is-size-1 {
       font-size: 2em !important;
     }
 
@@ -602,7 +603,7 @@
       font-weight: bold;
     }
     .inline-actor {
-      color: var(--theme-primary-text-color)
+      color: var(--theme-primary-text-color);
     }
     .actor {
       display: none;

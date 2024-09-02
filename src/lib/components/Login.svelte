@@ -2,7 +2,7 @@
     import loginImage from "$lib/assets/images/sermas-logo-white.svg";
 
     export let logoUrl = loginImage;
-    export let title = "Signin to continue";
+    export let title = "Sign-in to continue";
     export let onSubmit: (
         username: string,
         password: string,

@@ -14,12 +14,16 @@
     const clicked = (answer: QuizAnswerDto, idx: number) => {
         if (selected > -1) return;
         selected = idx;
+        // console.warn(`selected answerId=${answer.answerId}`);
         const payload = {
             appId: toolkit.getAppId(),
             sessionId: toolkit.getSessionId(),
             moduleId: "avatar",
             interaction: {
-                context: { ...(metadata || {}) },
+                context: {
+                    answerId: answer.answerId,
+                    ...(metadata || {}),
+                },
                 element: "quiz",
                 value: answer.answer,
             },
@@ -32,7 +36,10 @@
     <div class="quiz-question">{content.question}</div>
     {#each content.answers as a, idx}
         <div class="quiz-answer">
-            <button on:click={() => clicked(a, idx)} class="button is-multiline is-primary sermas-button">
+            <button
+                on:click={() => clicked(a, idx)}
+                class="button is-multiline is-primary sermas-button"
+            >
                 {a.answer}
             </button>
         </div>

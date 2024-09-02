@@ -32,6 +32,7 @@
 .ticket-content{
   padding-top: 20px;
   background-color: var(--theme-primary-bg-color);
+  color: var(--theme-primary-text-color);
   width: 100%;
   height: 100%;
   text-align: center;

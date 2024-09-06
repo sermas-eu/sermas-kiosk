@@ -80,6 +80,9 @@
       detection.on("speaking", onSpeaking);
       detection.on("classification", onAudioClassification);
       await detection.start();
+
+      const vadOption = detection.getVADConfig()
+      logger.debug(`VAD config: ${JSON.stringify(vadOption)}`)
     }
 
     toolkit.on("avatar.speech", onPlaybackChange);

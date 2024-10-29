@@ -2,7 +2,10 @@
 const apiProxy = process.env.API_PROXY || 'http://172.17.0.1:8080'
 const mqttProxy = process.env.MQTT_PROXY || 'http://mqtt:1884'
 
-const nodeModulesBasePath = './'
+
+const useAliases = process.env.NODE_ENV === 'development' && process.env.BUILD_FROM_TS === "1"
+
+const nodeModulesBasePath = useAliases ? '../sermas-toolkit-web/' : './'
 
 const copyFiles = [
 

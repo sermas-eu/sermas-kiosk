@@ -38,6 +38,7 @@
 		"vite-plugin-static-copy": "^0.17.0"
 	},
 	"dependencies": {
+		"@ricky0123/vad-web": "^0.0.19",
 		"@sermas/api-client": "^1.0.0-alpha.61",
 		"@sermas/sermas-toolkit-node-sdk": "^1.0.0-alpha.66",
 		"@sermas/toolkit": "^1.0.0-alpha.141",

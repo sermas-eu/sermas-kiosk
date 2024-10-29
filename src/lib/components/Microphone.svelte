@@ -4,7 +4,7 @@
   import type { AudioClassificationValue } from "@sermas/toolkit";
   import type { AudioDetection } from "@sermas/toolkit/detection";
   import { SpeechDetectionEvent } from "@sermas/toolkit/detection";
-  import { Logger } from "@sermas/toolkit/utils";
+  import { getChunkId, Logger } from "@sermas/toolkit/utils";
   import { onDestroy, onMount } from "svelte";
 
   import { toolkit } from "$lib";
@@ -18,7 +18,7 @@
   let started = false;
   let mounted = false;
 
-  let detectionEnabled = false;
+  let avatarSpeaking = false;
 
   $: enableMic ? start() : stop();
 
@@ -29,21 +29,22 @@
   let detection: AudioDetection | undefined;
 
   const onPlaybackChange = async (ev: AvatarAudioPlaybackStatus) => {
-    const avatarSpeechEnded = ev.status === "ended";
-
-    if (avatarSpeechEnded) {
-      detection?.restore();
-    } else {
-      detection?.pause();
-    }
-
-    detectionEnabled = avatarSpeechEnded;
-    sendStatus(detectionEnabled ? "" : "Microphone stopped");
+    avatarSpeaking = ev.status !== "ended";
+    // if (avatarSpeechEnded) {
+    //   detection?.restore();
+    // } else {
+    //   detection?.pause();
+    // }
   };
 
-  const onSpeaking = (isSpeaking: boolean) => {
-    if (!detectionEnabled) return;
-    if (isSpeaking) {
+  const onSpeaking = (userSpeaking: boolean, speechLength: number) => {
+    // logger.debug(
+    //   `avatarSpeaking=${avatarSpeaking} speechLength=${speechLength} userSpeaking=${userSpeaking}`,
+    // );
+    if (speechLength > 800) {
+      toolkit.getUI().stopAvatarSpeech();
+    }
+    if (userSpeaking) {
       sendStatus("Listening...");
     } else {
       sendStatus("");
@@ -81,8 +82,8 @@
       detection.on("classification", onAudioClassification);
       await detection.start();
 
-      const vadOption = detection.getVADConfig()
-      logger.debug(`VAD config: ${JSON.stringify(vadOption)}`)
+      const vadOption = detection.getVADConfig();
+      logger.debug(`VAD config: ${JSON.stringify(vadOption)}`);
     }
 
     toolkit.on("avatar.speech", onPlaybackChange);

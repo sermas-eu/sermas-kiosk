@@ -38,9 +38,9 @@
   };
 
   const onSpeaking = (userSpeaking: boolean, speechLength: number) => {
-    console.warn(
-      `avatarSpeaking=${avatarSpeaking} speechLength=${speechLength} userSpeaking=${userSpeaking}`,
-    );
+    // logger.debug(
+    //   `avatarSpeaking=${avatarSpeaking} speechLength=${speechLength} userSpeaking=${userSpeaking}`,
+    // );
     if (speechLength > 800) {
       toolkit.getUI().stopAvatarSpeech();
     }

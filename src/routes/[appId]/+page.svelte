@@ -1,4 +1,6 @@
 <script lang="ts">
+  import { run } from 'svelte/legacy';
+
   import Loader from "$lib/components/Loader.svelte";
   import Auth from "$lib/components/Auth.svelte";
   import Microphone from "$lib/components/Microphone.svelte";
@@ -10,8 +12,10 @@
   import { appReadyStore } from "$lib/store";
   import { browser } from "$app/environment";
 
-  let loading = true;
-  $: if (browser && $appReadyStore) loading = !$appReadyStore;
+  let loading = $state(true);
+  run(() => {
+    if (browser && $appReadyStore) loading = !$appReadyStore;
+  });
 
 </script>
 

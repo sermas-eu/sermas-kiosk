@@ -14,20 +14,25 @@
     } from "@sermas/toolkit";
     import { logger } from "@sermas/toolkit/utils";
     import { onDestroy, onMount } from "svelte";
-    // import { PageData } from "../$types";
+    
 
-    export let data;
+    interface Props {
+        // import { PageData } from "../$types";
+        data: any;
+    }
+
+    let { data }: Props = $props();
 
     let toolkit: SermasToolkit;
     let lastDataTimestamp = 0;
-    let dataAvailable = false;
+    let dataAvailable = $state(false);
     let dataCheckInterval: any = undefined;
     const DATA_VALIDITY_SEC = 10;
-    let videoUrl = "";
+    let videoUrl = $state("");
     // let mapUrl = "../map.png"
-    let robot: RepositoryRobotModelDto;
+    let robot: RepositoryRobotModelDto = $state();
 
-    let status: StatusDto = {
+    let status: StatusDto = $state({
         actualPosition: {
             position: { x: 0.0, y: 0.0, z: 0.0 },
             orientation: { x: 0.0, y: 0.0, z: 0.0, w: 1 },
@@ -36,7 +41,7 @@
             angular: { x: 0.0, y: 0.0, z: 0.0 },
             linear: { x: 0.0, y: 0.0, z: 0.0 },
         },
-    };
+    });
 
     const onRobotStatus = (st: StatusEventDto) => {
         status = st.status;

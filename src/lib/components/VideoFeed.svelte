@@ -1,6 +1,10 @@
 <script lang="ts">
 
-    export let videoUrl: string
+  interface Props {
+    videoUrl: string;
+  }
+
+  let { videoUrl }: Props = $props();
 
 </script>
 
@@ -11,7 +15,7 @@
         {#if videoUrl == ''}
           <div class="no-video has-text-info">No video</div>
         {:else}
-          <iframe class="has-text-info" src={videoUrl} title="live-stream"/>
+          <iframe class="has-text-info" src={videoUrl} title="live-stream"></iframe>
         {/if}
       </div>
     </div>

@@ -1,8 +1,12 @@
 <script lang="ts">
   import type { StatusDto } from "@sermas/toolkit";
 
-  export let dataAvailable = true;
-  export let status: StatusDto;
+  interface Props {
+    dataAvailable?: boolean;
+    status: StatusDto;
+  }
+
+  let { dataAvailable = true, status }: Props = $props();
 
   const colors = { x: "red", y: "green", z: "blue", w: "grey" };
 </script>

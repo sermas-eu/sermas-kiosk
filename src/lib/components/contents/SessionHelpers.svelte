@@ -8,7 +8,7 @@
 
     const dispatch = createEventDispatcher();
 
-    let sessionId: string | undefined = undefined
+    let sessionId: string | undefined = $state(undefined)
 
     const closeSession = async () => {
       toolkit?.triggerInteraction("ui", 'stop');
@@ -30,7 +30,7 @@
 </script>
 
 <div class="session-buttons is-flex is-flex-direction-row is-justify-content-center">
-    <button class="button is-light is-warning has-text-grey-dark is-small is-rounded" on:click={() => window.location.reload()}>
+    <button class="button is-light is-warning has-text-grey-dark is-small is-rounded" onclick={() => window.location.reload()}>
       <span class="icon">
         <IoMdRefresh />
       </span>
@@ -38,7 +38,7 @@
     </button>
     {#if sessionId && $appSettingsStore?.interactionStart != "intent-detection"}
       <button 
-      on:click={()=> closeSession()}
+      onclick={()=> closeSession()}
       class="button is-light is-danger is-small ml-1 is-rounded">
         <span class="icon">
           <IoMdCloseCircleOutline />
@@ -51,7 +51,7 @@
   </div>
 
 <style lang="scss">
-    @import "../../../variables.scss";
+    
     .session-closer-widget {
         width: 100%;
     }
@@ -77,7 +77,7 @@
     background: rgba(255,255,255,0.4);
   }
 
-  @include mobile-view {
+  @include variables.mobile-view {
     .session-buttons {
       margin-left: 0;
     }

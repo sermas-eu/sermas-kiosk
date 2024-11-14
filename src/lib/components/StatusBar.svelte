@@ -4,7 +4,11 @@
     import type { UiStatus } from "@sermas/toolkit/dto";
     import { onDestroy, onMount } from "svelte";
 
-    export let system = "";
+    interface Props {
+        system?: string;
+    }
+
+    let { system = $bindable("") }: Props = $props();
 
     const onStatus = (ev: UiStatus) => {
         system = ev.message;
@@ -25,11 +29,10 @@
 </div>
 
 <style lang="scss">
-    @import "../../variables.scss";
 
     .status-bar {
         position: absolute;
-        background-color: rgba($primary, 0.5);
+        background-color: rgba(variables.$primary, 0.5);
         backdrop-filter: blur(10px);
         width: 100%;
         height: 1.5em;
@@ -45,7 +48,7 @@
         color: #efefef;
     }
 
-    @include mobile-view {
+    @include variables.mobile-view {
         .status-bar {
             display: none;
         }

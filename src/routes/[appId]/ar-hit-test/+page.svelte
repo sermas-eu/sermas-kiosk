@@ -10,7 +10,7 @@
     import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
     import { XRControllerModelFactory } from "three/examples/jsm/webxr/XRControllerModelFactory";
 
-    export let data;
+    let { data } = $props();
 
     let toolkit: SermasToolkit;
     let apps: PlatformAppDto[] = [];

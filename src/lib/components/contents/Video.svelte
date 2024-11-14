@@ -1,7 +1,11 @@
 <script lang="ts">
     import { type VideoContentDto } from "@sermas/toolkit";
 
-    export let content: VideoContentDto;
+    interface Props {
+        content: VideoContentDto;
+    }
+
+    let { content }: Props = $props();
 </script>
 
 <span class="video">

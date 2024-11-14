@@ -1,5 +1,5 @@
+import type { PlatformAppDto } from '@sermas/api-client';
 import { AppSettings } from '@sermas/toolkit/dto';
-import { PlatformAppDto } from '@sermas/toolkit';
 import { writable, type Writable } from 'svelte/store';
 
 export const appReadyStore: Writable<boolean> = writable(false);

@@ -1,4 +1,6 @@
 <script lang="ts">
+  import { run } from 'svelte/legacy';
+
   import { browser } from "$app/environment";
   import { appSettingsStore } from "$lib/store";
   import type { AudioClassificationValue } from "@sermas/toolkit";
@@ -13,18 +15,14 @@
 
   const logger = new Logger("microphone");
 
-  let enableMic: boolean;
+  let enableMic: boolean = $state();
 
   let started = false;
   let mounted = false;
 
   let avatarSpeaking = false;
 
-  $: enableMic ? start() : stop();
 
-  $: if ($appSettingsStore && $appSettingsStore.enableMic !== enableMic) {
-    enableMic = $appSettingsStore.enableMic ? true : false;
-  }
 
   let detection: AudioDetection | undefined;
 
@@ -107,5 +105,13 @@
   onMount(() => {
     mounted = true;
     start();
+  });
+  run(() => {
+    if ($appSettingsStore && $appSettingsStore.enableMic !== enableMic) {
+      enableMic = $appSettingsStore.enableMic ? true : false;
+    }
+  });
+  run(() => {
+    enableMic ? start() : stop();
   });
 </script>

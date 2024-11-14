@@ -1,4 +1,6 @@
 <script lang="ts">
+  import { run, preventDefault } from 'svelte/legacy';
+
   import { browser } from "$app/environment";
   import { toolkit } from "$lib";
   import {
@@ -24,50 +26,38 @@
 
   const ui = toolkit.getUI();
 
-  let history: ChatMessage[] = [];
-  let showStopButton = false;
-  let sessionOpened: boolean = false;
-  let navigationFrameEnabled = false;
+  let history: ChatMessage[] = $state([]);
+  let showStopButton = $state(false);
+  let sessionOpened: boolean = $state(false);
+  let navigationFrameEnabled = $state(false);
   let showSessionClose = false;
 
-  let chatMessage = "";
-  let sendingMessage = false;
+  let chatMessage = $state("");
+  let sendingMessage = $state(false);
 
   let avatar: RepositoryAvatarDto | undefined;
   let gender: string | undefined;
-  let language: string | undefined;
-  let llm: Record<string, string | undefined> | undefined;
-  let enableMic: boolean;
-  let enableAudio: boolean;
+  let language: string | undefined = $state();
+  let llm: Record<string, string | undefined> | undefined = $state();
+  let enableMic: boolean = $state();
+  let enableAudio: boolean = $state();
 
-  let app: PlatformAppDto;
+  let app: PlatformAppDto = $state();
 
-  let showHomepage = true;
+  let showHomepage = $state(true);
 
   const MAX_RESPONSE_WAITING_SEC = 15;
-  let waitingResponse = false;
+  let waitingResponse = $state(false);
   let dotsTimeout: NodeJS.Timeout;
 
-  let showVirtualKeyboard = false;
-  let inputValue = "";
-  let placeholder = "";
+  let showVirtualKeyboard = $state(false);
+  let inputValue = $state("");
+  let placeholder = $state("");
   let callbackFunc: (res: string) => void;
 
   let messageId = getChunkId();
 
-  // $: $sessionIdStore, (sessionId = $sessionIdStore);
-  $: if ($appConfigStore) {
-    app = $appConfigStore;
-    loadAvatar();
-    loadAvatarGender();
-  }
 
-  $: if ($appSettingsStore) {
-    llm = $appSettingsStore.llm;
-    language = $appSettingsStore.language;
-    enableMic = $appSettingsStore.enableMic;
-    enableAudio = $appSettingsStore.enableAudio;
-  }
 
   const loadAvatarGender = async () => {
     gender = (await toolkit.getAvatarGender()) || "F";
@@ -106,7 +96,6 @@
     toolkit?.triggerInteraction("ui", "start");
   };
 
-  $: if (!sessionOpened && (!history || !history?.length)) showHomepage = true;
 
   const toggleLoadingDots = (show: boolean) => {
     if (!show) {
@@ -230,6 +219,25 @@
   const hideNavigation = () => {
     navigationFrameEnabled = false;
   };
+  // $: $sessionIdStore, (sessionId = $sessionIdStore);
+  run(() => {
+    if ($appConfigStore) {
+      app = $appConfigStore;
+      loadAvatar();
+      loadAvatarGender();
+    }
+  });
+  run(() => {
+    if ($appSettingsStore) {
+      llm = $appSettingsStore.llm;
+      language = $appSettingsStore.language;
+      enableMic = $appSettingsStore.enableMic;
+      enableAudio = $appSettingsStore.enableAudio;
+    }
+  });
+  run(() => {
+    if (!sessionOpened && (!history || !history?.length)) showHomepage = true;
+  });
 </script>
 
 <div
@@ -303,7 +311,7 @@
       {#if $appSettingsStore?.interactionStart == "touch"}
         <button
           class="button mt-4 is-large is-primary sermas-button"
-          on:click={() => startInteraction()}
+          onclick={() => startInteraction()}
         >
           <span>Press here to start</span>
         </button>
@@ -325,7 +333,7 @@
       <button
         disabled={(enableAudio && !showStopButton) || !enableAudio}
         class="button is-medium is-primary ml-2 sermas-button"
-        on:click={() => ui.stopAvatarSpeech()}
+        onclick={() => ui.stopAvatarSpeech()}
       >
         <span class="icon is-medium">
           <i class="fas fa-stop"></i>
@@ -335,11 +343,11 @@
         {/if}
       </button>
       {#if !enableMic}
-        <form on:submit|preventDefault={sendChatMessage} class="input-form">
+        <form onsubmit={preventDefault(sendChatMessage)} class="input-form">
           <input
             class="input is-medium"
             bind:value={chatMessage}
-            on:focus={(e) =>
+            onfocus={(e) =>
               openVirtualKeyboard(
                 chatMessage,
                 "Type something to ask",
@@ -366,7 +374,7 @@
     <div class="navigation-frame">
       <button
         class="delete is-large is-primary"
-        on:click={() => hideNavigation()}
+        onclick={() => hideNavigation()}
       ></button>
       <iframe
         id="navigation-frame"
@@ -384,7 +392,6 @@
 </div>
 
 <style lang="scss">
-  @import "../../variables.scss";
 
   .navigation-frame {
     position: fixed;
@@ -552,7 +559,7 @@
     }
   }
 
-  @include mobile-view {
+  @include variables.mobile-view {
     .chat-input {
       bottom: 0.5em;
     }

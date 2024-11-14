@@ -1,4 +1,6 @@
 <script lang="ts">
+  import { run } from 'svelte/legacy';
+
   import { env } from "$env/dynamic/public";
   import { browser } from "$app/environment";
   import { page } from "$app/stores";
@@ -7,12 +9,12 @@
   const noPrivacyPage = "/no-privacy";
 
   type PrivacyOptions = "yes" | "no" | null;
-  let privacy: PrivacyOptions = null;
+  let privacy: PrivacyOptions = $state(null);
 
-  let isPrivacyPage = true;
+  let isPrivacyPage = $state(true);
 
-  let radio1 = false,
-    radio2 = false;
+  let radio1 = $state(false),
+    radio2 = $state(false);
 
   const checkPrivacy = () => {
     // console.warn($page.url.pathname);
@@ -34,7 +36,9 @@
     checkPrivacy();
   };
 
-  $: if (browser) checkPrivacy();
+  run(() => {
+    if (browser) checkPrivacy();
+  });
 </script>
 
 {#if privacy !== "yes" && !isPrivacyPage}
@@ -51,7 +55,7 @@
           <input
             type="radio"
             checked={radio1}
-            on:change={() => {
+            onchange={() => {
               radio1 = true;
             }}
           /> Yes
@@ -61,7 +65,7 @@
           <input
             type="radio"
             checked={!radio1}
-            on:change={() => {
+            onchange={() => {
               radio1 = false;
             }}
           /> No
@@ -76,7 +80,7 @@
           <input
             type="radio"
             checked={radio2}
-            on:change={() => {
+            onchange={() => {
               radio2 = true;
             }}
           /> Yes
@@ -86,7 +90,7 @@
           <input
             type="radio"
             checked={!radio2}
-            on:change={() => {
+            onchange={() => {
               radio2 = false;
             }}
           /> No
@@ -107,9 +111,9 @@
         <button
           class="button is-primary"
           disabled={!(radio1 && radio2)}
-          on:click={() => setPrivacy("yes")}>Yes</button
+          onclick={() => setPrivacy("yes")}>Yes</button
         >
-        <button class="button is-secondary" on:click={() => setPrivacy("no")}
+        <button class="button is-secondary" onclick={() => setPrivacy("no")}
           >No</button
         >
       </div>
@@ -118,12 +122,11 @@
 {/if}
 
 <style lang="scss">
-  @import "../../variables.scss";
 
   .fullscreen {
     position: absolute;
     z-index: 99999999;
-    background-color: rgba($primary, 0.75);
+    background-color: rgba(variables.$primary, 0.75);
     width: 100%;
     height: 100%;
   }

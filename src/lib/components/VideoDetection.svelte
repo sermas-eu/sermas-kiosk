@@ -1,4 +1,6 @@
 <script lang="ts">
+  import { run } from 'svelte/legacy';
+
   import { browser } from "$app/environment";
   import { toolkit } from "$lib";
   import { appSettingsStore, sessionIdStore } from "$lib/store";
@@ -21,13 +23,13 @@
 
   let enableTestFaces: boolean;
   let sessionId: string | undefined;
-  let testFace: string;
-  let enableVideoDetection: boolean;
-  let showVideo = false;
-  let mirrorMode: boolean;
-  let detectorFaceLandmarker: boolean;
-  let detectorHuman: boolean;
-  let qrcode: boolean;
+  let testFace: string = $state();
+  let enableVideoDetection: boolean = $state();
+  let showVideo = $state(false);
+  let mirrorMode: boolean = $state();
+  let detectorFaceLandmarker: boolean = $state();
+  let detectorHuman: boolean = $state();
+  let qrcode: boolean = $state();
 
   const S_KEY = "KeyS";
   let blendShapeLog = false;
@@ -42,7 +44,7 @@
   let video: HTMLVideoElement | undefined;
   let canvas: HTMLCanvasElement | undefined;
 
-  let isDevMode = false;
+  let isDevMode = $state(false);
 
   const width = 640;
   const height = 480;
@@ -60,21 +62,11 @@
     qrcode = settings.qrcode;
   };
 
-  $: if ($appSettingsStore) updateSettings($appSettingsStore);
 
-  $: if (showVideo !== undefined && enableVideoDetection && videoDetection)
-    videoDetection.toggleRender(showVideo);
 
-  $: if (mirrorMode !== undefined && videoDetection && browser)
-    toggleMirrorMode();
 
-  $: if (detectorFaceLandmarker !== undefined && videoDetection && browser)
-    toggleFaceLandmarker();
 
-  $: if (detectorHuman !== undefined && videoDetection && browser)
-    toggleHuman();
 
-  $: if (qrcode !== undefined && videoDetection && browser) toggleQrcode();
 
   const createHuman = () =>
     new HumanDetector(
@@ -170,12 +162,8 @@
     emitter.emit("avatar.face", null, testFace);
   };
 
-  $: enableVideoDetection ? start() : stop();
 
-  $: if (enableVideoDetection && detectorFaceLandmarker && isDevMode)
-    handleSaveFaceLandmarks();
 
-  $: if (testFace) setTestFace(testFace);
 
   const start = async () => {
     if (!browser) return;
@@ -274,11 +262,43 @@
     if (ev.code !== S_KEY) return;
     blendShapeLog = !blendShapeLog;
   };
+  run(() => {
+    if ($appSettingsStore) updateSettings($appSettingsStore);
+  });
+  run(() => {
+    if (showVideo !== undefined && enableVideoDetection && videoDetection)
+      videoDetection.toggleRender(showVideo);
+  });
+  run(() => {
+    if (mirrorMode !== undefined && videoDetection && browser)
+      toggleMirrorMode();
+  });
+  run(() => {
+    if (detectorFaceLandmarker !== undefined && videoDetection && browser)
+      toggleFaceLandmarker();
+  });
+  run(() => {
+    if (detectorHuman !== undefined && videoDetection && browser)
+      toggleHuman();
+  });
+  run(() => {
+    if (qrcode !== undefined && videoDetection && browser) toggleQrcode();
+  });
+  run(() => {
+    enableVideoDetection ? start() : stop();
+  });
+  run(() => {
+    if (enableVideoDetection && detectorFaceLandmarker && isDevMode)
+      handleSaveFaceLandmarks();
+  });
+  run(() => {
+    if (testFace) setTestFace(testFace);
+  });
 </script>
 
 <div id="main-content" class={!showVideo ? "invisible" : ""}>
-  <video id="inputVideo" autoplay muted {width} {height} />
-  <canvas id="overlay" {width} {height} />
+  <video id="inputVideo" autoplay muted {width} {height}></video>
+  <canvas id="overlay" {width} {height}></canvas>
 </div>
 
 <style>

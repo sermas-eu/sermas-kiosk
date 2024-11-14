@@ -1,4 +1,6 @@
 <script lang="ts">
+  import { run } from 'svelte/legacy';
+
 import KioskBoard from 'kioskboard';
 import { tick } from "svelte";
 import { createEventDispatcher } from 'svelte';
@@ -9,10 +11,14 @@ import {
 
 const dispatch = createEventDispatcher();
 
-export let showKeyboard: boolean
-export let inputValue: string
-export let placeholder: string
-let field: HTMLInputElement
+  interface Props {
+    showKeyboard: boolean;
+    inputValue: string;
+    placeholder: string;
+  }
+
+  let { showKeyboard = $bindable(), inputValue = $bindable(), placeholder }: Props = $props();
+let field: HTMLInputElement = $state()
 
 
 const options = {
@@ -62,9 +68,6 @@ const options = {
     keysEnterCanClose: true,
   }
 
-$: if (showKeyboard) {
-  openKeyboard()
-}
 
 const openKeyboard = async () => {
   if (!$appSettingsStore.virtualKeyboardEnabled) {
@@ -84,6 +87,11 @@ const done = (str: string) => {
 }
 
 
+run(() => {
+    if (showKeyboard) {
+    openKeyboard()
+  }
+  });
 </script>
 
 {#if showKeyboard}
@@ -93,12 +101,12 @@ const done = (str: string) => {
         <input id="keyboard-input-text" bind:this={field} bind:value={inputValue} class="input js-kioskboard-input is-large" readonly type="text" data-kioskboard-specialcharacters="true"  placeholder={placeholder}>
       </div>
       <div class="control">
-        <button class="button is-large sermas-button" on:click={() => done(field?.value)}>
+        <button class="button is-large sermas-button" onclick={() => done(field?.value)}>
           Confirm
         </button>
         </div>
         <div class="control">
-        <button class="button is-large sermas-button" on:click={() => done(inputValue)}>
+        <button class="button is-large sermas-button" onclick={() => done(inputValue)}>
           Cancel
         </button>
       </div>

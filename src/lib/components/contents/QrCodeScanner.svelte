@@ -55,8 +55,8 @@
 </script>
 
 <div id="main-content-qr">
-  <video id="qrcode-scanner" autoplay muted width={"100%"} height={"100%"} />
-  <canvas id="qrcode-scanner-overlay" width={0} height={0} />
+  <video id="qrcode-scanner" autoplay muted width={"100%"} height={"100%"}></video>
+  <canvas id="qrcode-scanner-overlay" width={0} height={0}></canvas>
 </div>
 
 <style>

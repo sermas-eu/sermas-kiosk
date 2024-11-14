@@ -1,6 +1,10 @@
 <script lang="ts">
     import { type TextContentDto } from "@sermas/toolkit";
-    export let content: TextContentDto;
+    interface Props {
+        content: TextContentDto;
+    }
+
+    let { content }: Props = $props();
 </script>
 
 <span class="text">

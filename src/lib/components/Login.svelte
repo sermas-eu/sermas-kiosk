@@ -1,16 +1,22 @@
 <script lang="ts">
+    import { preventDefault } from 'svelte/legacy';
+
     import loginImage from "$lib/assets/images/sermas-logo-white.svg";
 
-    export let logoUrl = loginImage;
-    export let title = "Sign-in to continue";
-    export let onSubmit: (
+    interface Props {
+        logoUrl?: any;
+        title?: string;
+        onSubmit: (
         username: string,
         password: string,
     ) => (string | undefined) | Promise<string | undefined>;
+    }
 
-    let errorText: null | string = null;
-    let username = "";
-    let password = "";
+    let { logoUrl = loginImage, title = "Sign-in to continue", onSubmit }: Props = $props();
+
+    let errorText: null | string = $state(null);
+    let username = $state("");
+    let password = $state("");
 
     const submit = async () => {
         if (!onSubmit) return;
@@ -22,7 +28,7 @@
 </script>
 
 <div id="login-page">
-    <form on:submit|preventDefault={submit}>
+    <form onsubmit={preventDefault(submit)}>
         <div class="columns is-vcentered mt-5">
             <div class="column">
                 <div class="cn">
@@ -69,7 +75,7 @@
                         <p class="help is-danger">{errorText}</p>
                     {/if}
 
-                    <button class="mt-2 button is-primary" on:click={submit}
+                    <button class="mt-2 button is-primary" onclick={submit}
                         >Login</button
                     >
                 </div>
@@ -79,11 +85,10 @@
 </div>
 
 <style lang="scss">
-    @import "../../app.scss";
 
     .login-img {
         backdrop-filter: blur(10px);
-        background-color: rgba($primary, 0.85);
+        background-color: rgba(variables.$primary, 0.85);
         border-radius: 50%;
         height: 25vh;
         width: 25vh;

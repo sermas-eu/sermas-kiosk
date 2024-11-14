@@ -15,7 +15,7 @@
     import { PlatformAppDto } from "@sermas/toolkit";
     import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 
-    export let data;
+    let { data } = $props();
 
     let toolkit: SermasToolkit;
     let apps: PlatformAppDto[] = [];

@@ -6,10 +6,15 @@
         type ButtonsContentDto,
         type UIInteractionEventDto,
     } from "@sermas/toolkit";
-    // import { stringSimilarity } from "string-similarity-js";
+    
 
-    export let content: ButtonsContentDto;
-    export let metadata: Record<string, any> = {};
+    interface Props {
+        // import { stringSimilarity } from "string-similarity-js";
+        content: ButtonsContentDto;
+        metadata?: Record<string, any>;
+    }
+
+    let { content, metadata = {} }: Props = $props();
 
     let selected = -1;
     // let waitUserMessage = true
@@ -60,7 +65,7 @@
                 class="mb-2 is-flex is-flex-direction-row is-justify-content-center"
             >
                 <button
-                    on:click={() => clicked(b, idx)}
+                    onclick={() => clicked(b, idx)}
                     class="button sermas-button is-multiline {b.classes &&
                     b.classes.length
                         ? b.classes.join(' ')

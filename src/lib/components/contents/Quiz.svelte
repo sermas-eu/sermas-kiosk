@@ -7,8 +7,12 @@
         type UIInteractionEventDto,
     } from "@sermas/toolkit";
 
-    export let content: QuizContentDto;
-    export let metadata: Record<string, any> | undefined;
+    interface Props {
+        content: QuizContentDto;
+        metadata: Record<string, any> | undefined;
+    }
+
+    let { content, metadata }: Props = $props();
     let selected = -1;
 
     const clicked = (answer: QuizAnswerDto, idx: number) => {
@@ -37,7 +41,7 @@
     {#each content.answers as a, idx}
         <div class="quiz-answer">
             <button
-                on:click={() => clicked(a, idx)}
+                onclick={() => clicked(a, idx)}
                 class="button is-multiline is-primary sermas-button"
             >
                 {a.answer}
@@ -47,7 +51,6 @@
 </div>
 
 <style lang="scss">
-    @import "../../../variables.scss";
 
     .quiz {
         // width: calc(var(--ui-content-width) / 1.5);
@@ -66,7 +69,7 @@
         flex-direction: column;
     }
 
-    @include mobile-view {
+    @include variables.mobile-view {
         .quiz {
             width: 100%;
         }

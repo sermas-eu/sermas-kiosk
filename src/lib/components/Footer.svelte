@@ -24,7 +24,6 @@
 </footer>
 
 <style lang="scss">
-    @import "../../variables.scss";
 
     .pre {
         font-family: "Courier New", Courier, monospace;
@@ -42,7 +41,7 @@
         margin: 0;
 
         text-align: center;
-        background-color: rgba($primary, 0.5);
+        background-color: rgba(variables.$primary, 0.5);
         backdrop-filter: blur(10px);
         color: white;
 
@@ -68,7 +67,7 @@
         margin-left: 20px;
     }
 
-    @include mobile-view {
+    @include variables.mobile-view {
         .footer {
             bottom: 0;
             --footer-height: 50px;

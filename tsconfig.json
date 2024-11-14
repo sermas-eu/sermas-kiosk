@@ -10,8 +10,6 @@
 		"sourceMap": true,
 		"strict": true,
 		"strictPropertyInitialization": false,
-		"importsNotUsedAsValues": "remove",
-		"preserveValueImports": false,
 	}
 	// Path aliases are handled by https://kit.svelte.dev/docs/configuration#alias
 	//

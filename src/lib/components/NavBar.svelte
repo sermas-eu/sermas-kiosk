@@ -1,4 +1,6 @@
 <script lang="ts">
+  import { run, preventDefault } from 'svelte/legacy';
+
   import IoMdLogOut from "svelte-icons/io/IoMdLogOut.svelte";
   import IoMdMic from "svelte-icons/io/IoMdMic.svelte";
   import IoMdMicOff from "svelte-icons/io/IoMdMicOff.svelte";
@@ -25,7 +27,7 @@
   import { llmDefaults } from "@sermas/toolkit/settings";
 
   let app: PlatformAppDto | undefined;
-  let login: boolean;
+  let login: boolean = $state();
   const logger = new Logger("navbar");
 
   const facesList = [
@@ -38,14 +40,14 @@
     "surprise",
   ];
 
-  let repository: RepositoryConfigDto;
-  let settings: AppSettings;
-  let loaded = false;
-  let showMenu = false;
-  let rpmUrl = "";
-  let rpmGender = "M";
+  let repository: RepositoryConfigDto = $state();
+  let settings: AppSettings = $state();
+  let loaded = $state(false);
+  let showMenu = $state(false);
+  let rpmUrl = $state("");
+  let rpmGender = $state("M");
 
-  let hasCopied = "";
+  let hasCopied = $state("");
   const copyClipboard = (text: string) => {
     navigator?.clipboard
       ?.writeText(text)
@@ -74,21 +76,27 @@
     setLogLevel(settings.devMode);
   });
 
-  $: if ($appConfigStore) {
-    repository = $appConfigStore.repository;
-  }
+  run(() => {
+    if ($appConfigStore) {
+      repository = $appConfigStore.repository;
+    }
+  });
 
-  $: if ($appReadyStore && $appSettingsStore && !loaded) {
-    settings = $appSettingsStore;
-    logger.debug(`Settings loaded`, settings);
-    loaded = true;
-    setLogLevel(settings.devMode);
-  }
+  run(() => {
+    if ($appReadyStore && $appSettingsStore && !loaded) {
+      settings = $appSettingsStore;
+      logger.debug(`Settings loaded`, settings);
+      loaded = true;
+      setLogLevel(settings.devMode);
+    }
+  });
 
-  $: if ($appReadyStore && loaded && settings) {
-    logger.debug(`Settings changed`, settings);
-    toolkit.getSettings().save(settings || {});
-  }
+  run(() => {
+    if ($appReadyStore && loaded && settings) {
+      logger.debug(`Settings changed`, settings);
+      toolkit.getSettings().save(settings || {});
+    }
+  });
 
   onMount(async () => {
     //
@@ -168,8 +176,8 @@
           <a
             title="Close settings"
             href="#"
-            on:click|preventDefault={() => (showMenu = !showMenu)}
-            on:keydown|preventDefault={() => (showMenu = !showMenu)}
+            onclick={preventDefault(() => (showMenu = !showMenu))}
+            onkeydown={preventDefault(() => (showMenu = !showMenu))}
           >
             &#10060;
           </a>
@@ -181,7 +189,7 @@
               <span> LLM for {tag} </span>
               <select
                 bind:value={settings.llm[tag]}
-                on:change={() => setLLM(tag, llmService)}
+                onchange={() => setLLM(tag, llmService)}
               >
                 <option value="" selected={!llmService}>default</option>
                 {#each toolkit.getAvailableModels() as key}
@@ -195,7 +203,7 @@
         {/each}
         <li>
           <span> Language </span>
-          <select bind:value={settings.language} on:change={setLanguage}>
+          <select bind:value={settings.language} onchange={setLanguage}>
             {#each Object.keys(supportedLanguages) as key}
               <option value={key}>{supportedLanguages[key]}</option>
             {/each}
@@ -204,7 +212,7 @@
         <li>
           <span> Avatar </span>
           <!-- {#if repository.avatars} -->
-          <select bind:value={settings.avatar} on:change={setModelName}>
+          <select bind:value={settings.avatar} onchange={setModelName}>
             {#each repository?.avatars || [].sort() as avatar}
               <option value={avatar.id}>{avatar.name}</option>
             {/each}
@@ -225,17 +233,17 @@
               <option value="M">M</option>
             </select>
             {#if settings.rpmUrl == ""}
-              <button disabled={rpmUrl == ""} on:click={() => setRPMUrl(rpmUrl)}
+              <button disabled={rpmUrl == ""} onclick={() => setRPMUrl(rpmUrl)}
                 >Load</button
               >
             {:else}
-              <button on:click={() => setRPMUrl("")}>Unload</button>
+              <button onclick={() => setRPMUrl("")}>Unload</button>
             {/if}
           </div>
         </li>
         <li>
           <span> Background </span>
-          <select bind:value={settings.background} on:change={setBackground}>
+          <select bind:value={settings.background} onchange={setBackground}>
             {#each repository?.backgrounds || {} as background}
               <option value={background?.id}>{background.name}</option>
             {/each}
@@ -245,7 +253,7 @@
           <span> Interaction start </span>
           <select
             bind:value={settings.interactionStart}
-            on:change={setInteractionStart}
+            onchange={setInteractionStart}
           >
             <option value="on-load">On load</option>
             <option value="touch">On touch</option>
@@ -260,7 +268,7 @@
           <input
             type="checkbox"
             bind:checked={settings.virtualKeyboardEnabled}
-            on:change={setVirtualKeyboardEnabled}
+            onchange={setVirtualKeyboardEnabled}
           />
           {settings.virtualKeyboardEnabled == true ? "Enabled" : "Disabled"}
         </li>
@@ -272,7 +280,7 @@
                 href="#"
                 class="has-text-grey-lighter"
                 title={$sessionIdStore}
-                on:click={(e) => copyClipboard($sessionIdStore)}
+                onclick={(e) => copyClipboard($sessionIdStore)}
                 >Copy Session ID <b class="has-text-white-ter">{hasCopied}</b
                 ></a
               >
@@ -283,7 +291,7 @@
                 class="has-text-grey-ter"
                 title="View stats"
                 target="_blank"
-                on:click={(e) => copyClipboard($sessionIdStore)}>stats</a
+                onclick={(e) => copyClipboard($sessionIdStore)}>stats</a
               >
             </span>
           </li>
@@ -382,7 +390,7 @@
               <span> Play Animation </span>
               <select
                 bind:value={settings.animation}
-                on:change={setAnimation}
+                onchange={setAnimation}
                 placeholder="Animation"
               >
                 {#each settings.animationList as name}
@@ -393,7 +401,7 @@
           {/if}
           <li>
             <span> Face </span>
-            <select bind:value={settings.testFace} on:change={setFace}>
+            <select bind:value={settings.testFace} onchange={setFace}>
               {#each facesList as name}
                 <option value={name}>{name}</option>
               {/each}
@@ -413,9 +421,9 @@
       title="Toggle microphone"
       href="#"
       class="navbar-button {settings.enableMic ? 'is-active' : ''}"
-      on:click|preventDefault={() => (settings.enableMic = !settings.enableMic)}
-      on:keydown|preventDefault={() =>
-        (settings.enableMic = !settings.enableMic)}
+      onclick={preventDefault(() => (settings.enableMic = !settings.enableMic))}
+      onkeydown={preventDefault(() =>
+        (settings.enableMic = !settings.enableMic))}
     >
       {#if settings.enableMic}
         <IoMdMic />
@@ -427,8 +435,8 @@
       title="Toggle audio"
       href="#"
       class="navbar-button {settings.enableAudio ? 'is-active' : ''}"
-      on:click|preventDefault={() => updateAudioSettings()}
-      on:keydown|preventDefault={() => updateAudioSettings()}
+      onclick={preventDefault(() => updateAudioSettings())}
+      onkeydown={preventDefault(() => updateAudioSettings())}
     >
       {#if settings.enableAudio}
         <IoMdVolumeHigh />
@@ -440,8 +448,8 @@
       title="Open settings"
       href="#"
       class="navbar-button {showMenu ? 'hidden' : ''}"
-      on:click|preventDefault={() => (showMenu = !showMenu)}
-      on:keydown|preventDefault={() => (showMenu = !showMenu)}
+      onclick={preventDefault(() => (showMenu = !showMenu))}
+      onkeydown={preventDefault(() => (showMenu = !showMenu))}
     >
       <IoMdSettings />
     </a>
@@ -451,7 +459,7 @@
         title="logout"
         href="#"
         class="navbar-button {showMenu ? 'hidden' : ''}"
-        on:click|preventDefault={logout}
+        onclick={preventDefault(logout)}
       >
         <IoMdLogOut />
       </a>
@@ -464,7 +472,6 @@
 {/if}
 
 <style lang="scss">
-  @import "../../variables.scss";
 
   .row-container {
     display: flex;
@@ -474,12 +481,12 @@
   }
 
   .navbar-button {
-    color: rgba($secondary, 0.8);
+    color: rgba(variables.$secondary, 0.8);
   }
 
   .navbar-button:hover,
   .navbar-button.is-active {
-    color: rgba($primary, 1);
+    color: rgba(variables.$primary, 1);
   }
 
   .navbar-container {

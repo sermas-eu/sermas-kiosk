@@ -1,12 +1,18 @@
+<script lang="ts">
+  interface Props {
+    children?: import('svelte').Snippet;
+  }
+
+  let { children }: Props = $props();
+</script>
+
 <div class="app">
   <main>
-    <slot />
+    {@render children?.()}
   </main>
 </div>
 
 <style lang="scss">
-
-  @import '../../../variables.scss';
 
   .app {
     position: relative;

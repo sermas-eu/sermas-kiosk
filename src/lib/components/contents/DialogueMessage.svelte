@@ -1,18 +1,26 @@
 <script lang="ts">
+    import { run } from 'svelte/legacy';
+
     import { type DialogueMessageDto } from "@sermas/toolkit";
 
     import DOMPurify from "dompurify";
     import { marked } from "marked";
 
-    export let message: DialogueMessageDto;
+    interface Props {
+        message: DialogueMessageDto;
+    }
 
-    let content: string;
+    let { message }: Props = $props();
+
+    let content: string = $state();
 
     const renderMarkdown = async (text: string) => {
         content = DOMPurify.sanitize(await marked.parse(text));
     };
 
-    $: if (message && message.text) renderMarkdown(message.text);
+    run(() => {
+        if (message && message.text) renderMarkdown(message.text);
+    });
 </script>
 
 <span title={message.emotion} class="text emotion-{message.emotion || 'none'}">

@@ -13,7 +13,11 @@
     import Quiz from "./Quiz.svelte";
     import QrCodeScanner from "./QrCodeScanner.svelte";
 
-    export let content: UIContentDto;
+    interface Props {
+        content: UIContentDto;
+    }
+
+    let { content }: Props = $props();
 </script>
 
 <div

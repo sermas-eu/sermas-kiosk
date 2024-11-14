@@ -1,4 +1,6 @@
 <script lang="ts">
+    import { run } from 'svelte/legacy';
+
     import { type Emotion } from "@sermas/toolkit/dto";
 
     import { toolkit } from "$lib";
@@ -13,37 +15,43 @@
     import sad from "../assets/images/emotion-feedback/sad.png";
     import surprise from "../assets/images/emotion-feedback/surprise.png";
 
-    export let emotion: Emotion | undefined = undefined;
-
-    let imagePath = neutral;
-    $: if (emotion) {
-        switch (emotion) {
-            case "angry":
-                imagePath = angry;
-                break;
-            case "disgust":
-                imagePath = disgust;
-                break;
-            case "fear":
-                imagePath = fear;
-                break;
-            case "happy":
-                imagePath = happy;
-                break;
-            case "neutral":
-                imagePath = neutral;
-                break;
-            case "sad":
-                imagePath = sad;
-                break;
-            case "surprise":
-                imagePath = surprise;
-                break;
-            default:
-                imagePath = neutral;
-                break;
-        }
+    interface Props {
+        emotion?: Emotion | undefined;
     }
+
+    let { emotion = $bindable(undefined) }: Props = $props();
+
+    let imagePath = $state(neutral);
+    run(() => {
+        if (emotion) {
+            switch (emotion) {
+                case "angry":
+                    imagePath = angry;
+                    break;
+                case "disgust":
+                    imagePath = disgust;
+                    break;
+                case "fear":
+                    imagePath = fear;
+                    break;
+                case "happy":
+                    imagePath = happy;
+                    break;
+                case "neutral":
+                    imagePath = neutral;
+                    break;
+                case "sad":
+                    imagePath = sad;
+                    break;
+                case "surprise":
+                    imagePath = surprise;
+                    break;
+                default:
+                    imagePath = neutral;
+                    break;
+            }
+        }
+    });
 
     const onDetectionCharacterization = (ev: UserCharacterizationEventDto) => {
         emotion = ev.detections[0].emotion.value as Emotion;

@@ -1,12 +1,24 @@
-<script>
-	/* Default theme props can be retrieved from store or provided on SSR/SSG generation.
+<script lang="ts">
+	
+	interface Props {
+		/* Default theme props can be retrieved from store or provided on SSR/SSG generation.
 		 To update :root CSS Vars dynamically you can use
 		 document.documentElement.style.setProperty('--your-var', 'value');
   */
-	export let primaryBgColor = '#64539e';
-	export let primaryTextColor = 'white';
-	export let secondaryBgColor = '#64539e';
-	export let secondaryTextColor = 'white';
+		primaryBgColor?: string;
+		primaryTextColor?: string;
+		secondaryBgColor?: string;
+		secondaryTextColor?: string;
+		children?: import('svelte').Snippet;
+	}
+
+	let {
+		primaryBgColor = '#64539e',
+		primaryTextColor = 'white',
+		secondaryBgColor = '#64539e',
+		secondaryTextColor = 'white',
+		children
+	}: Props = $props();
 
 </script>
 
@@ -43,5 +55,5 @@
 	`--theme-secondary-text-color: ${secondaryTextColor};` +
 	`width: 100%; height: 100%;`
 }>
-	<slot/>
+	{@render children?.()}
 </div>

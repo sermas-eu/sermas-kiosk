@@ -1,4 +1,6 @@
 <script lang="ts">
+  import { run, preventDefault } from 'svelte/legacy';
+
   import { browser } from "$app/environment";
   import { toolkit } from "$lib";
   import {
@@ -23,27 +25,27 @@
   import Loader from "./Loader.svelte";
   import SessionHelpers from "./contents/SessionHelpers.svelte";
 
-  let xrSupported: boolean = false;
-  let enableAudio: boolean;
-  let enableAvatar: boolean;
-  let enableAnimation: boolean;
-  let enableMirrorMode: boolean;
-  let avatar: string;
-  let animation: string;
+  let xrSupported: boolean = $state(false);
+  let enableAudio: boolean = $state();
+  let enableAvatar: boolean = $state();
+  let enableAnimation: boolean = $state();
+  let enableMirrorMode: boolean = $state();
+  let avatar: string = $state();
+  let animation: string = $state();
   let animationList: string[] = [];
 
-  let avatarModel: AvatarModel | undefined;
+  let avatarModel: AvatarModel | undefined = $state();
 
   let mounted = false;
   let started = false;
 
-  let rpmUrl: string | undefined = undefined;
-  let rpmGender: string | undefined = undefined;
+  let rpmUrl: string | undefined = $state(undefined);
+  let rpmGender: string | undefined = $state(undefined);
 
-  let repository: RepositoryConfigDto;
+  let repository: RepositoryConfigDto = $state();
 
-  let background: string = "";
-  let backgroundImageUrl: string = "";
+  let background: string = $state("");
+  let backgroundImageUrl: string = $state("");
 
   const logger = new Logger("WebAvatar");
 
@@ -62,21 +64,8 @@
     enableAudio = settings.enableAudio;
   };
 
-  $: if ($appSettingsStore) updateSettings($appSettingsStore);
 
-  $: enableAudio, avatarModel?.toggleAudio(enableAudio);
-  $: enableAvatar ? start() : stop();
-  $: enableAnimation ? enableAnim(true) : enableAnim();
-  $: enableMirrorMode ? enableMirror(true) : enableMirror();
-  $: avatar && repository, reload();
-  $: rpmUrl || rpmGender, reload();
-  $: animation, triggerAnimation(animation);
-  $: background, setBackground(background);
 
-  $: if ($appConfigStore) {
-    // logger.debug("app config", $appConfigStore);
-    repository = $appConfigStore.repository;
-  }
 
   const onPerformance = (ev: PerformanceEvent) => {
     if (!avatarModel) return;
@@ -242,6 +231,39 @@
     start();
   });
   onDestroy(stop);
+  run(() => {
+    if ($appSettingsStore) updateSettings($appSettingsStore);
+  });
+  run(() => {
+    enableAudio, avatarModel?.toggleAudio(enableAudio);
+  });
+  run(() => {
+    enableAvatar ? start() : stop();
+  });
+  run(() => {
+    enableAnimation ? enableAnim(true) : enableAnim();
+  });
+  run(() => {
+    enableMirrorMode ? enableMirror(true) : enableMirror();
+  });
+  run(() => {
+    if ($appConfigStore) {
+      // logger.debug("app config", $appConfigStore);
+      repository = $appConfigStore.repository;
+    }
+  });
+  run(() => {
+    avatar && repository, reload();
+  });
+  run(() => {
+    rpmUrl || rpmGender, reload();
+  });
+  run(() => {
+    animation, triggerAnimation(animation);
+  });
+  run(() => {
+    background, setBackground(background);
+  });
 </script>
 
 {#if !$avatarLoadedStore}
@@ -250,7 +272,7 @@
 <div id="xr-button-avatar" class={xrSupported ? "" : "is-hidden"}>
   <button
     class="button is-primary start-ar {$avatarLoadedStore ? '' : 'is-hidden'}"
-    on:click|preventDefault={onStartAR}
+    onclick={preventDefault(onStartAR)}
   >
     Start AR
   </button>
@@ -265,10 +287,9 @@
   <!-- <div id="background" style={'background-image: url(' + backgroundImageUrl + ');'}></div> -->
 </div>
 <SessionHelpers />
-<div id="blendshape-controls" />
+<div id="blendshape-controls"></div>
 
 <style lang="scss">
-  @import "../../variables.scss";
 
   #xr-button-avatar {
     position: absolute;

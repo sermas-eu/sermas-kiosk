@@ -7,7 +7,7 @@
     import { onMount } from "svelte";
 
     let toolkit: SermasToolkit;
-    let apps: PlatformAppDto[] = [];
+    let apps: PlatformAppDto[] = $state([]);
 
     onMount(async () => {
         if (!browser) return;
@@ -68,13 +68,12 @@
 </div>
 
 <style lang="scss">
-    @import "../variables.scss";
 
     .note {
         max-width: 35em;
         margin: 0 auto;
         padding: 0.5em;
-        background-color: rgba($palette5, 0.6) !important;
+        background-color: rgba(variables.$palette5, 0.6) !important;
     }
 
     .wrapper {
@@ -86,8 +85,8 @@
         font-size: 150%;
         z-index: 10;
         width: 100%;
-        background-color: rgba($palette1, 0.5) !important;
-        box-shadow: inset 0 0 10em rgba($palette4, 0.2) !important;
+        background-color: rgba(variables.$palette1, 0.5) !important;
+        box-shadow: inset 0 0 10em rgba(variables.$palette4, 0.2) !important;
         backdrop-filter: blur(10px);
     }
 
@@ -104,7 +103,7 @@
         overflow: auto;
     }
 
-    @include mobile-view {
+    @include variables.mobile-view {
         //
     }
 </style>

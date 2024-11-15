@@ -21,7 +21,6 @@
   } from "@sermas/toolkit/utils";
   import { onDestroy, onMount } from "svelte";
   import Loader from "./Loader.svelte";
-  import SessionHelpers from "./contents/SessionHelpers.svelte";
 
   let xrSupported: boolean = false;
   let enableAudio: boolean;
@@ -264,7 +263,6 @@
   <!-- <div id="avatar-container"></div> -->
   <!-- <div id="background" style={'background-image: url(' + backgroundImageUrl + ');'}></div> -->
 </div>
-<SessionHelpers />
 <div id="blendshape-controls" />
 
 <style lang="scss">

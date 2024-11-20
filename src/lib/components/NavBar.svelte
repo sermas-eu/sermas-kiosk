@@ -25,8 +25,7 @@
   import { AppSettings, supportedLanguages } from "@sermas/toolkit/dto";
   import { Logger, addGlobal, setDefaultLogLevel } from "@sermas/toolkit/utils";
   import { onDestroy, onMount } from "svelte";
-  import EmotionFeedback from "./EmotionFeedback.svelte";
-  import { llmDefaults } from "@sermas/toolkit/settings";
+  import sermasLogo from "$lib/assets/images/sermas-logo-white.svg";
 
   let app: PlatformAppDto | undefined;
   let login: boolean;
@@ -52,6 +51,7 @@
 
   let hasCopied = "";
   let sessionId: string | undefined = undefined;
+  const version = PKG_VERSION;
 
   const copyClipboard = (text: string) => {
     navigator?.clipboard
@@ -554,7 +554,13 @@
           </li>
         </ul>
       </aside>
-
+      <div class="credits">
+        <a href="https://sermasproject.eu" target="_blank">
+          <img class="logo" src={sermasLogo} alt="SERMAS" />
+          SERMAS
+        </a>
+        <span>v{version}</span>
+      </div>
     </nav>
   </div>
 {/if}
@@ -611,6 +617,8 @@
       .menu {
         margin-top: 1em;
         margin-left: 1em;
+        height: 85%;
+
         .menu-list {
           li a {
             color: $secondary;
@@ -646,6 +654,30 @@
           .rpm-url {
             width: 50%;
           }
+        }
+      }
+      .credits {
+        margin-bottom: 1em;
+        margin-left: 1em;
+        color: $secondary;
+        display: flex;
+        height: 2em;
+        justify-content: center;
+        text-align: center;
+        align-items: center;
+
+        .logo {
+          width: 35px;
+          height: 35px;
+        }
+        a {
+          color: $secondary;
+          margin-right: 10px;
+          display: flex;
+          align-items: center;
+        }
+        a:hover {
+          color: $primary;
         }
       }
     }

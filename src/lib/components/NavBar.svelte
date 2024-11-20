@@ -623,6 +623,14 @@
     .is-opened {
       margin-top: 1em;
       margin-left: 1em;
+
+      .navbar-button:hover,
+      .navbar-button.is-active {
+        color: rgba($secondary, 0.8);
+      }
+      .navbar-button {
+        color: white;
+      }
     }
 
     .is-closed {
@@ -646,7 +654,13 @@
 
         .menu-list {
           li a {
-            color: $secondary;
+            color: white;
+          }
+          a:hover {
+            background-color: rgba($secondary, 0.8);
+          }
+          a.is-active {
+            background-color: rgba($secondary, 0.8);
           }
         }
         .menu-item-w-icon {
@@ -659,7 +673,7 @@
         align-content: center;
 
         select {
-          color: #333;
+          color: $dark-blue;
           width: 100%;
           .gender {
             width: 50px;
@@ -684,30 +698,31 @@
       .credits {
         margin-bottom: 1em;
         margin-left: 1em;
-        color: $secondary;
+        color: white;
         display: flex;
         height: 2em;
         justify-content: center;
         text-align: center;
         align-items: center;
+        color: white;
 
         .logo {
           width: 35px;
           height: 35px;
         }
         a {
-          color: $secondary;
+          color: white;
           margin-right: 10px;
           display: flex;
           align-items: center;
         }
         a:hover {
-          color: $primary;
+          color: rgba($secondary, 0.8);
         }
       }
     }
   }
   .is-show {
-    background-color: #333;
+    background-color: $dark-blue;
   }
 </style>

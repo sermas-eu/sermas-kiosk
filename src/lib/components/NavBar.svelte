@@ -286,8 +286,8 @@
       <aside class="menu">
         <p class="menu-label">General</p>
         <ul class="menu-list">
-          <li><a>TODO Intro</a></li>
-          <li><a>TODO Free Chat</a></li>
+          <!-- <li><a>TODO Intro</a></li>
+          <li><a>TODO Free Chat</a></li> -->
           <!-- <hr class="navbar-divider"> -->
           <li>
             <a

@@ -9,6 +9,7 @@
   import IoMdCloseCircleOutline from "svelte-icons/io/IoMdCloseCircleOutline.svelte";
   import MdMenu from "svelte-icons/md/MdMenu.svelte";
   import MdClose from "svelte-icons/md/MdClose.svelte";
+  import FaVrCardboard from "svelte-icons/fa/FaVrCardboard.svelte";
 
   import { toolkit } from "$lib";
   import {
@@ -16,6 +17,7 @@
     appReadyStore,
     appSettingsStore,
     avatarLoadedStore,
+    avatarModelStore,
     sessionIdStore,
   } from "$lib/store";
   import {
@@ -26,6 +28,7 @@
   import { Logger, addGlobal, setDefaultLogLevel } from "@sermas/toolkit/utils";
   import { onDestroy, onMount } from "svelte";
   import sermasLogo from "$lib/assets/images/sermas-logo-white.svg";
+  import { sendStatus } from "@sermas/toolkit/events";
 
   let app: PlatformAppDto | undefined;
   let login: boolean;
@@ -52,6 +55,7 @@
   let hasCopied = "";
   let sessionId: string | undefined = undefined;
   const version = PKG_VERSION;
+  let xrSupported: boolean = false;
 
   const copyClipboard = (text: string) => {
     navigator?.clipboard
@@ -111,6 +115,8 @@
         sessionId = ev.record.sessionId;
       }
     });
+
+    xrSupported = (await $avatarModelStore?.getXR().isSupported()) || false;
   });
 
   onDestroy(async () => {
@@ -178,6 +184,13 @@
 
   const closeSession = async () => {
     toolkit?.triggerInteraction("ui", "stop");
+  };
+
+  const onStartAR = async () => {
+    if (!$avatarModelStore) return;
+    xrSupported = await $avatarModelStore.getXR().start();
+
+    if (!xrSupported) sendStatus("AR is not available on this device");
   };
 </script>
 
@@ -255,6 +268,17 @@
         {:else}
           <IoMdVolumeOff />
         {/if}
+      </a>
+
+      <a
+        title="Start AR"
+        href="#"
+        class="navbar-button {xrSupported && avatarLoadedStore
+          ? ''
+          : 'is-hidden'}"
+        on:click|preventDefault={onStartAR}
+      >
+        <FaVrCardboard />
       </a>
     </div>
 
@@ -567,6 +591,7 @@
 
 <style lang="scss">
   @import "../../variables.scss";
+
   .nav-container {
     position: absolute;
     z-index: 999;

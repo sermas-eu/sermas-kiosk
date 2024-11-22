@@ -81,7 +81,7 @@
 
   const sendToken = () => {
     const iframe = document.getElementById(
-      "navigation-frame",
+      "navigation-frame"
     ) as HTMLIFrameElement;
     const iframeWin = iframe?.contentWindow;
     if (iframeWin) {
@@ -89,7 +89,7 @@
         JSON.stringify({
           appId: toolkit.getAppId(),
           token: toolkit.getToken(),
-        }),
+        })
       );
     }
   };
@@ -172,7 +172,7 @@
   const openVirtualKeyboard = (
     initValue: string,
     placehoder: string,
-    callback: (res: string) => void,
+    callback: (res: string) => void
   ) => {
     callbackFunc = callback;
     inputValue = initValue;
@@ -330,36 +330,28 @@
         <span class="icon is-medium">
           <i class="fas fa-stop"></i>
         </span>
-        {#if enableMic}
-          <span>Stop Avatar</span>
-        {/if}
       </button>
-      {#if !enableMic}
-        <form on:submit|preventDefault={sendChatMessage} class="input-form">
-          <input
-            class="input is-medium"
-            bind:value={chatMessage}
-            on:focus={(e) =>
-              openVirtualKeyboard(
-                chatMessage,
-                "Type something to ask",
-                (result) => (chatMessage = result),
-              )}
-            placeholder="Type something to ask"
-          />
-          <button
-            class="button is-medium ml-2 is-primary sermas-button {sendingMessage
-              ? 'is-loading'
-              : ''}"
-            type="submit"
-          >
-            <span class="icon is-medium">
-              <i class="fas fa-paper-plane"></i>
-            </span>
-            <span>Send</span>
-          </button>
-        </form>
-      {/if}
+      <form on:submit|preventDefault={sendChatMessage} class="input-form">
+        <input
+          class="input is-medium"
+          bind:value={chatMessage}
+          on:focus={(e) =>
+            openVirtualKeyboard(
+              chatMessage,
+              "Type something to ask",
+              (result) => (chatMessage = result)
+            )}
+          placeholder="Type something to ask"
+        />
+        <button
+          class="button is-medium ml-2 is-primary sermas-button {sendingMessage
+            ? 'is-loading'
+            : ''}"
+          type="submit"
+        >
+          <span>Send</span>
+        </button>
+      </form>
     </div>
   {/if}
   {#if navigationFrameEnabled}

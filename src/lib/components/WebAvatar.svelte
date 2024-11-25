@@ -21,7 +21,6 @@
   } from "@sermas/toolkit/utils";
   import { onDestroy, onMount } from "svelte";
   import Loader from "./Loader.svelte";
-  import SessionHelpers from "./contents/SessionHelpers.svelte";
 
   let xrSupported: boolean = false;
   let enableAudio: boolean;
@@ -111,15 +110,15 @@
         reject(err);
       };
     });
-  }
+  };
 
   const setBackground = async (background: string) => {
     logger.debug(`Set background: ${background}`);
-    let config = await toolkit.getAssetConfig('backgrounds', background);
-    if (!config) return
-    const blob = await toolkit.getApi().getAsset(config.type, config.id)
+    let config = await toolkit.getAssetConfig("backgrounds", background);
+    if (!config) return;
+    const blob = await toolkit.getApi().getAsset(config.type, config.id);
     if (blob) {
-      backgroundImageUrl = `${await toBase64(blob)}`
+      backgroundImageUrl = `${await toBase64(blob)}`;
     }
   };
 
@@ -154,6 +153,7 @@
     logger.debug(`Reloading model ${avatar}`);
     //await new Promise(r => setTimeout(r, 500));
     await stop();
+    toolkit.getUI().clear();
     await start();
   };
 
@@ -258,12 +258,11 @@
 <div
   id="web-avatar"
   class={$appSettingsStore.devMode ? "controls-enabled" : ""}
-  style={'background-image: url(' + backgroundImageUrl + ');'}
+  style={"background-image: url(" + backgroundImageUrl + ");"}
 >
   <!-- <div id="avatar-container"></div> -->
   <!-- <div id="background" style={'background-image: url(' + backgroundImageUrl + ');'}></div> -->
 </div>
-<SessionHelpers />
 <div id="blendshape-controls" />
 
 <style lang="scss">
@@ -301,7 +300,7 @@
     height: 100%;
   }
 
-  #web-avatar{
+  #web-avatar {
     // disable canvas mouse controls
     pointer-events: none;
     background-color: transparent;
@@ -320,5 +319,4 @@
   #web-avatar.controls-enabled {
     pointer-events: inherit;
   }
-
 </style>

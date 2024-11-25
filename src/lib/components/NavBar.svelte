@@ -149,6 +149,10 @@
     settings.virtualKeyboardEnabled = ev.target.checked;
   };
 
+  const setSubtitlesEnabled = (ev: any) => {
+    settings.subtitlesEnabled = ev.target.checked;
+  };
+
   const setLanguage = (ev: any) => {
     if (!settings) return;
     if (!ev.target || !ev.target.value) return;
@@ -401,15 +405,22 @@
                     </select>
                   </li>
                   <li>
-                    <span> Virtual keyboard </span>
-                    <input
-                      type="checkbox"
-                      bind:checked={settings.virtualKeyboardEnabled}
-                      on:change={setVirtualKeyboardEnabled}
-                    />
-                    {settings.virtualKeyboardEnabled == true
-                      ? "Enabled"
-                      : "Disabled"}
+                    <span>
+                      <input
+                        type="checkbox"
+                        bind:checked={settings.virtualKeyboardEnabled}
+                        on:change={setVirtualKeyboardEnabled}
+                      />
+                      Virtual keyboard
+                    </span>
+                    <span>
+                      <input
+                        type="checkbox"
+                        bind:checked={settings.subtitlesEnabled}
+                        on:change={setSubtitlesEnabled}
+                      />
+                      Subtitles
+                    </span>
                   </li>
 
                   {#if $sessionIdStore}

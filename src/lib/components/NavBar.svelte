@@ -9,6 +9,7 @@
   import IoMdCloseCircleOutline from "svelte-icons/io/IoMdCloseCircleOutline.svelte";
   import MdMenu from "svelte-icons/md/MdMenu.svelte";
   import MdClose from "svelte-icons/md/MdClose.svelte";
+  import FaVrCardboard from "svelte-icons/fa/FaVrCardboard.svelte";
 
   import { toolkit } from "$lib";
   import {
@@ -16,6 +17,7 @@
     appReadyStore,
     appSettingsStore,
     avatarLoadedStore,
+    avatarModelStore,
     sessionIdStore,
   } from "$lib/store";
   import {
@@ -25,8 +27,8 @@
   import { AppSettings, supportedLanguages } from "@sermas/toolkit/dto";
   import { Logger, addGlobal, setDefaultLogLevel } from "@sermas/toolkit/utils";
   import { onDestroy, onMount } from "svelte";
-  import EmotionFeedback from "./EmotionFeedback.svelte";
-  import { llmDefaults } from "@sermas/toolkit/settings";
+  import sermasLogo from "$lib/assets/images/sermas-logo-white.svg";
+  import { sendStatus } from "@sermas/toolkit/events";
 
   let app: PlatformAppDto | undefined;
   let login: boolean;
@@ -52,6 +54,8 @@
 
   let hasCopied = "";
   let sessionId: string | undefined = undefined;
+  const version = PKG_VERSION;
+  let xrSupported: boolean = false;
 
   const copyClipboard = (text: string) => {
     navigator?.clipboard
@@ -111,6 +115,8 @@
         sessionId = ev.record.sessionId;
       }
     });
+
+    xrSupported = (await $avatarModelStore?.getXR().isSupported()) || false;
   });
 
   onDestroy(async () => {
@@ -141,6 +147,10 @@
 
   const setVirtualKeyboardEnabled = (ev: any) => {
     settings.virtualKeyboardEnabled = ev.target.checked;
+  };
+
+  const setSubtitlesEnabled = (ev: any) => {
+    settings.subtitlesEnabled = ev.target.checked;
   };
 
   const setLanguage = (ev: any) => {
@@ -178,6 +188,13 @@
 
   const closeSession = async () => {
     toolkit?.triggerInteraction("ui", "stop");
+  };
+
+  const onStartAR = async () => {
+    if (!$avatarModelStore) return;
+    xrSupported = await $avatarModelStore.getXR().start();
+
+    if (!xrSupported) sendStatus("AR is not available on this device");
   };
 </script>
 
@@ -256,14 +273,25 @@
           <IoMdVolumeOff />
         {/if}
       </a>
+
+      <a
+        title="Start AR"
+        href="#"
+        class="navbar-button {xrSupported && avatarLoadedStore
+          ? ''
+          : 'is-hidden'}"
+        on:click|preventDefault={onStartAR}
+      >
+        <FaVrCardboard />
+      </a>
     </div>
 
     <nav class={!showMenu ? "hidden" : ""}>
       <aside class="menu">
         <p class="menu-label">General</p>
         <ul class="menu-list">
-          <li><a>TODO Intro</a></li>
-          <li><a>TODO Free Chat</a></li>
+          <!-- <li><a>TODO Intro</a></li>
+          <li><a>TODO Free Chat</a></li> -->
           <!-- <hr class="navbar-divider"> -->
           <li>
             <a
@@ -377,15 +405,22 @@
                     </select>
                   </li>
                   <li>
-                    <span> Virtual keyboard </span>
-                    <input
-                      type="checkbox"
-                      bind:checked={settings.virtualKeyboardEnabled}
-                      on:change={setVirtualKeyboardEnabled}
-                    />
-                    {settings.virtualKeyboardEnabled == true
-                      ? "Enabled"
-                      : "Disabled"}
+                    <span>
+                      <input
+                        type="checkbox"
+                        bind:checked={settings.virtualKeyboardEnabled}
+                        on:change={setVirtualKeyboardEnabled}
+                      />
+                      Virtual keyboard
+                    </span>
+                    <span>
+                      <input
+                        type="checkbox"
+                        bind:checked={settings.subtitlesEnabled}
+                        on:change={setSubtitlesEnabled}
+                      />
+                      Subtitles
+                    </span>
                   </li>
 
                   {#if $sessionIdStore}
@@ -554,13 +589,20 @@
           </li>
         </ul>
       </aside>
-
+      <div class="credits">
+        <a href="https://sermasproject.eu" target="_blank">
+          <img class="logo" src={sermasLogo} alt="SERMAS" />
+          SERMAS
+        </a>
+        <span>v{version}</span>
+      </div>
     </nav>
   </div>
 {/if}
 
 <style lang="scss">
   @import "../../variables.scss";
+
   .nav-container {
     position: absolute;
     z-index: 999;
@@ -592,6 +634,14 @@
     .is-opened {
       margin-top: 1em;
       margin-left: 1em;
+
+      .navbar-button:hover,
+      .navbar-button.is-active {
+        color: rgba($secondary, 0.8);
+      }
+      .navbar-button {
+        color: white;
+      }
     }
 
     .is-closed {
@@ -611,9 +661,17 @@
       .menu {
         margin-top: 1em;
         margin-left: 1em;
+        height: 85%;
+
         .menu-list {
           li a {
-            color: $secondary;
+            color: white;
+          }
+          a:hover {
+            background-color: rgba($secondary, 0.8);
+          }
+          a.is-active {
+            background-color: rgba($secondary, 0.8);
           }
         }
         .menu-item-w-icon {
@@ -626,7 +684,7 @@
         align-content: center;
 
         select {
-          color: #333;
+          color: $dark-blue;
           width: 100%;
           .gender {
             width: 50px;
@@ -648,9 +706,34 @@
           }
         }
       }
+      .credits {
+        margin-bottom: 1em;
+        margin-left: 1em;
+        color: white;
+        display: flex;
+        height: 2em;
+        justify-content: center;
+        text-align: center;
+        align-items: center;
+        color: white;
+
+        .logo {
+          width: 35px;
+          height: 35px;
+        }
+        a {
+          color: white;
+          margin-right: 10px;
+          display: flex;
+          align-items: center;
+        }
+        a:hover {
+          color: rgba($secondary, 0.8);
+        }
+      }
     }
   }
   .is-show {
-    background-color: #333;
+    background-color: $dark-blue;
   }
 </style>

@@ -21,7 +21,6 @@
   import { onDestroy, onMount } from "svelte";
   import "../../app.scss";
   import type { PageData } from "./$types";
-  import PrivacyPopup from "$lib/components/PrivacyPopup.svelte";
 
   export let data: PageData;
 
@@ -176,7 +175,6 @@
       <main>
         <slot />
       </main>
-      <!-- <Footer /> -->
     </Theme>
   {/if}
 </div>
@@ -200,7 +198,7 @@
   }
   main {
     position: relative;
-    height: calc(100% - var(--footer-height));
+    height: 100%;
     width: 100%;
     padding: 0;
     margin: 0;

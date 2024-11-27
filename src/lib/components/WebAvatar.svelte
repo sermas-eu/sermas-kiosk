@@ -5,15 +5,15 @@
     appConfigStore,
     appSettingsStore,
     avatarLoadedStore,
+    avatarModelStore,
   } from "$lib/store";
   import { type RepositoryConfigDto } from "@sermas/toolkit";
   import {
-    AvatarModel,
     getAvatarDefaultConfig,
     type AvatarModelConfig,
   } from "@sermas/toolkit/avatar";
   import { AppSettings } from "@sermas/toolkit/dto";
-  import { emitter, sendStatus } from "@sermas/toolkit/events";
+  import { emitter } from "@sermas/toolkit/events";
   import {
     Logger,
     addGlobal,
@@ -22,7 +22,6 @@
   import { onDestroy, onMount } from "svelte";
   import Loader from "./Loader.svelte";
 
-  let xrSupported: boolean = false;
   let enableAudio: boolean;
   let enableAvatar: boolean;
   let enableAnimation: boolean;
@@ -30,8 +29,6 @@
   let avatar: string;
   let animation: string;
   let animationList: string[] = [];
-
-  let avatarModel: AvatarModel | undefined;
 
   let mounted = false;
   let started = false;
@@ -63,7 +60,7 @@
 
   $: if ($appSettingsStore) updateSettings($appSettingsStore);
 
-  $: enableAudio, avatarModel?.toggleAudio(enableAudio);
+  $: enableAudio, $avatarModelStore?.toggleAudio(enableAudio);
   $: enableAvatar ? start() : stop();
   $: enableAnimation ? enableAnim(true) : enableAnim();
   $: enableMirrorMode ? enableMirror(true) : enableMirror();
@@ -78,20 +75,20 @@
   }
 
   const onPerformance = (ev: PerformanceEvent) => {
-    if (!avatarModel) return;
+    if (!$avatarModelStore) return;
     if (ev.status === "degraded") {
       logger.warn(`Performance degraded, stopping animations`);
-      avatarModel.setAnimationEnabled(false);
+      $avatarModelStore.setAnimationEnabled(false);
     }
     if (ev.status === "restored") {
       logger.log(`Performance restored, starting animations`);
-      avatarModel.setAnimationEnabled(true);
+      $avatarModelStore.setAnimationEnabled(true);
     }
   };
 
   const enableAnim = (enable = false) => {
     logger.debug(`Enable animation: ${enable}`);
-    avatarModel?.setAnimationEnabled(enable);
+    $avatarModelStore?.setAnimationEnabled(enable);
   };
 
   const toBase64 = (blob: Blob): Promise<string> => {
@@ -124,16 +121,16 @@
 
   const enableMirror = (enable = false) => {
     logger.debug(`Enable mirror mode: ${enable}`);
-    avatarModel?.setMirrorModeEnabled(enable);
+    $avatarModelStore?.setMirrorModeEnabled(enable);
   };
 
   const triggerAnimation = (name: string) => {
     logger.debug(`Triggered animation: ${name}`);
-    avatarModel?.getAnimation()?.play("gesture", name);
+    $avatarModelStore?.getAnimation()?.play("gesture", name);
   };
 
   const loadAvatarConfig = async (
-    avatar: string,
+    avatar: string
   ): Promise<AvatarModelConfig | null> => {
     logger.debug(`loading avatar ${avatar}`);
 
@@ -161,7 +158,7 @@
     if (!browser || !mounted) return;
     if (!repository) return;
     if (!enableAvatar) return;
-    if (avatarModel) return;
+    if ($avatarModelStore) return;
     if (started) return;
     started = true;
 
@@ -193,11 +190,9 @@
       }
     }
 
-    avatarModel = await toolkit.createWebAvatar(avatarConfig);
+    $avatarModelStore = await toolkit.createWebAvatar(avatarConfig);
 
     toolkit?.emit("avatar.status", "ready");
-
-    xrSupported = (await avatarModel?.getXR().isSupported()) || false;
 
     if (background) {
       setBackground(background);
@@ -205,13 +200,13 @@
 
     if ($appSettingsStore.devMode) {
       animationList = Array.from(
-        avatarModel?.getAnimation()?.getAnimations("gesture") || [],
-        (x: any) => x.name,
+        $avatarModelStore?.getAnimation()?.getAnimations("gesture") || [],
+        (x: any) => x.name
       );
       toolkit.getSettings().save({ animationList });
     }
 
-    addGlobal("Avatar", avatarModel);
+    addGlobal("Avatar", $avatarModelStore);
 
     emitter.on("performance", onPerformance);
 
@@ -221,19 +216,13 @@
   const stop = async () => {
     if (!browser) return;
     logger.debug(`stop avatar`);
-    if (avatarModel) {
-      await avatarModel.destroy();
-      avatarModel = undefined;
+    if ($avatarModelStore) {
+      await $avatarModelStore.destroy();
+      $avatarModelStore = undefined;
     }
     emitter.off("performance", onPerformance);
     started = false;
     avatarLoadedStore.set(false);
-  };
-
-  const onStartAR = async () => {
-    if (!avatarModel) return;
-    xrSupported = await avatarModel.getXR().start();
-    if (!xrSupported) sendStatus("AR is not available on this device");
   };
 
   onMount(() => {
@@ -246,14 +235,6 @@
 {#if !$avatarLoadedStore}
   <Loader />
 {/if}
-<div id="xr-button-avatar" class={xrSupported ? "" : "is-hidden"}>
-  <button
-    class="button is-primary start-ar {$avatarLoadedStore ? '' : 'is-hidden'}"
-    on:click|preventDefault={onStartAR}
-  >
-    Start AR
-  </button>
-</div>
 
 <div
   id="web-avatar"
@@ -268,23 +249,6 @@
 <style lang="scss">
   @import "../../variables.scss";
 
-  #xr-button-avatar {
-    position: absolute;
-    z-index: 80;
-    left: 0;
-    right: 0;
-    margin: auto;
-    padding-top: 1em;
-    text-align: center;
-  }
-
-  #xr-button-avatar .button {
-    opacity: 0.6;
-  }
-
-  #xr-button-avatar .button:hover {
-    opacity: 0.8;
-  }
 
   #blendshape-controls {
     position: absolute;

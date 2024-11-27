@@ -1,21 +1,24 @@
 @mixin mobile-view {
-    @media (max-width: 1200px) {
-        @content;
-    }
+  @media (max-width: 1200px) {
+    @content;
+  }
 }
 
 // Set your brand colors
 $palette1: #64539e;
-$palette2: #5965AC;
-$palette3: #3F85C6;
-$palette4: #3893CC;
-$palette5: #41A3C3;
-$palette6: #F9CF4D;
+$palette2: #5965ac;
+$palette3: #3f85c6;
+$palette4: #3893cc;
+$palette5: #41a3c3;
+$palette6: #f9cf4d;
+
+$dark-blue: #000721;
+$blue: #00228b;
 
 // Update Bulma's global variables
 $family-sans-serif: "Nunito", sans-serif;
 $grey-dark: #333;
-$grey-light: #BBB;
-$primary: $palette1;
-$secondary: $palette5;
+$grey-light: #bbb;
+$primary: $dark-blue;
+$secondary: $blue;
 $link: $palette2;

@@ -3,6 +3,7 @@
     import { goto } from "$app/navigation";
     import { createToolkit } from "$lib";
     import BackgroundAnimation from "$lib/components/BackgroundAnimation.svelte";
+  import Footer from "$lib/components/Footer.svelte";
     import type { PlatformAppDto, SermasToolkit } from "@sermas/toolkit";
     import { onMount } from "svelte";
 
@@ -62,6 +63,7 @@
         </div>
     </section>
 </div>
+<Footer />
 
 <div class="background">
     <BackgroundAnimation />

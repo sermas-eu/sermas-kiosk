@@ -1,5 +1,4 @@
 <script lang="ts">
-  import Footer from "$lib/components/Footer.svelte";
   import PrivacyPopup from "$lib/components/PrivacyPopup.svelte";
   import "../app.scss";
 </script>
@@ -9,7 +8,6 @@
   <main>
     <slot />
   </main>
-  <Footer />
 </div>
 
 <style>
@@ -22,7 +20,7 @@
   }
   main {
     position: relative;
-    height: calc(100% - var(--footer-height));
+    height: 100%;
     width: 100%;
     padding: 0;
     margin: 0;

@@ -81,7 +81,7 @@
 
   const sendToken = () => {
     const iframe = document.getElementById(
-      "navigation-frame",
+      "navigation-frame"
     ) as HTMLIFrameElement;
     const iframeWin = iframe?.contentWindow;
     if (iframeWin) {
@@ -89,7 +89,7 @@
         JSON.stringify({
           appId: toolkit.getAppId(),
           token: toolkit.getToken(),
-        }),
+        })
       );
     }
   };
@@ -172,7 +172,7 @@
   const openVirtualKeyboard = (
     initValue: string,
     placehoder: string,
-    callback: (res: string) => void,
+    callback: (res: string) => void
   ) => {
     callbackFunc = callback;
     inputValue = initValue;
@@ -232,35 +232,44 @@
   };
 </script>
 
-<div
-  class="ui-content is-flex {history.length ? '' : 'is-align-items-center'}
+<span>
+  {#if history.length && $appSettingsStore.subtitlesEnabled}
+    <div class="is-flex chat-history">
+      <div class="subtitle-div">
+        {#each history[history.length - 1].messages as message}
+          {#if history[history.length - 1].actor == "agent" && message.contentType != "buttons"}
+            <span
+              class="subtitle-box {history[history.length - 1].actor == 'agent'
+                ? 'agent-box'
+                : 'user-box'}"
+            >
+              <span
+                class="subtitle {history[history.length - 1].actor == 'agent'
+                  ? 'agent'
+                  : 'user'}"
+              >
+                <RenderContent
+                  content={message}
+                  subtitle={$appSettingsStore.subtitlesEnabled}
+                  actor={history[history.length - 1].actor}
+                />
+              </span>
+            </span>
+          {/if}
+        {/each}
+      </div>
+    </div>
+  {/if}
+  <div
+    class="ui-content is-flex {history.length ? '' : 'is-align-items-center'}
     with-input-bar
     : ''} {$avatarLoadedStore ? '' : 'is-hidden'}"
->
-  {#if history.length}
-    <div class="chat-history" id="chat-history">
-      {#each history as chatMessage, i}
-        <div class="chat-message actor-{chatMessage.actor}">
-          <div class="actor sermas-actor with-neumorphism">
-            {#if chatMessage.actor === "agent"}
-              <AvatarName
-                id={chatMessage.messages[0] &&
-                chatMessage.messages[0].metadata?.avatar
-                  ? chatMessage.messages[0].metadata?.avatar.toString()
-                  : undefined}
-              />
-            {:else}
-              You
-            {/if}
-          </div>
-          <div class="message">
-            <span class="time"
-              >{chatMessage.ts.toLocaleTimeString(undefined, {
-                timeStyle: "short",
-                hour12: false,
-              })}</span
-            >
-            <span class="inline-actor is-hidden">
+  >
+    {#if history.length && !$appSettingsStore.subtitlesEnabled}
+      <div class="chat-history" id="chat-history">
+        {#each history as chatMessage, i}
+          <div class="chat-message actor-{chatMessage.actor}">
+            <div class="actor sermas-actor with-neumorphism">
               {#if chatMessage.actor === "agent"}
                 <AvatarName
                   id={chatMessage.messages[0] &&
@@ -271,70 +280,117 @@
               {:else}
                 You
               {/if}
-            </span>
-            {#each chatMessage.messages as content}
-              <RenderContent {content} />
-            {/each}
+            </div>
+            <div class="message">
+              <span class="time">
+                {chatMessage.ts.toLocaleTimeString(undefined, {
+                  timeStyle: "short",
+                  hour12: false,
+                })}
+              </span>
+              <span class="inline-actor is-hidden">
+                {#if chatMessage.actor === "agent"}
+                  <AvatarName
+                    id={chatMessage.messages[0] &&
+                    chatMessage.messages[0].metadata?.avatar
+                      ? chatMessage.messages[0].metadata?.avatar.toString()
+                      : undefined}
+                  />
+                {:else}
+                  You
+                {/if}
+              </span>
+              {#each chatMessage.messages as content}
+                <RenderContent {content} />
+              {/each}
+            </div>
           </div>
-        </div>
-      {/each}
-      {#if waitingResponse}
-        <div class="is-flex is-justify-content-center">
-          <div class="loading-dots"></div>
-        </div>
-      {/if}
-      <!-- {#if showSessionClose}
+        {/each}
+        {#if waitingResponse}
+          <div class="is-flex is-justify-content-center">
+            <div class="loading-dots"></div>
+          </div>
+        {/if}
+        <!-- {#if showSessionClose}
         <SessionCloser on:hide-session-closer={hideSessionCloser}/>
       {/if} -->
-    </div>
-  {:else if !sessionOpened && showHomepage}
-    <div class="welcome-box box block has-text-centered my-6">
-      {#if !app}
-        <p class="is-size-1 has-text-primary-dark">Welcome</p>
-      {:else}
-        <p class="is-size-1 sermas-title">
-          {app.name || ""}
-        </p>
-        <p class="is-size-4 has-text-secondary-dark">
-          {app.description || ""}
-        </p>
-      {/if}
-
-      {#if $appSettingsStore?.interactionStart == "touch"}
-        <button
-          class="button mt-4 is-large is-primary sermas-button"
-          on:click={() => startInteraction()}
-        >
-          <span>Press here to start</span>
-        </button>
-      {:else if $appSettingsStore?.interactionStart == "intent-detection"}
-        <p class="is-size-4 has-text-primary sermas-title">
-          Get closer to interact to the avatar
-        </p>
-      {:else}
-        <p class="is-size-4 has-text-primary sermas-title">
-          Talk to the avatar to interact
-        </p>
-      {/if}
-    </div>
-  {:else}
-    <Loader />
-  {/if}
-  {#if sessionOpened}
-    <div class="chat-input">
-      <button
-        disabled={(enableAudio && !showStopButton) || !enableAudio}
-        class="button is-medium is-primary ml-2 sermas-button"
-        on:click={() => ui.stopAvatarSpeech()}
-      >
-        <span class="icon is-medium">
-          <i class="fas fa-stop"></i>
-        </span>
-        {#if enableMic}
-          <span>Stop Avatar</span>
+      </div>
+    {:else if history.length && $appSettingsStore.subtitlesEnabled}
+      <div class="is-flex chat-history">
+        {#each history[history.length - 1].messages as message, i}
+          <div
+            class="subtitle-div {history[history.length - 1].actor == 'agent' &&
+            message.contentType == 'buttons'
+              ? 'button-div'
+              : ''}"
+          >
+            {#if (history[history.length - 1].actor != "agent" && history[history.length - 1].messages.length == i + 1) || (history[history.length - 1].actor == "agent" && message.contentType == "buttons")}
+              <span
+                class="subtitle-box {history[history.length - 1].actor ==
+                'agent'
+                  ? 'message'
+                  : 'user-box'}"
+              >
+                <span
+                  class="subtitle {history[history.length - 1].actor == 'agent'
+                    ? 'button'
+                    : 'user'}"
+                >
+                  <RenderContent
+                    content={message}
+                    subtitle={$appSettingsStore.subtitlesEnabled}
+                    actor={history[history.length - 1].actor}
+                  />
+                </span>
+              </span>
+            {/if}
+          </div>
+        {/each}
+      </div>
+    {:else if !sessionOpened && showHomepage}
+      <div class="welcome-box box block has-text-centered my-6">
+        {#if !app}
+          <p class="is-size-1 has-text-primary-dark">Welcome</p>
+        {:else}
+          <p class="is-size-1 sermas-title">
+            {app.name || ""}
+          </p>
+          <p class="is-size-4 has-text-secondary-dark">
+            {app.description || ""}
+          </p>
         {/if}
-      </button>
-      {#if !enableMic}
+
+        {#if $appSettingsStore?.interactionStart == "touch"}
+          <button
+            class="button mt-4 is-large is-primary sermas-button"
+            on:click={() => startInteraction()}
+          >
+            <span>Press here to start</span>
+          </button>
+        {:else if $appSettingsStore?.interactionStart == "intent-detection"}
+          <p class="is-size-4 has-text-primary sermas-title">
+            Get closer to interact to the avatar
+          </p>
+        {:else}
+          <p class="is-size-4 has-text-primary sermas-title">
+            Talk to the avatar to interact
+          </p>
+        {/if}
+      </div>
+    {:else}
+      <Loader />
+    {/if}
+    {#if sessionOpened}
+      <div class="chat-input">
+        <button
+          disabled={(enableAudio && !showStopButton) || !enableAudio}
+          class="button is-medium is-primary ml-2 sermas-button"
+          on:click={() => ui.stopAvatarSpeech()}
+        >
+          <span class="icon is-medium">
+            <i class="fas fa-stop"></i>
+          </span>
+        </button>
         <form on:submit|preventDefault={sendChatMessage} class="input-form">
           <input
             class="input is-medium"
@@ -343,7 +399,7 @@
               openVirtualKeyboard(
                 chatMessage,
                 "Type something to ask",
-                (result) => (chatMessage = result),
+                (result) => (chatMessage = result)
               )}
             placeholder="Type something to ask"
           />
@@ -353,38 +409,90 @@
               : ''}"
             type="submit"
           >
-            <span class="icon is-medium">
-              <i class="fas fa-paper-plane"></i>
-            </span>
             <span>Send</span>
           </button>
         </form>
-      {/if}
-    </div>
-  {/if}
-  {#if navigationFrameEnabled}
-    <div class="navigation-frame">
-      <button
-        class="delete is-large is-primary"
-        on:click={() => hideNavigation()}
-      ></button>
-      <iframe
-        id="navigation-frame"
-        src="./{$appConfigStore.appId}/navigation"
-        title="navigation"
-      ></iframe>
-    </div>
-  {/if}
-  <VirtualKeyboard
-    {placeholder}
-    showKeyboard={showVirtualKeyboard}
-    {inputValue}
-    on:virtual-keyboard-input={onVirtualKeyboardInput}
-  />
-</div>
+      </div>
+    {/if}
+    {#if navigationFrameEnabled}
+      <div class="navigation-frame">
+        <button
+          class="delete is-large is-primary"
+          on:click={() => hideNavigation()}
+        ></button>
+        <iframe
+          id="navigation-frame"
+          src="./{$appConfigStore.appId}/navigation"
+          title="navigation"
+        ></iframe>
+      </div>
+    {/if}
+    <VirtualKeyboard
+      {placeholder}
+      showKeyboard={showVirtualKeyboard}
+      {inputValue}
+      on:virtual-keyboard-input={onVirtualKeyboardInput}
+    />
+  </div>
+</span>
 
 <style lang="scss">
+  @use "bulma/sass/utilities/mixins";
   @import "../../variables.scss";
+  $breakpoint: 1201px;
+
+  .subtitle-div {
+    justify-content: end;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .subtitle-box {
+    backdrop-filter: blur(10px);
+    opacity: 0.7;
+    background-color: var(--theme-primary-bg-color);
+    margin-bottom: 10px;
+    border-radius: 4px;
+    padding: 1em 1em;
+    display: block;
+  }
+
+  .button-div {
+    justify-content: flex-start;
+  }
+
+  .agent-box {
+    background-color: var(--theme-secondary-bg-color);
+  }
+  .user-box {
+    background-color: var(--theme-primary-bg-color);
+  }
+
+  .agent-box,
+  .user-box {
+    position: absolute;
+    bottom: 15vh;
+
+    @include mixins.until($breakpoint) {
+      width: auto;
+      margin-left: 1rem;
+      margin-right: 1rem;
+    }
+
+    @include mixins.from($breakpoint) {
+      width: var(--ui-content-width);
+      left: 7vh;
+    }
+  }
+
+  .subtitle {
+    color: var(--theme-primary-text-color);
+    display: contents;
+  }
+
+  .agent {
+    color: var(--theme-secondary-text-color);
+  }
 
   .navigation-frame {
     position: fixed;

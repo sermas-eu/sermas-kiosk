@@ -333,7 +333,7 @@
               >
                 <span
                   class="subtitle {history[history.length - 1].actor == 'agent'
-                    ? 'buttont'
+                    ? 'button'
                     : 'user'}"
                 >
                   <RenderContent
@@ -437,7 +437,9 @@
 </span>
 
 <style lang="scss">
+  @use "bulma/sass/utilities/mixins";
   @import "../../variables.scss";
+  $breakpoint: 1201px;
 
   .subtitle-div {
     justify-content: end;
@@ -452,6 +454,7 @@
     margin-bottom: 10px;
     border-radius: 4px;
     padding: 1em 1em;
+    display: block;
   }
 
   .button-div {
@@ -460,14 +463,31 @@
 
   .agent-box {
     background-color: var(--theme-secondary-bg-color);
+  }
+  .user-box {
+    background-color: var(--theme-primary-bg-color);
+  }
+
+  .agent-box,
+  .user-box {
     position: absolute;
     bottom: 15vh;
-    left: 7vh;
-    width: var(--ui-content-width);
+
+    @include mixins.until($breakpoint) {
+      width: auto;
+      margin-left: 1rem;
+      margin-right: 1rem;
+    }
+
+    @include mixins.from($breakpoint) {
+      width: var(--ui-content-width);
+      left: 7vh;
+    }
   }
 
   .subtitle {
     color: var(--theme-primary-text-color);
+    display: contents;
   }
 
   .agent {

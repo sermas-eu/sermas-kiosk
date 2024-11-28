@@ -236,7 +236,7 @@
       </a>
       {#if sessionId && $appSettingsStore?.interactionStart != "intent-detection"}
         <a
-          title="Reload Page"
+          title="End Session"
           href="#"
           class="navbar-button"
           on:click={() => closeSession()}

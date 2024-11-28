@@ -16,15 +16,15 @@
   import { type DialogueActor } from "@sermas/toolkit/dto";
 
   export let content: UIContentDto;
-  export const subtitle: boolean = false;
+  export let subtitle: boolean = false;
   export let actor: DialogueActor | null = null;
 </script>
 
 <div
   class="ui-content {content.options?.fullscreen === true ? 'fullscreen' : ''} "
 >
-  {#if subtitle}
-    <Subtitle messages={content.content} {actor} />
+  {#if subtitle && content.contentType === "dialogue-message"}
+    <Subtitle content={content.content} {actor} />
   {:else if content.contentType === "dialogue-message"}
     <DialogueMessage message={content.content} />
   {:else if content.contentType === "image"}

@@ -1,23 +1,24 @@
 <script lang="ts">
-  import { type DialogueMessageDto } from "@sermas/toolkit";
+  import { type DialogueActor } from "@sermas/toolkit/dto";
 
   import DOMPurify from "dompurify";
   import { marked } from "marked";
 
-  export let message: DialogueMessageDto;
+  export let content;
+  export let actor: DialogueActor | null;
 
-  let content: string;
+  let mex: string;
 
   const renderMarkdown = async (text: string) => {
-    content = DOMPurify.sanitize(await marked.parse(text));
+    mex = DOMPurify.sanitize(await marked.parse(text));
   };
 
-  $: if (message && message.text) renderMarkdown(message.text);
+  $: if (content && content.text) renderMarkdown(content.text);
 </script>
 
-<span class="message-{message.messageId || 'none'} subtitle"
-  >{@html content}</span
->
+<span class="message-{content.messageId || 'none'} subtitle">
+  {@html mex}
+</span>
 
 <style>
   .subtitle {

@@ -464,12 +464,8 @@
   .agent-box {
     background-color: var(--theme-secondary-bg-color);
   }
-  .user-box {
-    background-color: var(--theme-primary-bg-color);
-  }
 
-  .agent-box,
-  .user-box {
+  .agent-box {
     position: absolute;
     bottom: 15vh;
 
@@ -482,6 +478,16 @@
     @include mixins.from($breakpoint) {
       width: var(--ui-content-width);
       left: 7vh;
+    }
+  }
+
+  .user-box {
+    background-color: var(--theme-primary-bg-color);
+
+    @include mixins.until($breakpoint) {
+      width: auto;
+      margin-left: 1rem;
+      margin-right: 1rem;
     }
   }
 

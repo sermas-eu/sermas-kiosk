@@ -235,29 +235,19 @@
 <span>
   {#if history.length && $appSettingsStore.subtitlesEnabled}
     <div class="is-flex chat-history">
-      <div class="subtitle-div">
-        {#each history[history.length - 1].messages as message}
-          {#if history[history.length - 1].actor == "agent" && message.contentType != "buttons"}
-            <span
-              class="subtitle-box {history[history.length - 1].actor == 'agent'
-                ? 'agent-box'
-                : 'user-box'}"
-            >
-              <span
-                class="subtitle {history[history.length - 1].actor == 'agent'
-                  ? 'agent'
-                  : 'user'}"
-              >
-                <RenderContent
-                  content={message}
-                  subtitle={$appSettingsStore.subtitlesEnabled}
-                  actor={history[history.length - 1].actor}
-                />
-              </span>
+      {#each history[history.length - 1].messages as message}
+        {#if history[history.length - 1].actor == "agent" && message.contentType != "buttons"}
+          <div class="subtitle-div">
+            <span class="subtitle-box">
+              <RenderContent
+                content={message}
+                subtitle={$appSettingsStore.subtitlesEnabled}
+                actor={history[history.length - 1].actor}
+              />
             </span>
-          {/if}
-        {/each}
-      </div>
+          </div>
+        {/if}
+      {/each}
     </div>
   {/if}
   <div
@@ -329,12 +319,13 @@
                 class="subtitle-box {history[history.length - 1].actor ==
                 'agent'
                   ? 'message'
-                  : 'user-box'}"
+                  : ''}"
               >
                 <span
-                  class="subtitle {history[history.length - 1].actor == 'agent'
+                  class="subtitle-span {history[history.length - 1].actor ==
+                  'agent'
                     ? 'button'
-                    : 'user'}"
+                    : ''}"
                 >
                   <RenderContent
                     content={message}
@@ -448,56 +439,17 @@
   }
 
   .subtitle-box {
-    backdrop-filter: blur(10px);
-    opacity: 0.7;
-    background-color: var(--theme-primary-bg-color);
-    margin-bottom: 10px;
+    margin-bottom: 2em;
     border-radius: 4px;
-    padding: 1em 1em;
     display: block;
+  }
+
+  .subtitle-span {
+    display: contents;
   }
 
   .button-div {
     justify-content: flex-start;
-  }
-
-  .agent-box {
-    background-color: var(--theme-secondary-bg-color);
-  }
-
-  .agent-box {
-    position: absolute;
-    bottom: 15vh;
-
-    @include mixins.until($breakpoint) {
-      width: auto;
-      margin-left: 1rem;
-      margin-right: 1rem;
-    }
-
-    @include mixins.from($breakpoint) {
-      width: var(--ui-content-width);
-      left: 7vh;
-    }
-  }
-
-  .user-box {
-    background-color: var(--theme-primary-bg-color);
-
-    @include mixins.until($breakpoint) {
-      width: auto;
-      margin-left: 1rem;
-      margin-right: 1rem;
-    }
-  }
-
-  .subtitle {
-    color: var(--theme-primary-text-color);
-    display: contents;
-  }
-
-  .agent {
-    color: var(--theme-secondary-text-color);
   }
 
   .navigation-frame {
@@ -541,7 +493,11 @@
 
   .message {
     backdrop-filter: blur(10px);
+    opacity: 0.7;
     background-color: rgba(255, 255, 255, 0.8);
+
+    margin-bottom: 10px;
+    padding: 1em 1em;
   }
 
   :root {

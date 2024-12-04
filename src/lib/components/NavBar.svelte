@@ -102,7 +102,6 @@
   }
 
   onMount(async () => {
-    //
     app = await toolkit.getApp();
     login = app?.settings?.login || false;
 
@@ -309,117 +308,122 @@
             {#if showSettings}
               <div class="controls">
                 <ul class="">
-                  {#each Object.entries(settings.llm || {}) as [tag, llmService]}
-                    {#if tag === "chat" || settings.devMode}
-                      <li>
-                        <span> LLM for {tag} </span>
-                        <select
-                          bind:value={settings.llm[tag]}
-                          on:change={() => setLLM(tag, llmService)}
-                        >
-                          <option value="" selected={!llmService}
-                            >default</option
-                          >
-                          {#each toolkit.getAvailableModels() as key}
-                            <option value={key} selected={llmService === key}
-                              >{key}</option
-                            >
-                          {/each}
-                        </select>
-                      </li>
-                    {/if}
-                  {/each}
                   <li>
-                    <span> Language </span>
-                    <select
-                      bind:value={settings.language}
-                      on:change={setLanguage}
-                    >
-                      {#each Object.keys(supportedLanguages) as key}
-                        <option value={key}>{supportedLanguages[key]}</option>
-                      {/each}
-                    </select>
-                  </li>
-                  <li>
-                    <span> Avatar </span>
-                    <!-- {#if repository.avatars} -->
-                    <select
-                      bind:value={settings.avatar}
-                      on:change={setModelName}
-                    >
-                      {#each repository?.avatars || [].sort() as avatar}
-                        <option value={avatar.id}>{avatar.name}</option>
-                      {/each}
-                    </select>
-                    <!-- {/if} -->
-                    <div class="row-container mt-1">
-                      <input
-                        class="rpm-url pl-1 mr-1 {rpmUrl != ''
-                          ? 'text-black'
-                          : ''}"
-                        bind:value={rpmUrl}
-                        placeholder="or paste RPM url"
-                      />
-                      <select
-                        class="pl-2 mr-1 gender"
-                        placeholder="Gender"
-                        bind:value={rpmGender}
-                      >
-                        <option value="F" selected>F</option>
-                        <option value="M">M</option>
-                      </select>
-                      {#if settings.rpmUrl == ""}
-                        <button
-                          disabled={rpmUrl == ""}
-                          on:click={() => setRPMUrl(rpmUrl)}>Load</button
-                        >
-                      {:else}
-                        <button on:click={() => setRPMUrl("")}>Unload</button>
-                      {/if}
-                    </div>
-                  </li>
-                  <li>
-                    <span> Background </span>
-                    <select
-                      bind:value={settings.background}
-                      on:change={setBackground}
-                    >
-                      {#each repository?.backgrounds || {} as background}
-                        <option value={background?.id}>{background.name}</option
-                        >
-                      {/each}
-                    </select>
-                  </li>
-                  <li>
-                    <span> Interaction start </span>
-                    <select
-                      bind:value={settings.interactionStart}
-                      on:change={setInteractionStart}
-                    >
-                      <option value="on-load">On load</option>
-                      <option value="touch">On touch</option>
-                      <option value="speak">On speak</option>
-                      <option value="intent-detection"
-                        >On intent detection (with Kinect)</option
-                      >
-                    </select>
-                  </li>
-                  <li>
-                    <span>
-                      <input
-                        type="checkbox"
-                        bind:checked={settings.virtualKeyboardEnabled}
-                        on:change={setVirtualKeyboardEnabled}
-                      />
-                      Virtual keyboard
-                    </span>
-                    <span>
+                    <span class="li-item">
                       <input
                         type="checkbox"
                         bind:checked={settings.subtitlesEnabled}
                         on:change={setSubtitlesEnabled}
                       />
-                      Subtitles
+                      Show subtitles
+                    </span>
+                    <span class="li-item">
+                      <input
+                        type="checkbox"
+                        bind:checked={settings.virtualKeyboardEnabled}
+                        on:change={setVirtualKeyboardEnabled}
+                      />
+                      Enable Virtual keyboard
+                    </span>
+                    <span class="li-item">
+                      <span> Background </span>
+                      <select
+                        bind:value={settings.background}
+                        on:change={setBackground}
+                      >
+                        {#each repository?.backgrounds || {} as background}
+                          <option value={background?.id}
+                            >{background.name}</option
+                          >
+                        {/each}
+                      </select>
+                    </span>
+                  </li>
+
+                  <li>
+                    <span class="li-item">
+                      <span> Language </span>
+                      <select
+                        bind:value={settings.language}
+                        on:change={setLanguage}
+                      >
+                        {#each Object.keys(supportedLanguages) as key}
+                          <option value={key}>{supportedLanguages[key]}</option>
+                        {/each}
+                      </select>
+                    </span>
+                    <span class="li-item">
+                      {#each Object.entries(settings.llm || {}) as [tag, llmService]}
+                        {#if tag === "chat" || settings.devMode}
+                          <span> Large Language Model (LLM)</span>
+                          <select
+                            bind:value={settings.llm[tag]}
+                            on:change={() => setLLM(tag, llmService)}
+                          >
+                            <option value="" selected={!llmService}>
+                              default
+                            </option>
+                            {#each toolkit.getAvailableModels() as key}
+                              <option value={key} selected={llmService === key}>
+                                {key}
+                              </option>
+                            {/each}
+                          </select>
+                        {/if}
+                      {/each}
+                    </span>
+                    <span class="li-item">
+                      <span> Avatar </span>
+                      <select
+                        bind:value={settings.avatar}
+                        on:change={setModelName}
+                      >
+                        {#each repository?.avatars || [].sort() as avatar}
+                          <option value={avatar.id}>
+                            {avatar.name}
+                          </option>
+                        {/each}
+                      </select>
+                      <div class="row-container mt-1">
+                        <input
+                          class="rpm-url pl-1 mr-1 {rpmUrl != ''
+                            ? 'text-black'
+                            : ''}"
+                          bind:value={rpmUrl}
+                          placeholder="or paste RPM url"
+                        />
+                        <select
+                          class="pl-2 mr-1 gender"
+                          placeholder="Gender"
+                          bind:value={rpmGender}
+                        >
+                          <option value="F" selected>F</option>
+                          <option value="M">M</option>
+                        </select>
+                        {#if settings.rpmUrl == ""}
+                          <button
+                            class="load-button"
+                            disabled={rpmUrl == ""}
+                            on:click={() => setRPMUrl(rpmUrl)}>Load</button
+                          >
+                        {:else}
+                          <button on:click={() => setRPMUrl("")}>Unload</button>
+                        {/if}
+                      </div>
+                    </span>
+                    <span class="li-item">
+                      <span> Interaction start </span>
+                      <select
+                        bind:value={settings.interactionStart}
+                        on:change={setInteractionStart}
+                      >
+                        <option value="on-load">On load</option>
+                        <option value="touch">On touch</option>
+                        <option value="speak">On speak</option>
+                        <option value="intent-detection"
+                          >On intent detection (with Kinect)</option
+                        >
+                      </select>
                     </span>
                   </li>
 
@@ -428,23 +432,26 @@
                       <span>
                         <a
                           href="#"
-                          class="has-text-grey-lighter"
+                          class="has-text-grey-lighter a-no-padding"
                           title={$sessionIdStore}
                           on:click={(e) => copyClipboard($sessionIdStore)}
-                          >Copy Session ID <b class="has-text-white-ter"
-                            >{hasCopied}</b
-                          ></a
                         >
+                          Copy Session ID
+                          <b class="has-text-white-ter">
+                            {hasCopied}
+                          </b>
+                        </a>
                       </span>
                       <span>
                         <a
                           href="/{toolkit.getAppId()}/{$sessionIdStore}/stats"
-                          class="has-text-grey-ter"
+                          class="has-text-grey-ter a-no-padding"
                           title="View stats"
                           target="_blank"
                           on:click={(e) => copyClipboard($sessionIdStore)}
-                          >stats</a
                         >
+                          Show statistics
+                        </a>
                       </span>
                     </li>
                   {/if}
@@ -655,7 +662,7 @@
       color: #eee;
       left: 0;
       top: 0;
-      width: 15em;
+      width: 18em;
       height: 100vh;
       overflow-y: scroll;
       .menu {
@@ -686,23 +693,62 @@
         select {
           color: $dark-blue;
           width: 100%;
-          .gender {
-            width: 50px;
-          }
         }
 
         span {
           display: block;
+          .a-no-padding {
+            padding-right: 0px;
+            padding-left: 0px;
+          }
         }
 
         ul li {
           padding: 0.5em;
           border-bottom: 1pt solid #efefef;
         }
+
+        li:last-child {
+          border-bottom: none;
+        }
+
+        .li-item {
+          margin-top: 10px;
+          margin-bottom: 10px;
+          font-size: 14px;
+
+          span {
+            margin-bottom: 5px;
+          }
+
+          select {
+            margin-bottom: 5px;
+          }
+        }
+
         .row-container {
           display: flex;
+          width: 100%;
+          max-width: 100%;
+          flex-direction: row;
+          justify-content: space-between;
+
           .rpm-url {
-            width: 50%;
+            max-width: 55%;
+          }
+
+          .load-button {
+            width: 20%;
+            color: black;
+            background-color: $palette4;
+            border: none;
+            border-radius: 3px;
+          }
+
+          .gender {
+            width: 20%;
+            align-content: center;
+            margin-bottom: 0px;
           }
         }
       }

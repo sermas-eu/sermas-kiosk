@@ -25,6 +25,7 @@
   const ui = toolkit.getUI();
 
   let history: ChatMessage[] = [];
+  let lastMessage: ChatMessage | undefined;
   let showStopButton = false;
   let sessionOpened: boolean = false;
   let navigationFrameEnabled = false;
@@ -132,6 +133,7 @@
       }
       showHomepage = false;
       history = [...chatHistory];
+      if (history.length) lastMessage = history[history.length - 1];
       scrollChat();
       // messageId must change every time the avatar "interrupts" the conversation
       messageId = getChunkId();
@@ -233,31 +235,21 @@
 </script>
 
 <span>
-  {#if history.length && $appSettingsStore.subtitlesEnabled}
+  {#if lastMessage && $appSettingsStore.subtitlesEnabled}
     <div class="is-flex chat-history">
-      <div class="subtitle-div">
-        {#each history[history.length - 1].messages as message}
-          {#if history[history.length - 1].actor == "agent" && message.contentType != "buttons"}
-            <span
-              class="subtitle-box {history[history.length - 1].actor == 'agent'
-                ? 'agent-box'
-                : 'user-box'}"
-            >
-              <span
-                class="subtitle {history[history.length - 1].actor == 'agent'
-                  ? 'agent'
-                  : 'user'}"
-              >
-                <RenderContent
-                  content={message}
-                  subtitle={$appSettingsStore.subtitlesEnabled}
-                  actor={history[history.length - 1].actor}
-                />
-              </span>
+      {#each lastMessage.messages as message}
+        {#if lastMessage.actor == "agent" && message.contentType != "buttons"}
+          <div class="subtitle-div">
+            <span class="subtitle-box">
+              <RenderContent
+                content={message}
+                subtitle={$appSettingsStore.subtitlesEnabled}
+                actor={lastMessage.actor}
+              />
             </span>
-          {/if}
-        {/each}
-      </div>
+          </div>
+        {/if}
+      {/each}
     </div>
   {/if}
   <div
@@ -315,31 +307,32 @@
         <SessionCloser on:hide-session-closer={hideSessionCloser}/>
       {/if} -->
       </div>
-    {:else if history.length && $appSettingsStore.subtitlesEnabled}
+    {:else if lastMessage && $appSettingsStore.subtitlesEnabled}
       <div class="is-flex chat-history">
-        {#each history[history.length - 1].messages as message, i}
+        {#each lastMessage.messages as message, i}
           <div
-            class="subtitle-div {history[history.length - 1].actor == 'agent' &&
+            class="subtitle-div {lastMessage.actor == 'agent' &&
             message.contentType == 'buttons'
               ? 'button-div'
               : ''}"
           >
-            {#if (history[history.length - 1].actor != "agent" && history[history.length - 1].messages.length == i + 1) || (history[history.length - 1].actor == "agent" && message.contentType == "buttons")}
+            {#if (lastMessage.actor != "agent" && lastMessage.messages.length == i + 1) || (lastMessage.actor == "agent" && message.contentType == "buttons")}
               <span
-                class="subtitle-box {history[history.length - 1].actor ==
+                class="subtitle-box {lastMessage.actor ==
                 'agent'
                   ? 'message'
-                  : 'user-box'}"
+                  : ''}"
               >
                 <span
-                  class="subtitle {history[history.length - 1].actor == 'agent'
+                  class="subtitle-span {lastMessage.actor ==
+                  'agent'
                     ? 'button'
-                    : 'user'}"
+                    : ''}"
                 >
                   <RenderContent
                     content={message}
                     subtitle={$appSettingsStore.subtitlesEnabled}
-                    actor={history[history.length - 1].actor}
+                    actor={lastMessage.actor}
                   />
                 </span>
               </span>
@@ -448,50 +441,17 @@
   }
 
   .subtitle-box {
-    backdrop-filter: blur(10px);
-    opacity: 0.7;
-    background-color: var(--theme-primary-bg-color);
-    margin-bottom: 10px;
+    margin-bottom: 2em;
     border-radius: 4px;
-    padding: 1em 1em;
     display: block;
+  }
+
+  .subtitle-span {
+    display: contents;
   }
 
   .button-div {
     justify-content: flex-start;
-  }
-
-  .agent-box {
-    background-color: var(--theme-secondary-bg-color);
-  }
-  .user-box {
-    background-color: var(--theme-primary-bg-color);
-  }
-
-  .agent-box,
-  .user-box {
-    position: absolute;
-    bottom: 15vh;
-
-    @include mixins.until($breakpoint) {
-      width: auto;
-      margin-left: 1rem;
-      margin-right: 1rem;
-    }
-
-    @include mixins.from($breakpoint) {
-      width: var(--ui-content-width);
-      left: 7vh;
-    }
-  }
-
-  .subtitle {
-    color: var(--theme-primary-text-color);
-    display: contents;
-  }
-
-  .agent {
-    color: var(--theme-secondary-text-color);
   }
 
   .navigation-frame {
@@ -535,7 +495,11 @@
 
   .message {
     backdrop-filter: blur(10px);
+    opacity: 0.7;
     background-color: rgba(255, 255, 255, 0.8);
+
+    margin-bottom: 10px;
+    padding: 1em 1em;
   }
 
   :root {

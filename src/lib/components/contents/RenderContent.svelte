@@ -16,7 +16,7 @@
   import Quiz from "./Quiz.svelte";
   import QrCodeScanner from "./QrCodeScanner.svelte";
   import Subtitle from "./Subtitle.svelte";
-  import { type ChatMessage, type DialogueActor } from "@sermas/toolkit/dto";
+  import { type DialogueActor } from "@sermas/toolkit/dto";
 
   export let content: UIContentDto;
   export let subtitle: boolean = false;

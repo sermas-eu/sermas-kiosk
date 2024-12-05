@@ -1,12 +1,13 @@
 <script lang="ts">
   import { type DialogueMessageUIContentDto } from "@sermas/api-client";
   import type { AvatarAudioPlaybackStatus } from "@sermas/toolkit/avatar";
-  import { type DialogueActor } from "@sermas/toolkit/dto";
+  import { AppSettings, type DialogueActor } from "@sermas/toolkit/dto";
   import { emitter } from "@sermas/toolkit/events";
 
   import DOMPurify from "dompurify";
   import { marked } from "marked";
   import { onDestroy, onMount } from "svelte";
+  import { appReadyStore, appSettingsStore } from "$lib/store";
 
   export let content;
   export let actor: DialogueActor | null;
@@ -16,6 +17,8 @@
 
   let show: boolean = false;
   let chunkIdToShow: string | null = null;
+
+  let settings: AppSettings;
 
   onMount(async () => {
     emitter.on("avatar.speech", ev);
@@ -34,16 +37,24 @@
     mex = DOMPurify.sanitize(await marked.parse(text));
   };
 
-  $: if (actor != "agent" && content && content.text)
+  $: if ($appReadyStore && $appSettingsStore) {
+    settings = $appSettingsStore;
+  }
+
+  $: if (
+    (actor !== "agent" && content && content.text) ||
+    !settings.enableAudio
+  )
     renderMarkdown(content.text);
-  $: if (actor == "agent" && show) {
+
+  $: if (actor === "agent" && show) {
     const tmp = chunks?.find((o) => o.chunkId === chunkIdToShow);
     if (tmp) renderMarkdown(tmp.content.text);
   }
 </script>
 
 <span>
-  {#if (actor == "agent" && show) || actor != "agent"}
+  {#if (actor === "agent" && show) || actor !== "agent" || !settings.enableAudio}
     <span
       class="subtitle-wrap message {actor == 'agent'
         ? 'agent-box'

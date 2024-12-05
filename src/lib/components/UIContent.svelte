@@ -318,14 +318,12 @@
           >
             {#if (lastMessage.actor != "agent" && lastMessage.messages.length == i + 1) || (lastMessage.actor == "agent" && message.contentType == "buttons")}
               <span
-                class="subtitle-box {lastMessage.actor ==
-                'agent'
-                  ? 'message'
+                class="subtitle-box {lastMessage.actor == 'agent'
+                  ? 'subs-message'
                   : ''}"
               >
                 <span
-                  class="subtitle-span {lastMessage.actor ==
-                  'agent'
+                  class="subtitle-span {lastMessage.actor == 'agent'
                     ? 'button'
                     : ''}"
                 >
@@ -492,12 +490,16 @@
     backdrop-filter: blur(10px);
     background-color: rgba(255, 255, 255, 0.7);
   }
-
+  
   .message {
     backdrop-filter: blur(10px);
-    opacity: 0.7;
     background-color: rgba(255, 255, 255, 0.8);
+  }
 
+  .subs-message {
+    backdrop-filter: blur(10px);
+    // opacity: 0.7;
+    background-color: rgba(255, 255, 255, 0.8);
     margin-bottom: 10px;
     padding: 1em 1em;
   }

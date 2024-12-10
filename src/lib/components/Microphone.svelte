@@ -37,11 +37,17 @@
     // }
   };
 
+  const onSpeech = (detection: { speech: boolean }) => {
+    console.warn("onSpeech --------", detection);
+    if (detection.speech) {
+      toolkit.getUI().stopAvatarSpeech();
+    }
+  };
   const onSpeaking = (userSpeaking: boolean, speechLength: number) => {
     // logger.debug(
     //   `avatarSpeaking=${avatarSpeaking} speechLength=${speechLength} userSpeaking=${userSpeaking}`,
     // );
-    if (speechLength > 800) {
+    if (speechLength > 2500) {
       toolkit.getUI().stopAvatarSpeech();
     }
     if (userSpeaking) {
@@ -55,17 +61,17 @@
     // if (ev.op === "started") {}
   };
 
-  const onDetection = async (ev: SpeechDetectionEvent) => {
-    logger.debug(`Speech detected`);
-  };
+  // const onDetection = async (ev: SpeechDetectionEvent) => {
+  //   logger.debug(`Speech detected`);
+  // };
 
-  const onAudioClassification = async (
-    detections: AudioClassificationValue[],
-  ) => {
-    logger.debug(
-      `Audio classification ${detections.map((d) => `${d.value}: ${d.probability}%`)}`,
-    );
-  };
+  // const onAudioClassification = async (
+  //   detections: AudioClassificationValue[],
+  // ) => {
+  //   logger.debug(
+  //     `Audio classification ${detections.map((d) => `${d.value}: ${d.probability}%`)}`,
+  //   );
+  // };
 
   const start = async () => {
     if (!browser) return;
@@ -77,9 +83,12 @@
     if (!detection) {
       logger.debug(`Load audio detection`);
       detection = toolkit.getAudioDetection();
-      detection.on("speech", onDetection);
+
+      // detection.on("speech", onDetection);
+      // detection.on("classification", onAudioClassification);
+
+      detection.on("detection.speech", onSpeech);
       detection.on("speaking", onSpeaking);
-      detection.on("classification", onAudioClassification);
       await detection.start();
 
       const vadOption = detection.getVADConfig();

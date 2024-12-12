@@ -6,6 +6,7 @@
     appSettingsStore,
     avatarLoadedStore,
     avatarModelStore,
+    backgroundImageAndSoundStore,
   } from "$lib/store";
   import { type RepositoryConfigDto } from "@sermas/toolkit";
   import {
@@ -39,7 +40,6 @@
   let repository: RepositoryConfigDto;
 
   let background: string = "";
-  let backgroundImageUrl: string = "";
 
   const logger = new Logger("WebAvatar");
 
@@ -112,10 +112,17 @@
   const setBackground = async (background: string) => {
     logger.debug(`Set background: ${background}`);
     let config = await toolkit.getAssetConfig("backgrounds", background);
+
     if (!config) return;
     const blob = await toolkit.getApi().getAsset(config.type, config.id);
+
+    $backgroundImageAndSoundStore = {
+      ...$backgroundImageAndSoundStore,
+      image: background,
+      messageImage: false,
+    };
     if (blob) {
-      backgroundImageUrl = `${await toBase64(blob)}`;
+      $backgroundImageAndSoundStore.urlImage = `${await toBase64(blob)}`;
     }
   };
 
@@ -239,16 +246,14 @@
 <div
   id="web-avatar"
   class={$appSettingsStore.devMode ? "controls-enabled" : ""}
-  style={"background-image: url(" + backgroundImageUrl + ");"}
->
-  <!-- <div id="avatar-container"></div> -->
-  <!-- <div id="background" style={'background-image: url(' + backgroundImageUrl + ');'}></div> -->
-</div>
+  style={"background-image: url(" +
+    $backgroundImageAndSoundStore.urlImage +
+    ");"}
+/>
 <div id="blendshape-controls" />
 
 <style lang="scss">
   @import "../../variables.scss";
-
 
   #blendshape-controls {
     position: absolute;

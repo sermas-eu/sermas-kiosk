@@ -1,11 +1,12 @@
 import adapter from "@sveltejs/adapter-node";
 import { vitePreprocess } from "@sveltejs/kit/vite";
-import { toolkitAliases } from './svelte.config.toolkit.js'
+import { toolkitAliases } from "./svelte.config.toolkit.js";
 
-const useAliases = process.env.NODE_ENV === 'development' && process.env.BUILD_FROM_TS === "1"
+const useAliases =
+  process.env.NODE_ENV === "development" && process.env.BUILD_FROM_TS === "1";
 
 if (useAliases) {
-  console.warn("**** using ts code via aliases ***")
+  console.warn("**** using ts code via aliases ***");
 }
 
 /** @type {import('@sveltejs/kit').Config} */

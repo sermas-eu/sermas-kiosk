@@ -1,10 +1,8 @@
 <script lang="ts">
   import { browser } from "$app/environment";
   import { appSettingsStore } from "$lib/store";
-  import type { AudioClassificationValue } from "@sermas/toolkit";
   import type { AudioDetection } from "@sermas/toolkit/detection";
-  import { SpeechDetectionEvent } from "@sermas/toolkit/detection";
-  import { getChunkId, Logger } from "@sermas/toolkit/utils";
+  import { Logger } from "@sermas/toolkit/utils";
   import { onDestroy, onMount } from "svelte";
 
   import { toolkit } from "$lib";
@@ -37,18 +35,22 @@
     // }
   };
 
-  const onSpeech = (detection: { speech: boolean }) => {
-    console.warn("onSpeech --------", detection);
+  const onSpeechDetected = (detection: { speech: boolean }) => {
+    // console.warn("onSpeech --------", detection);
     if (detection.speech) {
       toolkit.getUI().stopAvatarSpeech();
+    } else {
+      toolkit.getAvatar()?.getHandler()?.resumeSpeech();
     }
   };
   const onSpeaking = (userSpeaking: boolean, speechLength: number) => {
     // logger.debug(
     //   `avatarSpeaking=${avatarSpeaking} speechLength=${speechLength} userSpeaking=${userSpeaking}`,
     // );
-    if (speechLength > 2500) {
-      toolkit.getUI().stopAvatarSpeech();
+    if (speechLength > 1000) {
+      toolkit.getAvatar()?.getHandler()?.pauseSpeech();
+    } else {
+      toolkit.getAvatar()?.getHandler()?.resumeSpeech();
     }
     if (userSpeaking) {
       sendStatus("Listening...");
@@ -87,7 +89,6 @@
       // detection.on("speech", onDetection);
       // detection.on("classification", onAudioClassification);
 
-      detection.on("detection.speech", onSpeech);
       detection.on("speaking", onSpeaking);
       await detection.start();
 
@@ -95,6 +96,7 @@
       logger.debug(`VAD config: ${JSON.stringify(vadOption)}`);
     }
 
+    toolkit.on("detection.speech", onSpeechDetected);
     toolkit.on("avatar.speech", onPlaybackChange);
     toolkit.on("ui.button.session", onButtonStartSession);
   };
@@ -108,6 +110,8 @@
 
     toolkit.off("avatar.speech", onPlaybackChange);
     toolkit.off("ui.button.session", onButtonStartSession);
+
+    toolkit.off("detection.speech", onSpeechDetected);
 
     started = false;
   };

@@ -20,5 +20,7 @@ export const backgroundImageAndSoundStore: Writable<BackgroundStoreDto> =
     image: undefined,
     urlImage: "",
     messageImage: false,
-    backgroudAudio: false,
+    backgroudAudioUrl: undefined,
+    backgroudAudioType: undefined,
+    isBackgroudAudioPlaying: false,
   });

@@ -17,6 +17,7 @@
   import QrCodeScanner from "./QrCodeScanner.svelte";
   import Subtitle from "./Subtitle.svelte";
   import { type DialogueActor } from "@sermas/toolkit/dto";
+  import BackgroundAudio from "./BackgroundAudio.svelte";
 
   export let content: UIContentDto;
   export let subtitle: boolean = false;
@@ -58,6 +59,8 @@
     <Quiz content={content.content} metadata={content.metadata} />
   {:else if content.contentType === "qrcode-scanner"}
     <QrCodeScanner content={content.content} metadata={content.metadata} />
+  {:else if content.contentType === "background-audio"}
+    <BackgroundAudio content={content.content} />
   {/if}
 </div>
 

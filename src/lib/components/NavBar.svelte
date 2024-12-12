@@ -18,6 +18,7 @@
     appSettingsStore,
     avatarLoadedStore,
     avatarModelStore,
+    backgroundImageAndSoundStore,
     sessionIdStore,
   } from "$lib/store";
   import {
@@ -56,6 +57,8 @@
   let sessionId: string | undefined = undefined;
   const version = PKG_VERSION;
   let xrSupported: boolean = false;
+
+  let audio: any;
 
   const copyClipboard = (text: string) => {
     navigator?.clipboard
@@ -101,6 +104,13 @@
     toolkit.getSettings().save(settings || {});
   }
 
+  $: if (
+    $backgroundImageAndSoundStore.isBackgroudAudioPlaying &&
+    settings.enableAudio
+  ) {
+    audio.play();
+  }
+
   onMount(async () => {
     app = await toolkit.getApp();
     login = app?.settings?.login || false;
@@ -124,6 +134,9 @@
 
   const updateAudioSettings = () => {
     settings.enableAudio = !settings.enableAudio;
+    if (!settings.enableAudio) {
+      audio.pause();
+    }
     settings.ttsEnabled = settings.enableAudio;
   };
 
@@ -196,6 +209,12 @@
     if (!xrSupported) sendStatus("AR is not available on this device");
   };
 </script>
+
+<audio
+  src={$backgroundImageAndSoundStore.backgroudAudioUrl}
+  bind:this={audio}
+  loop
+/>
 
 {#if settings}
   <div class="nav-container {showMenu ? 'is-show' : ''}">

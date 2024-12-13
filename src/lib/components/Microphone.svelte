@@ -28,15 +28,9 @@
 
   const onPlaybackChange = async (ev: AvatarAudioPlaybackStatus) => {
     avatarSpeaking = ev.status !== "ended";
-    // if (avatarSpeechEnded) {
-    //   detection?.restore();
-    // } else {
-    //   detection?.pause();
-    // }
   };
 
   const onSpeechDetected = (detection: { speech: boolean }) => {
-    // console.warn("onSpeech --------", detection);
     if (detection.speech) {
       toolkit.getUI().stopAvatarSpeech();
     } else {
@@ -44,9 +38,6 @@
     }
   };
   const onSpeaking = (userSpeaking: boolean, speechLength: number) => {
-    // logger.debug(
-    //   `avatarSpeaking=${avatarSpeaking} speechLength=${speechLength} userSpeaking=${userSpeaking}`,
-    // );
     if (speechLength > 1000) {
       toolkit.getAvatar()?.getHandler()?.pauseSpeech();
     } else {
@@ -59,22 +50,6 @@
     }
   };
 
-  const onButtonStartSession = async (ev: any) => {
-    // if (ev.op === "started") {}
-  };
-
-  // const onDetection = async (ev: SpeechDetectionEvent) => {
-  //   logger.debug(`Speech detected`);
-  // };
-
-  // const onAudioClassification = async (
-  //   detections: AudioClassificationValue[],
-  // ) => {
-  //   logger.debug(
-  //     `Audio classification ${detections.map((d) => `${d.value}: ${d.probability}%`)}`,
-  //   );
-  // };
-
   const start = async () => {
     if (!browser) return;
     if (!enableMic) return;
@@ -86,9 +61,6 @@
       logger.debug(`Load audio detection`);
       detection = toolkit.getAudioDetection();
 
-      // detection.on("speech", onDetection);
-      // detection.on("classification", onAudioClassification);
-
       detection.on("speaking", onSpeaking);
       await detection.start();
 
@@ -98,7 +70,6 @@
 
     toolkit.on("detection.speech", onSpeechDetected);
     toolkit.on("avatar.speech", onPlaybackChange);
-    toolkit.on("ui.button.session", onButtonStartSession);
   };
 
   const stop = async () => {
@@ -109,8 +80,6 @@
     detection = undefined;
 
     toolkit.off("avatar.speech", onPlaybackChange);
-    toolkit.off("ui.button.session", onButtonStartSession);
-
     toolkit.off("detection.speech", onSpeechDetected);
 
     started = false;

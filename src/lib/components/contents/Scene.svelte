@@ -14,11 +14,4 @@
 
 <T.AmbientLight />
 
-{#if type === "glb"}
-  <GLTF {url} interactive />
-{:else if type === "obj"}
-  <GLTF
-    {url}
-    useDraco="https://www.gstatic.com/draco/versioned/decoders/1.5.7/*"
-  />
-{/if}
+<GLTF {url} interactive />

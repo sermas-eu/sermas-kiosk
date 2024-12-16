@@ -238,7 +238,7 @@
   {#if lastMessage && $appSettingsStore.subtitlesEnabled}
     <div class="is-flex chat-history">
       {#each lastMessage.messages as message}
-        {#if lastMessage.actor == "agent" && message.contentType != "buttons"}
+        {#if lastMessage.actor === "agent" && message.contentType === "dialogue-message"}
           <div class="subtitle-div">
             <span class="subtitle-box">
               <RenderContent
@@ -308,25 +308,12 @@
       {/if} -->
       </div>
     {:else if lastMessage && $appSettingsStore.subtitlesEnabled}
-      <div class="is-flex chat-history">
+      <div class="is-flex chat-history chat-history-subs">
         {#each lastMessage.messages as message, i}
-          <div
-            class="subtitle-div {lastMessage.actor == 'agent' &&
-            message.contentType == 'buttons'
-              ? 'button-div'
-              : ''}"
-          >
-            {#if (lastMessage.actor != "agent" && lastMessage.messages.length == i + 1) || (lastMessage.actor == "agent" && message.contentType == "buttons")}
-              <span
-                class="subtitle-box {lastMessage.actor == 'agent'
-                  ? 'subs-message'
-                  : ''}"
-              >
-                <span
-                  class="subtitle-span {lastMessage.actor == 'agent'
-                    ? 'button'
-                    : ''}"
-                >
+          {#if lastMessage.actor !== "agent" && lastMessage.messages.length === i + 1}
+            <div class="subtitle-div">
+              <span class="subtitle-box">
+                <span class="subtitle-span">
                   <RenderContent
                     content={message}
                     subtitle={$appSettingsStore.subtitlesEnabled}
@@ -334,8 +321,38 @@
                   />
                 </span>
               </span>
+            </div>
+          {/if}
+        {/each}
+        {#each history as chatMessage, index}
+          {#each chatMessage.messages as message, i}
+            {#if chatMessage.actor === "agent" && message.contentType !== "dialogue-message"}
+              <div
+                class="subtitle-div {chatMessage.actor === 'agent' &&
+                message.contentType == 'buttons'
+                  ? 'button-div'
+                  : ''}"
+              >
+                <span
+                  class="subtitle-box {chatMessage.actor === 'agent'
+                    ? 'subs-message'
+                    : ''}"
+                >
+                  <span
+                    class="subtitle-span {chatMessage.actor === 'agent'
+                      ? 'button'
+                      : ''}"
+                  >
+                    <RenderContent
+                      content={message}
+                      subtitle={$appSettingsStore.subtitlesEnabled}
+                      actor={chatMessage.actor}
+                    />
+                  </span>
+                </span>
+              </div>
             {/if}
-          </div>
+          {/each}
         {/each}
       </div>
     {:else if !sessionOpened && showHomepage}
@@ -450,6 +467,12 @@
 
   .button-div {
     justify-content: flex-start;
+  }
+
+  .chat-history-subs {
+    height: 100%;
+    flex-direction: column;
+    justify-content: end;
   }
 
   .navigation-frame {

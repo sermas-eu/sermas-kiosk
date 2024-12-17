@@ -5,8 +5,8 @@
   export let content: BackgroundAudioDto;
 
   $: if (content.src && content.type) {
-    $backgroundImageAndSoundStore.backgroudAudioUrl = content.src;
-    $backgroundImageAndSoundStore.backgroudAudioType = content.type;
-    $backgroundImageAndSoundStore.isBackgroudAudioPlaying = true;
+    $backgroundImageAndSoundStore.backgroundAudioUrl = content.src;
+    $backgroundImageAndSoundStore.backgroundAudioType = content.type;
+    $backgroundImageAndSoundStore.isBackgroundAudioPlaying = true;
   }
 </script>

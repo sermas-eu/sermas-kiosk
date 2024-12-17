@@ -105,7 +105,7 @@
   }
 
   $: if (
-    $backgroundImageAndSoundStore.isBackgroudAudioPlaying &&
+    $backgroundImageAndSoundStore.isBackgroundAudioPlaying &&
     settings.enableAudio
   ) {
     audio.play();
@@ -211,7 +211,7 @@
 </script>
 
 <audio
-  src={$backgroundImageAndSoundStore.backgroudAudioUrl}
+  src={$backgroundImageAndSoundStore.backgroundAudioUrl}
   bind:this={audio}
   loop
 />

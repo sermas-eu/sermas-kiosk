@@ -5,7 +5,7 @@ export interface BackgroundStoreDto {
   urlImage: string;
   oldImage?: string;
   messageImage: boolean;
-  backgroudAudioUrl: string | undefined;
-  backgroudAudioType: SupportedAudioTypes | undefined;
-  isBackgroudAudioPlaying: boolean;
+  backgroundAudioUrl: string | undefined;
+  backgroundAudioType: SupportedAudioTypes | undefined;
+  isBackgroundAudioPlaying: boolean;
 }

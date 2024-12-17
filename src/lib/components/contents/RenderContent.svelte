@@ -51,6 +51,14 @@
     <Text content={content.content} />
   {:else if content.contentType === "video"}
     <Video content={content.content} />
+  {:else if content.contentType === "object" && content.content?.list && content.content?.list instanceof Array}
+    <div class="obj-container">
+      {#each content.content.list as cont}
+        <div class="obj-list">
+          <Object content={cont} />
+        </div>
+      {/each}
+    </div>
   {:else if content.contentType === "object"}
     <Object content={content.content} />
   {:else if content.contentType === "buttons"}
@@ -71,5 +79,14 @@
     height: 100vh;
     top: 0;
     left: 0;
+  }
+  .obj-container {
+    overflow: hidden;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+  }
+  .obj-list {
+    flex: auto;
   }
 </style>

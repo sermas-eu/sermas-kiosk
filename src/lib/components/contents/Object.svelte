@@ -12,16 +12,18 @@
   export let content: ObjectContentDto;
 
   onMount(async () => {
-    if (content.type === "glb") return;  // Nothing to do with GLB format, it is directly displayed using the Scene component
-    // Other formats are 
-    const container = document.getElementById("three-d") as HTMLInputElement;
+    if (content.type === "glb") return; // Nothing to do with GLB format, it is directly displayed using the Scene component
+    // Other formats are
+    const container = document.getElementById(
+      `three-d${content.url}`
+    ) as HTMLInputElement;
 
     const scene = new THREE.Scene();
     scene.background = null;
 
     const camera = new THREE.PerspectiveCamera(
       30,
-      container.clientWidth / container.clientHeight,
+      container.clientWidth / container.clientHeight
     );
     camera.position.set(2, 5, 10);
     camera.lookAt(scene.position);
@@ -100,22 +102,19 @@
   });
 </script>
 
-<span class="object">
-  <div class="three-d" id="three-d">
-    {#if content.type === "glb"}
-      <Canvas>
-        <Scene type={content.type} url={content.url} />
-      </Canvas>
-    {/if}
-  </div>
-</span>
+<div class="three-d" id="three-d{content.url}">
+  {#if content.type === "glb"}
+    <Canvas>
+      <Scene type={content.type} url={content.url} />
+    </Canvas>
+  {/if}
+</div>
 
 <style lang="scss">
   .three-d {
     position: relative;
     width: 99%;
-
-    min-width: 100px;
-    min-height: 100px;
+    min-width: 150px;
+    min-height: 200px;
   }
 </style>

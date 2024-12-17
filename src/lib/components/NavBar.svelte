@@ -132,7 +132,7 @@
     loaded = false;
   });
 
-  const updateAudioSettings = () => {
+  const toggleAudio = () => {
     settings.enableAudio = !settings.enableAudio;
     if (!settings.enableAudio) {
       audio.pause();
@@ -282,8 +282,8 @@
         title="Toggle audio"
         href="#"
         class="navbar-button {settings.enableAudio ? 'is-active' : ''}"
-        on:click|preventDefault={() => updateAudioSettings()}
-        on:keydown|preventDefault={() => updateAudioSettings()}
+        on:click|preventDefault={() => toggleAudio()}
+        on:keydown|preventDefault={() => toggleAudio()}
       >
         {#if settings.enableAudio}
           <IoMdVolumeHigh />

@@ -32,7 +32,12 @@
   class="ui-content {content.options?.fullscreen === true ? 'fullscreen' : ''} "
 >
   {#if (subtitle && content.contentType === "dialogue-message") || (subtitle && content.contentType === "text")}
-    <Subtitle content={content.content} {chunks} {actor} />
+    <Subtitle
+      content={content.content}
+      messageId={content.messageId}
+      {chunks}
+      {actor}
+    />
   {:else if content.contentType === "dialogue-message"}
     <DialogueMessage message={content.content} />
   {:else if content.contentType === "image"}

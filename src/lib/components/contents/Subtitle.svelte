@@ -12,12 +12,11 @@
   export let content;
   export let actor: DialogueActor | null;
   export let chunks: DialogueMessageUIContentDto[] | null;
-
+  export let messageId: string | undefined;
   let mex: string;
 
   let show: boolean = false;
   let chunkIdToShow: string | null = null;
-
   let settings: AppSettings;
 
   onMount(async () => {
@@ -61,7 +60,7 @@
         : 'user-box'}"
     >
       <span
-        class="message-{content.messageId || 'none'} subtitle {actor == 'agent'
+        class="message-{messageId || 'none'} subtitle {actor == 'agent'
           ? 'agent'
           : 'user'}"
       >

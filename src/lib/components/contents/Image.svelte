@@ -13,8 +13,10 @@
 </script>
 
 {#if !img.isBackground}
-  <span class="image" style="width: {img.width}px; height: {img.height}px;">
-    <img src={img.src} alt={img.alt} width={img.width} height={img.height} />
+  <span class="image-wrapper is-flex is-justify-content-center">
+    <span class="image" style="width: {img.width}px; height: {img.height}px;">
+      <img src={img.src} alt={img.alt} width={img.width} height={img.height} />
+    </span>
   </span>
 {/if}
 

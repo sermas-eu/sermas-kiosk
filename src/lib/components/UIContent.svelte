@@ -56,6 +56,9 @@
 
   let messageId = getChunkId();
 
+  let compRef: any = {};
+  let subsSpanShowing: string | undefined = undefined;
+
   // $: $sessionIdStore, (sessionId = $sessionIdStore);
   $: if ($appConfigStore) {
     app = $appConfigStore;
@@ -134,6 +137,34 @@
       showHomepage = false;
       history = [...chatHistory];
       if (history.length) lastMessage = history[history.length - 1];
+
+      for (const [key, value] of Object.entries(compRef)) {
+        if (key !== "leave" && value) {
+          compRef[key].remove();
+          delete compRef[key];
+        }
+      }
+
+      if (
+        !enableAudio &&
+        $appSettingsStore.subtitlesEnabled &&
+        lastMessage &&
+        lastMessage.messages.length > 1
+      ) {
+        for (let i = 0; i < lastMessage?.messages.length; i++) {
+          const el = lastMessage.messages[i];
+          if (
+            el.contentType === "dialogue-message" ||
+            el.contentType === "text"
+          ) {
+            if (subsSpanShowing) {
+              document.getElementById(`subtitle-${subsSpanShowing}`)?.remove();
+            }
+            subsSpanShowing = el.messageId;
+          }
+        }
+      }
+
       scrollChat();
       // messageId must change every time the avatar "interrupts" the conversation
       messageId = getChunkId();
@@ -218,7 +249,7 @@
       chatMessage = "";
       ui.stopAvatarSpeech();
     } catch (e: any) {
-      logger.log(`Error sending chat message, e=${e.message}`);
+      logger.error(`Error sending chat message, e=${e.message}`);
     } finally {
       sendingMessage = false;
       scrollChat();
@@ -239,7 +270,7 @@
     <div class="is-flex chat-history">
       {#each lastMessage.messages as message}
         {#if lastMessage.actor === "agent" && message.contentType === "dialogue-message"}
-          <div class="subtitle-div">
+          <div class="subtitle-div" id="subtitle-{message.messageId || 'none'}">
             <span class="subtitle-box">
               <RenderContent
                 content={message}
@@ -309,21 +340,6 @@
       </div>
     {:else if lastMessage && $appSettingsStore.subtitlesEnabled}
       <div class="is-flex chat-history chat-history-subs">
-        {#each lastMessage.messages as message, i}
-          {#if lastMessage.actor !== "agent" && lastMessage.messages.length === i + 1}
-            <div class="subtitle-div">
-              <span class="subtitle-box">
-                <span class="subtitle-span">
-                  <RenderContent
-                    content={message}
-                    subtitle={$appSettingsStore.subtitlesEnabled}
-                    actor={lastMessage.actor}
-                  />
-                </span>
-              </span>
-            </div>
-          {/if}
-        {/each}
         {#each history as chatMessage, index}
           {#each chatMessage.messages as message, i}
             {#if chatMessage.actor === "agent" && message.contentType !== "dialogue-message"}
@@ -332,6 +348,13 @@
                 message.contentType == 'buttons'
                   ? 'button-div'
                   : ''}"
+                bind:this={compRef[
+                  message.options?.clearScreen
+                    ? message.messageId
+                      ? message.messageId
+                      : String(Math.random())
+                    : "leave"
+                ]}
               >
                 <span
                   class="subtitle-box {chatMessage.actor === 'agent'
@@ -353,6 +376,21 @@
               </div>
             {/if}
           {/each}
+        {/each}
+        {#each lastMessage.messages as message, i}
+          {#if lastMessage.actor !== "agent" && lastMessage.messages.length === i + 1}
+            <div class="subtitle-div">
+              <span class="subtitle-box">
+                <span class="subtitle-span">
+                  <RenderContent
+                    content={message}
+                    subtitle={$appSettingsStore.subtitlesEnabled}
+                    actor={lastMessage.actor}
+                  />
+                </span>
+              </span>
+            </div>
+          {/if}
         {/each}
       </div>
     {:else if !sessionOpened && showHomepage}

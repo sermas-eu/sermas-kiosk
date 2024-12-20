@@ -145,26 +145,6 @@
         }
       }
 
-      if (
-        !enableAudio &&
-        $appSettingsStore.subtitlesEnabled &&
-        lastMessage &&
-        lastMessage.messages.length > 1
-      ) {
-        for (let i = 0; i < lastMessage?.messages.length; i++) {
-          const el = lastMessage.messages[i];
-          if (
-            el.contentType === "dialogue-message" ||
-            el.contentType === "text"
-          ) {
-            if (subsSpanShowing) {
-              document.getElementById(`subtitle-${subsSpanShowing}`)?.remove();
-            }
-            subsSpanShowing = el.messageId;
-          }
-        }
-      }
-
       scrollChat();
       // messageId must change every time the avatar "interrupts" the conversation
       messageId = getChunkId();
@@ -267,21 +247,28 @@
 
 <span>
   {#if lastMessage && $appSettingsStore.subtitlesEnabled}
-    <div class="is-flex chat-history">
-      {#each lastMessage.messages as message}
-        {#if lastMessage.actor === "agent" && message.contentType === "dialogue-message"}
-          <div class="subtitle-div" id="subtitle-{message.messageId || 'none'}">
-            <span class="subtitle-box">
-              <RenderContent
-                content={message}
-                subtitle={$appSettingsStore.subtitlesEnabled}
-                actor={lastMessage.actor}
-              />
-            </span>
-          </div>
-        {/if}
-      {/each}
-    </div>
+    <span class="ui-content-agent">
+      <div
+        class="is-flex chat-history chat-history-subs chat-history-agent-subs"
+      >
+        {#each lastMessage.messages as message}
+          {#if lastMessage.actor === "agent" && message.contentType === "dialogue-message"}
+            <div
+              class="subtitle-div"
+              id="subtitle-{message.messageId || 'none'}"
+            >
+              <span class="subtitle-box agent-box">
+                <RenderContent
+                  content={message}
+                  subtitle={$appSettingsStore.subtitlesEnabled}
+                  actor={lastMessage.actor}
+                />
+              </span>
+            </div>
+          {/if}
+        {/each}
+      </div>
+    </span>
   {/if}
   <div
     class="ui-content is-flex {history.length ? '' : 'is-align-items-center'}
@@ -494,7 +481,7 @@
   }
 
   .subtitle-box {
-    margin-bottom: 2em;
+    margin-bottom: 1em;
     border-radius: 4px;
     display: block;
   }
@@ -578,6 +565,21 @@
     height: 95%;
     flex-direction: column;
     justify-content: center;
+  }
+
+  .ui-content-agent {
+    position: absolute;
+    padding: 1em 1em;
+    top: 0;
+    left: 2vw;
+    width: var(--ui-content-width);
+    height: 95%;
+    flex-direction: column;
+    justify-content: center;
+  }
+
+  .chat-history-agent-subs {
+    height: calc(100% - 80px);
   }
 
   .actor {

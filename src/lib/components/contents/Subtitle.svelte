@@ -84,7 +84,6 @@
   }
 
   .agent-box {
-    position: absolute;
     background-color: var(--theme-secondary-bg-color);
     bottom: 15vh;
 
@@ -95,8 +94,8 @@
     }
 
     @include mixins.from($breakpoint) {
-      width: var(--ui-content-width);
-      left: 7vh;
+      // width: var(--ui-content-width);
+      width: auto;
     }
   }
 

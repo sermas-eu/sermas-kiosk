@@ -26,13 +26,14 @@
 
   let detection: AudioDetection | undefined;
 
-  const onPlaybackChange = async (ev: AvatarAudioPlaybackStatus) => {
-    avatarSpeaking = ev.status !== "ended";
+  const onAvatarSpeakingChanged = async (isSpeaking: boolean) => {
+    avatarSpeaking = isSpeaking;
   };
 
   const onSpeechDetected = (detection: { speech: boolean }) => {
     if (detection.speech) {
-      toolkit.getUI().stopAvatarSpeech();
+      toolkit.getAvatar()?.getHandler()?.pauseSpeech();
+      // toolkit.getUI().stopAvatarSpeech();
     } else {
       toolkit.getAvatar()?.getHandler()?.resumeSpeech();
     }
@@ -69,7 +70,7 @@
     }
 
     toolkit.on("detection.speech", onSpeechDetected);
-    toolkit.on("avatar.speech", onPlaybackChange);
+    toolkit.on("ui.avatar.speaking", onAvatarSpeakingChanged);
   };
 
   const stop = async () => {
@@ -79,7 +80,7 @@
     detection?.stop();
     detection = undefined;
 
-    toolkit.off("avatar.speech", onPlaybackChange);
+    toolkit.off("ui.avatar.speaking", onAvatarSpeakingChanged);
     toolkit.off("detection.speech", onSpeechDetected);
 
     started = false;

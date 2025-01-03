@@ -51,11 +51,15 @@
     };
 
     onMount(() => {
-        toolkit.on("detection.characterization", onDetectionCharacterization);
+        toolkit
+            .getBroker()
+            .on("detection.characterization", onDetectionCharacterization);
     });
 
     onDestroy(() => {
-        toolkit.off("detection.characterization", onDetectionCharacterization);
+        toolkit
+            .getBroker()
+            .off("detection.characterization", onDetectionCharacterization);
     });
 </script>
 

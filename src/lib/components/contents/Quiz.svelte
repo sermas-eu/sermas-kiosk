@@ -61,7 +61,7 @@
 
     .button.is-multiline {
         min-height: 2.25em;
-        white-space: unset;
+        white-space: break-spaces;
         height: auto;
         flex-direction: column;
     }

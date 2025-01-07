@@ -311,7 +311,7 @@
           <!-- <li><a>TODO Intro</a></li>
           <li><a>TODO Free Chat</a></li> -->
           <!-- <hr class="navbar-divider"> -->
-          <li>
+          <li class="list">
             <a
               title="Open settings"
               href="#"
@@ -476,124 +476,121 @@
                   {/if}
 
                   {#if settings.devMode}
-                    <li class="menu-title">Development settings</li>
+                    <li class="menu-title">
+                      Development settings
 
-                    <li>
-                      <label>
+                      <span class="li-item">
                         <input
                           type="checkbox"
                           bind:checked={settings.enableMic}
-                        /> Toggle Microphone
-                      </label>
+                        />
+                        Toggle Microphone
+                      </span>
                     </li>
 
-                    <li class="menu-title">Detectors</li>
+                    <li class="menu-title">
+                      Detectors
 
-                    <li>
-                      <label>
+                      <span class="li-item">
                         <input
                           type="checkbox"
                           bind:checked={settings.enableVideoDetection}
-                        /> Toggle Video Detection
-                      </label>
-                    </li>
+                        />
+                        Toggle Video Detection
+                      </span>
 
-                    <li>
-                      <label>
+                      <span class="li-item">
                         <input
                           type="checkbox"
                           bind:checked={settings.showVideo}
                           disabled={!settings.enableVideoDetection}
-                        /> Toggle Video Rendering
-                      </label>
-                    </li>
+                        />
+                        Toggle Video Rendering
+                      </span>
 
-                    <li>
-                      <label>
+                      <span class="li-item">
                         <input
                           type="checkbox"
                           bind:checked={settings.enableMirrorMode}
                           disabled={!settings.enableVideoDetection ||
                             !settings.enableAnimation}
-                        /> Mirror mode (holistic v1)
-                      </label>
-                    </li>
+                        />
+                        Mirror mode (holistic v1)
+                      </span>
 
-                    <li>
-                      <label>
+                      <span class="li-item">
                         <input
                           type="checkbox"
                           bind:checked={settings.detectorHuman}
                           disabled={!settings.enableVideoDetection}
-                        /> Toggle Emotion (human)
-                      </label>
-                    </li>
+                        />
+                        Toggle Emotion (human)
+                      </span>
 
-                    <li>
-                      <label>
+                      <span class="li-item">
                         <input
                           type="checkbox"
                           bind:checked={settings.qrcode}
                           disabled={!settings.enableVideoDetection}
-                        /> Toggle Qrcode (zbar)
-                      </label>
-                    </li>
+                        />
+                        Toggle Qrcode (zbar)
+                      </span>
 
-                    <li>
-                      <label>
+                      <span class="li-item">
                         <input
                           type="checkbox"
                           bind:checked={settings.detectorFaceLandmarker}
                           disabled={!settings.enableVideoDetection}
-                        /> Toggle Face mapping (faceLandmark)
-                      </label>
+                        />
+                        Toggle Face mapping (faceLandmark)
+                      </span>
                     </li>
 
-                    <li class="menu-title">Avatar</li>
+                    <li class="menu-title">
+                      Avatar
 
-                    <li>
-                      <label>
+                      <span class="li-item">
                         <input
                           type="checkbox"
                           bind:checked={settings.enableAvatar}
                         />
                         Toggle Avatar
-                      </label>
-                    </li>
+                      </span>
 
-                    <li>
-                      <label>
+                      <span class="li-item">
                         <input
                           type="checkbox"
                           bind:checked={settings.enableAnimation}
-                        /> Toggle Animation
-                      </label>
-                    </li>
+                        />
+                        Toggle Animation
+                      </span>
 
-                    {#if settings && settings.animationList && settings.animationList.length}
-                      <li>
-                        <span> Play Animation </span>
+                      {#if settings && settings.animationList && settings.animationList.length}
+                        <span class="li-item">
+                          <span> Play Animation </span>
+                          <select
+                            bind:value={settings.animation}
+                            on:change={setAnimation}
+                            placeholder="Animation"
+                          >
+                            {#each settings.animationList as name}
+                              <option value={name}>{name}</option>
+                            {/each}
+                          </select>
+                        </span>
+                      {/if}
+
+                      <span class="li-item">
+                        <span> Face </span>
                         <select
-                          bind:value={settings.animation}
-                          on:change={setAnimation}
-                          placeholder="Animation"
+                          bind:value={settings.testFace}
+                          on:change={setFace}
                         >
-                          {#each settings.animationList as name}
+                          {#each facesList as name}
                             <option value={name}>{name}</option>
                           {/each}
                         </select>
-                      </li>
-                    {/if}
-                    <li>
-                      <span> Face </span>
-                      <select
-                        bind:value={settings.testFace}
-                        on:change={setFace}
-                      >
-                        {#each facesList as name}
-                          <option value={name}>{name}</option>
-                        {/each}
-                      </select>
+                      </span>
                     </li>
                   {/if}
                 </ul>
@@ -690,6 +687,7 @@
         height: 85%;
 
         .menu-list {
+          height: 95%;
           li a {
             color: white;
           }
@@ -698,6 +696,11 @@
           }
           a.is-active {
             background-color: rgba($secondary, 0.8);
+          }
+          .list {
+            height: 100%;
+            display: flex;
+            flex-direction: column;
           }
         }
         .menu-item-w-icon {
@@ -708,7 +711,8 @@
 
       .controls {
         align-content: center;
-
+        flex: 1;
+        overflow: auto;
         select {
           color: $dark-blue;
           width: 100%;

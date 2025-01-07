@@ -12,11 +12,11 @@
 
     onMount(() => {
         if (!browser) return;
-        toolkit.on("ui.status", onStatus);
+        toolkit.getBroker().on("ui.status", onStatus);
     });
 
     onDestroy(() => {
-        toolkit.off("ui.status", onStatus);
+        toolkit.getBroker().off("ui.status", onStatus);
     });
 </script>
 

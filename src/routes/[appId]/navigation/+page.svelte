@@ -61,7 +61,7 @@
 
         await toolkit.init(token || undefined);
 
-        toolkit.on("robotics.status", onRobotStatus);
+        toolkit.getBroker().on("robotics.status", onRobotStatus);
 
         await loadRobotData();
     };
@@ -101,7 +101,7 @@
         window.removeEventListener("message", onMessage);
 
         if (toolkit) {
-            toolkit.on("robotics.status", onRobotStatus);
+            toolkit.getBroker().on("robotics.status", onRobotStatus);
             await toolkit?.destroy();
         }
     });

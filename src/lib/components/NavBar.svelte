@@ -71,7 +71,7 @@
         function (err: any) {
           logger.error(`Could not copy text: ${text} [${err.message}]`);
           hasCopied = "copy failed";
-        }
+        },
       )
       .finally(() => {
         setTimeout(() => {
@@ -117,7 +117,7 @@
 
     sessionId = toolkit.getSessionId();
 
-    toolkit.on("session.session", (ev) => {
+    toolkit.getBroker().on("session.session", (ev) => {
       if (ev.operation === "updated" && ev.record.closedAt) {
         sessionId = undefined;
       } else {

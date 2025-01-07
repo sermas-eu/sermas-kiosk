@@ -36,7 +36,7 @@
         toolkit.getBroker().publish(`${UI_INTERACTION_TOPIC}/avatar`, payload);
     };
 
-    // toolkit.on("dialogue.messages", (message: any) => {
+    // toolkit.getBroker().on("dialogue.messages", (message: any) => {
     //     if (waitUserMessage && message.actor == 'user') {
     //         waitUserMessage = false
     //         content.list.forEach((element: string, index: number) => {

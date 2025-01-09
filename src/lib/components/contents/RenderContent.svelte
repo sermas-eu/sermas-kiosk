@@ -94,4 +94,7 @@
   .obj-list {
     flex: auto;
   }
+  .ui-content {
+    display: inherit;
+  }
 </style>

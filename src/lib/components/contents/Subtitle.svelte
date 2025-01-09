@@ -8,6 +8,8 @@
   import { marked } from "marked";
   import { onDestroy, onMount } from "svelte";
   import { appReadyStore, appSettingsStore } from "$lib/store";
+  import { gsap } from "gsap";
+  import { ScrollTrigger } from "gsap/dist/ScrollTrigger.js";
 
   export let content;
   export let actor: DialogueActor | null;
@@ -19,8 +21,14 @@
   let chunkIdToShow: string | null = null;
   let settings: AppSettings;
 
+  gsap.registerPlugin(ScrollTrigger);
+  let tl = gsap.timeline();
+  let scrolling = false;
+  let ready = false;
+
   onMount(async () => {
     emitter.on("avatar.speech", ev);
+    ready = true;
   });
 
   onDestroy(() => {
@@ -46,26 +54,88 @@
   )
     renderMarkdown(content.text);
 
+  $: if (
+    ((actor === "agent" && show) ||
+      (actor === "agent" && !settings.enableAudio)) &&
+    ready &&
+    mex
+  ) {
+    scrollText();
+  }
+
   $: if (actor === "agent" && show) {
     const tmp = chunks?.find((o) => o.chunkId === chunkIdToShow);
     if (tmp) renderMarkdown(tmp.content.text);
   }
+
+  function scrollText() {
+    const scroller = document.getElementById("scroller") as HTMLElement;
+    if (!scroller) return;
+
+    let scrollerheight = scroller.offsetHeight;
+    let box = document.getElementById("box");
+    let scrolldistance = scrollerheight + (box ? box.offsetHeight : 0);
+
+    // Make a copy div with scroll distance
+    let scrollcopy = document.getElementById("scroller-copy");
+    let scrollscrolllength = scrollerheight * 4;
+    if (scrollcopy) {
+      scrollcopy.style.height = scrollscrolllength + "px";
+    }
+
+    // Slowly scroll the items
+    tl.to(scroller, {
+      y: -scrolldistance,
+      duration: 250,
+      timeScale: 1,
+      ease: "inOut",
+    });
+
+    // Listen to the scrolltrigger, and sync the animation speed
+    ScrollTrigger.create({
+      trigger: scrollcopy,
+      start: "top top",
+      end: "bottom bottom",
+      onUpdate: (self) => {
+        var velo = self.getVelocity();
+        var speed = velo * 0.01;
+        tl.timeScale(speed);
+      },
+    });
+
+    // On scrolling play the timeline
+    ScrollTrigger.addEventListener("scrollStart", function () {
+      tl.play();
+    });
+
+    // When scrolling is done, pause for a moment, then resume animation
+    ScrollTrigger.addEventListener("scrollEnd", function () {
+      tl.timeScale(1);
+      tl.pause();
+
+      setTimeout(() => {
+        tl.play();
+      }, 500);
+    });
+  }
 </script>
 
-<span>
+<span id="box">
   {#if (actor === "agent" && show) || actor !== "agent" || !settings.enableAudio}
     <span
       class="subtitle-wrap message {actor == 'agent'
         ? 'agent-box'
         : 'user-box'}"
     >
-      <span
+      <div
+        id="scroller"
         class="message-{messageId || 'none'} subtitle {actor == 'agent'
           ? 'agent'
           : 'user'}"
       >
         {@html mex}
-      </span>
+        <div id="scroller-copy" class="scroller-copy" />
+      </div>
     </span>
   {/if}
 </span>
@@ -86,6 +156,10 @@
   .agent-box {
     background-color: var(--theme-secondary-bg-color);
     bottom: 15vh;
+    display: flex;
+    flex-direction: column;
+    overflow: auto;
+    height: 100%;
 
     @include mixins.until($breakpoint) {
       width: auto;
@@ -116,5 +190,16 @@
 
   .agent {
     color: var(--theme-secondary-text-color);
+    flex: 1;
+    // overflow: auto;
+    display: flex;
+    flex-direction: column;
+    display: block;
+    // position: fixed;
+  }
+  .scroller-copy {
+    position: relative;
+    height: 10px;
+    display: block;
   }
 </style>

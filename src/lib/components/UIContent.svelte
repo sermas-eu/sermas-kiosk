@@ -485,6 +485,11 @@
     border-radius: 4px;
     display: block;
   }
+  .agent-box {
+    margin-bottom: 0em;
+    max-height: 6rem;
+    display: flex;
+  }
 
   .subtitle-span {
     display: contents;

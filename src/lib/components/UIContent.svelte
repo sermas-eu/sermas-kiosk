@@ -489,6 +489,7 @@
     margin-bottom: 0em;
     max-height: 6rem;
     display: flex;
+    min-width: 100%;
   }
 
   .subtitle-span {

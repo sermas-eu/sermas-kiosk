@@ -23,7 +23,6 @@
 
   gsap.registerPlugin(ScrollTrigger);
   let tl = gsap.timeline();
-  let scrolling = false;
   let ready = false;
 
   onMount(async () => {
@@ -78,7 +77,7 @@
 
     // Make a copy div with scroll distance
     let scrollcopy = document.getElementById("scroller-copy");
-    let scrollscrolllength = scrollerheight * 4;
+    let scrollscrolllength = scrollerheight * 6;
     if (scrollcopy) {
       scrollcopy.style.height = scrollscrolllength + "px";
     }
@@ -86,9 +85,8 @@
     // Slowly scroll the items
     tl.to(scroller, {
       y: -scrolldistance,
-      duration: 250,
-      timeScale: 1,
-      ease: "inOut",
+      duration: 10,
+      ease: "sine.inOut",
     });
 
     // Listen to the scrolltrigger, and sync the animation speed
@@ -120,13 +118,12 @@
   }
 </script>
 
-<span id="box">
-  {#if (actor === "agent" && show) || actor !== "agent" || !settings.enableAudio}
-    <span
-      class="subtitle-wrap message {actor == 'agent'
-        ? 'agent-box'
-        : 'user-box'}"
-    >
+{#if (actor === "agent" && show) || actor !== "agent" || !settings.enableAudio}
+  <span
+    id="box"
+    class="subtitle-wrap message {actor == 'agent' ? 'agent-box' : 'user-box'}"
+  >
+    <div class={actor == "agent" ? "agent-wrap" : ""}>
       <div
         id="scroller"
         class="message-{messageId || 'none'} subtitle {actor == 'agent'
@@ -134,11 +131,11 @@
           : 'user'}"
       >
         {@html mex}
-        <div id="scroller-copy" class="scroller-copy" />
       </div>
-    </span>
-  {/if}
-</span>
+      <div id="scroller-copy" class="scroller-copy" />
+    </div>
+  </span>
+{/if}
 
 <style lang="scss">
   @use "bulma/sass/utilities/mixins";
@@ -160,16 +157,15 @@
     flex-direction: column;
     overflow: auto;
     height: 100%;
+    width: 100%;
 
     @include mixins.until($breakpoint) {
-      width: auto;
       margin-left: 1rem;
       margin-right: 1rem;
     }
 
     @include mixins.from($breakpoint) {
       // width: var(--ui-content-width);
-      width: auto;
     }
   }
 
@@ -188,18 +184,22 @@
     display: contents;
   }
 
+  .agent-wrap {
+    position: relative;
+    display: block;
+    min-height: 4rem;
+  }
+
   .agent {
     color: var(--theme-secondary-text-color);
-    flex: 1;
-    // overflow: auto;
-    display: flex;
-    flex-direction: column;
-    display: block;
-    // position: fixed;
+    position: fixed;
+    display: unset;
+    padding-top: 1rem;
   }
+
   .scroller-copy {
     position: relative;
     height: 10px;
-    display: block;
+    width: 100%;
   }
 </style>

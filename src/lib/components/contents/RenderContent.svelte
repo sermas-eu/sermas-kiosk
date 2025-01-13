@@ -96,5 +96,6 @@
   }
   .ui-content {
     display: inherit;
+    min-width: 100%;
   }
 </style>

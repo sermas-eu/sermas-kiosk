@@ -10,6 +10,7 @@
   import { appReadyStore, appSettingsStore } from "$lib/store";
   import { gsap } from "gsap";
   import { ScrollTrigger } from "gsap/dist/ScrollTrigger.js";
+  import { tick } from "svelte";
 
   export let content;
   export let actor: DialogueActor | null;
@@ -24,6 +25,7 @@
   gsap.registerPlugin(ScrollTrigger);
   let tl = gsap.timeline();
   let ready = false;
+  let ref;
 
   onMount(async () => {
     emitter.on("avatar.speech", ev);
@@ -67,26 +69,29 @@
     if (tmp) renderMarkdown(tmp.content.text);
   }
 
-  function scrollText() {
+  async function scrollText() {
+    await tick();
     const scroller = document.getElementById("scroller") as HTMLElement;
     if (!scroller) return;
 
     let scrollerheight = scroller.offsetHeight;
+
     let box = document.getElementById("box");
     let scrolldistance = scrollerheight + (box ? box.offsetHeight : 0);
 
     // Make a copy div with scroll distance
     let scrollcopy = document.getElementById("scroller-copy");
-    let scrollscrolllength = scrollerheight * 6;
+    let scrollscrolllength = scrollerheight * 4;
     if (scrollcopy) {
       scrollcopy.style.height = scrollscrolllength + "px";
     }
 
     // Slowly scroll the items
     tl.to(scroller, {
-      y: -scrolldistance, 
+      y: -scrolldistance,
       duration: Math.round(scrollerheight / 3),
-      ease: "sine.inOut",
+      // ease: "sine.inOut",
+      ease: "power1.out",
     });
 
     // Listen to the scrolltrigger, and sync the animation speed
@@ -129,6 +134,7 @@
         class="message-{messageId || 'none'} subtitle {actor == 'agent'
           ? 'agent'
           : 'user'}"
+        bind:this={ref}
       >
         {@html mex}
       </div>

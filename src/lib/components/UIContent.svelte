@@ -247,7 +247,7 @@
 
 <span>
   {#if lastMessage && $appSettingsStore.subtitlesEnabled}
-    <span class="ui-content-agent">
+    <span id="ui-content-agent" class="ui-content-agent">
       <div
         class="is-flex chat-history chat-history-subs chat-history-agent-subs"
       >
@@ -271,6 +271,7 @@
     </span>
   {/if}
   <div
+    id="ui-content"
     class="ui-content is-flex {history.length ? '' : 'is-align-items-center'}
     with-input-bar
     : ''} {$avatarLoadedStore ? '' : 'is-hidden'}"
@@ -426,6 +427,7 @@
         </button>
         <form on:submit|preventDefault={sendChatMessage} class="input-form">
           <input
+            id="user-input"
             class="input is-medium"
             bind:value={chatMessage}
             on:focus={(e) =>
@@ -437,6 +439,7 @@
             placeholder="Type something to ask"
           />
           <button
+            id="send-button"
             class="button is-medium ml-2 is-primary sermas-button {sendingMessage
               ? 'is-loading'
               : ''}"

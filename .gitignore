@@ -21,9 +21,6 @@ static.*/
 
 # Editor directories and files
 
-### VisualStudioCode ###
-.vscode/*    
-!.vscode/extensions.json
 .idea
 .DS_Store
 *.suo

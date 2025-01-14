@@ -84,8 +84,8 @@
 
     // Slowly scroll the items
     tl.to(scroller, {
-      y: -scrolldistance,
-      duration: 10,
+      y: -scrolldistance, 
+      duration: Math.round(scrollerheight / 3),
       ease: "sine.inOut",
     });
 
@@ -119,7 +119,7 @@
 </script>
 
 {#if (actor === "agent" && show) || actor !== "agent" || !settings.enableAudio}
-  <span
+  <div
     id="box"
     class="subtitle-wrap message {actor == 'agent' ? 'agent-box' : 'user-box'}"
   >
@@ -134,7 +134,7 @@
       </div>
       <div id="scroller-copy" class="scroller-copy" />
     </div>
-  </span>
+  </div>
 {/if}
 
 <style lang="scss">

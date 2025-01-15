@@ -123,7 +123,7 @@
   }
 </script>
 
-{#if (actor === "agent" && show) || actor !== "agent" || !settings.enableAudio}
+{#if (actor === "agent" && show && mex !== undefined) || actor !== "agent" || !settings.enableAudio}
   <div
     id="box"
     class="subtitle-wrap message {actor == 'agent' ? 'agent-box' : 'user-box'}"

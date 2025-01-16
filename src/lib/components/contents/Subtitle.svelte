@@ -10,6 +10,7 @@
   import { appReadyStore, appSettingsStore } from "$lib/store";
   import { gsap } from "gsap";
   import { ScrollTrigger } from "gsap/dist/ScrollTrigger.js";
+  import { CustomEase } from "gsap/dist/CustomEase.js";
   import { tick } from "svelte";
 
   export let content;
@@ -20,9 +21,14 @@
 
   let show: boolean = false;
   let chunkIdToShow: string | null = null;
+  let duration: number | null = null;
   let settings: AppSettings;
 
-  gsap.registerPlugin(ScrollTrigger);
+  if (typeof window !== "undefined") {
+    gsap.registerPlugin(ScrollTrigger);
+    gsap.registerPlugin(CustomEase);
+  }
+
   let tl = gsap.timeline();
   let ready = false;
   let ref;
@@ -39,6 +45,7 @@
   const ev = (ev: AvatarAudioPlaybackStatus) => {
     show = ev.status == "started" ? true : false;
     chunkIdToShow = ev.chunkId ? ev.chunkId : null;
+    duration = ev.duration ? ev.duration : null;
   };
 
   const renderMarkdown = async (text: string) => {
@@ -75,28 +82,25 @@
     if (!scroller) return;
 
     let scrollerheight = scroller.offsetHeight;
-
-    let box = document.getElementById("box");
-    let scrolldistance = scrollerheight + (box ? box.offsetHeight : 0);
-
-    // Make a copy div with scroll distance
-    let scrollcopy = document.getElementById("scroller-copy");
-    let scrollscrolllength = scrollerheight * 4;
-    if (scrollcopy) {
-      scrollcopy.style.height = scrollscrolllength + "px";
-    }
+    let time = !duration
+      ? Math.round(scrollerheight / 3)
+      : duration >= 30
+        ? duration * 1.15
+        : duration + 10;
 
     // Slowly scroll the items
     tl.to(scroller, {
-      y: -scrolldistance,
-      duration: Math.round(scrollerheight / 3),
-      // ease: "sine.inOut",
-      ease: "power1.out",
+      y: -scrollerheight + 25,
+      duration: time,
+      ease: CustomEase.create(
+        "custom",
+        "M0,0 C0,0 0.671,0.783 0.888,1 0.926,1.037 1,1 1,1 "
+      ),
     });
 
     // Listen to the scrolltrigger, and sync the animation speed
     ScrollTrigger.create({
-      trigger: scrollcopy,
+      trigger: scroller,
       start: "top top",
       end: "bottom bottom",
       onUpdate: (self) => {
@@ -123,7 +127,7 @@
   }
 </script>
 
-{#if (actor === "agent" && show) || actor !== "agent" || !settings.enableAudio}
+{#if (actor === "agent" && show && mex !== undefined) || actor !== "agent" || !settings.enableAudio}
   <div
     id="box"
     class="subtitle-wrap message {actor == 'agent' ? 'agent-box' : 'user-box'}"
@@ -138,7 +142,6 @@
       >
         {@html mex}
       </div>
-      <div id="scroller-copy" class="scroller-copy" />
     </div>
   </div>
 {/if}

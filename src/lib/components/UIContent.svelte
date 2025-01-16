@@ -714,6 +714,16 @@
       border: 0px !important;
     }
 
+    .ui-content-agent {
+      position: absolute;
+      width: 100%;
+      height: 40%;
+      top: 6rem;
+      bottom: auto;
+      left: 0;
+      right: 0;
+    }
+
     .welcome-box .is-size-1 {
       font-size: 2em !important;
     }

@@ -85,7 +85,7 @@
 
   const sendToken = () => {
     const iframe = document.getElementById(
-      "navigation-frame"
+      "navigation-frame",
     ) as HTMLIFrameElement;
     const iframeWin = iframe?.contentWindow;
     if (iframeWin) {
@@ -93,7 +93,7 @@
         JSON.stringify({
           appId: toolkit.getAppId(),
           token: toolkit.getToken(),
-        })
+        }),
       );
     }
   };
@@ -185,7 +185,7 @@
   const openVirtualKeyboard = (
     initValue: string,
     placehoder: string,
-    callback: (res: string) => void
+    callback: (res: string) => void,
   ) => {
     callbackFunc = callback;
     inputValue = initValue;
@@ -227,7 +227,7 @@
       };
       await ui.appendContent("user", content);
       chatMessage = "";
-      ui.stopAvatarSpeech();
+      ui.stopAvatarSpeech(messageId);
     } catch (e: any) {
       logger.error(`Error sending chat message, e=${e.message}`);
     } finally {
@@ -434,7 +434,7 @@
               openVirtualKeyboard(
                 chatMessage,
                 "Type something to ask",
-                (result) => (chatMessage = result)
+                (result) => (chatMessage = result),
               )}
             placeholder="Type something to ask"
           />

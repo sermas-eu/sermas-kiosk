@@ -32,17 +32,17 @@
 
   const onSpeechDetected = (detection: { speech: boolean }) => {
     if (detection.speech) {
-      toolkit.getAvatar()?.getHandler()?.pauseSpeech();
-      // toolkit.getUI().stopAvatarSpeech();
+      // toolkit.getAvatar()?.getHandler()?.pauseSpeech();
+      toolkit.getAvatar()?.getHandler()?.stopSpeech();
     } else {
       toolkit.getAvatar()?.getHandler()?.resumeSpeech();
     }
   };
   const onSpeaking = (userSpeaking: boolean, speechLength: number) => {
-    if (speechLength > 1000) {
+    if (speechLength > 600) {
       toolkit.getAvatar()?.getHandler()?.pauseSpeech();
     } else {
-      toolkit.getAvatar()?.getHandler()?.resumeSpeech();
+      // toolkit.getAvatar()?.getHandler()?.resumeSpeech();
     }
     if (userSpeaking) {
       sendStatus("Listening...");

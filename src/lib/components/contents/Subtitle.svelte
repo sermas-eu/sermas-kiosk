@@ -196,7 +196,7 @@
   .agent-wrap {
     position: relative;
     display: block;
-    min-height: 4rem;
+    min-height: 6rem;
   }
 
   .agent {

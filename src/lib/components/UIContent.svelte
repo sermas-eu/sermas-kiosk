@@ -490,7 +490,7 @@
   }
   .agent-box {
     margin-bottom: 0em;
-    max-height: 6rem;
+    max-height: 8rem;
     display: flex;
     min-width: 100%;
   }

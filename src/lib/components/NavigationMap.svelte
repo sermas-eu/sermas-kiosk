@@ -45,7 +45,7 @@
       orientation.x,
       orientation.y,
       orientation.z,
-      orientation.w,
+      orientation.w
     );
     const rot = new THREE.Euler();
     rot.setFromQuaternion(q);
@@ -90,7 +90,7 @@
           <div
             class="agv-div"
             style="background-image: url({agvImageUrl});transform: rotate({-rotation(
-              status.actualPosition?.orientation,
+              status.actualPosition?.orientation
             )}rad);left: {(100 *
               (status.actualPosition?.position.x + originOffsetX)) /
               buildingWidth}%;top: {(100 *

@@ -130,6 +130,9 @@
 
     ui.on("ui.dialogue.history", (chatHistory: ChatMessage[]) => {
       if (chatHistory.length == 0) {
+        if (lastMessage && lastMessage.messages) {
+          lastMessage.messages = []
+        }
         toggleLoadingDots(false);
       } else {
         toggleLoadingDots(chatHistory[chatHistory.length - 1].actor == "user");

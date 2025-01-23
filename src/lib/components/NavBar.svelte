@@ -71,7 +71,7 @@
         function (err: any) {
           logger.error(`Could not copy text: ${text} [${err.message}]`);
           hasCopied = "copy failed";
-        },
+        }
       )
       .finally(() => {
         setTimeout(() => {
@@ -207,6 +207,21 @@
     xrSupported = await $avatarModelStore.getXR().start();
 
     if (!xrSupported) sendStatus("AR is not available on this device");
+  };
+
+  const openGithubIssue = async (sessionId: string) => {
+    const date = new Date();
+    const insertDate = `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}`;
+    const project = settings.githubRepository
+      ? settings.githubRepository
+      : `pilots-${toolkit.getAppId()}`;
+
+    window
+      .open(
+        `https://github.com/sermas-eu/${project}/issues/new?labels=bug&title=New+bug+${insertDate}+SessionId+reference+${sessionId}&template=bug_report.md`,
+        "_blank"
+      )
+      ?.focus();
   };
 </script>
 
@@ -459,6 +474,16 @@
                           <b class="has-text-white-ter">
                             {hasCopied}
                           </b>
+                        </a>
+                      </span>
+                      <span>
+                        <a
+                          href="#"
+                          class="has-text-grey-lighter a-no-padding"
+                          title="Open Issue"
+                          on:click={(e) => openGithubIssue($sessionIdStore)}
+                        >
+                          Open Github Issue
                         </a>
                       </span>
                       <span>

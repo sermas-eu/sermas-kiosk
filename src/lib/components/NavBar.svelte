@@ -212,10 +212,13 @@
   const openGithubIssue = async (sessionId: string) => {
     const date = new Date();
     const insertDate = `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}`;
+    const project = settings.githubRepository
+      ? settings.githubRepository
+      : `pilots-${toolkit.getAppId()}`;
 
     window
       .open(
-        `https://github.com/sermas-eu/pilots-${toolkit.getAppId()}/issues/new?labels=bug&title=New+bug+${insertDate}+SessionId+reference+${sessionId}&template=bug_report.md`,
+        `https://github.com/sermas-eu/${project}/issues/new?labels=bug&title=New+bug+${insertDate}+SessionId+reference+${sessionId}&template=bug_report.md`,
         "_blank"
       )
       ?.focus();

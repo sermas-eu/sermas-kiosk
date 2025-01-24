@@ -26,6 +26,7 @@
   const chunks: DialogueMessageUIContentDto[] = content.metadata?.chunks
     ? (content.metadata?.chunks as unknown as DialogueMessageUIContentDto[])
     : [];
+  console.warn("content", content.content);
 </script>
 
 <div

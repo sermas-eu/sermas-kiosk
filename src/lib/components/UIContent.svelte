@@ -29,7 +29,6 @@
   let showStopButton = false;
   let sessionOpened: boolean = false;
   let navigationFrameEnabled = false;
-  let showSessionClose = false;
 
   let chatMessage = "";
   let sendingMessage = false;
@@ -57,9 +56,7 @@
   let messageId = getChunkId();
 
   let compRef: any = {};
-  let subsSpanShowing: string | undefined = undefined;
 
-  // $: $sessionIdStore, (sessionId = $sessionIdStore);
   $: if ($appConfigStore) {
     app = $appConfigStore;
     loadAvatar();
@@ -85,7 +82,7 @@
 
   const sendToken = () => {
     const iframe = document.getElementById(
-      "navigation-frame",
+      "navigation-frame"
     ) as HTMLIFrameElement;
     const iframeWin = iframe?.contentWindow;
     if (iframeWin) {
@@ -93,7 +90,7 @@
         JSON.stringify({
           appId: toolkit.getAppId(),
           token: toolkit.getToken(),
-        }),
+        })
       );
     }
   };
@@ -131,7 +128,7 @@
     ui.on("ui.dialogue.history", (chatHistory: ChatMessage[]) => {
       if (chatHistory.length == 0) {
         if (lastMessage && lastMessage.messages) {
-          lastMessage.messages = []
+          lastMessage.messages = [];
         }
         toggleLoadingDots(false);
       } else {
@@ -159,6 +156,7 @@
 
     ui.on("ui.session.changed", (status: SessionStatus) => {
       sessionOpened = status === "started";
+      if (!sessionOpened) history = [];
     });
 
     // TODO open navigation iframe on robot action
@@ -171,15 +169,7 @@
         }
       }
     });
-
-    ui.on("close.session", () => {
-      showSessionClose = true;
-    });
   });
-
-  const hideSessionCloser = () => {
-    showSessionClose = false;
-  };
 
   onDestroy(async () => {
     await ui.destroy();
@@ -188,7 +178,7 @@
   const openVirtualKeyboard = (
     initValue: string,
     placehoder: string,
-    callback: (res: string) => void,
+    callback: (res: string) => void
   ) => {
     callbackFunc = callback;
     inputValue = initValue;
@@ -249,7 +239,7 @@
 </script>
 
 <span>
-  {#if lastMessage && $appSettingsStore.subtitlesEnabled}
+  {#if lastMessage && $appSettingsStore.subtitlesEnabled && sessionOpened}
     <span id="ui-content-agent" class="ui-content-agent">
       <div
         class="is-flex chat-history chat-history-subs chat-history-agent-subs"
@@ -270,6 +260,11 @@
             </div>
           {/if}
         {/each}
+        {#if waitingResponse}
+          <div class="is-flex is-justify-content-center">
+            <div class="loading-dots"></div>
+          </div>
+        {/if}
       </div>
     </span>
   {/if}
@@ -279,7 +274,7 @@
     with-input-bar
     : ''} {$avatarLoadedStore ? '' : 'is-hidden'}"
   >
-    {#if history.length && !$appSettingsStore.subtitlesEnabled}
+    {#if history.length && !$appSettingsStore.subtitlesEnabled && sessionOpened}
       <div class="chat-history" id="chat-history">
         {#each history as chatMessage, i}
           <div class="chat-message actor-{chatMessage.actor}">
@@ -325,11 +320,8 @@
             <div class="loading-dots"></div>
           </div>
         {/if}
-        <!-- {#if showSessionClose}
-        <SessionCloser on:hide-session-closer={hideSessionCloser}/>
-      {/if} -->
       </div>
-    {:else if lastMessage && $appSettingsStore.subtitlesEnabled}
+    {:else if lastMessage && $appSettingsStore.subtitlesEnabled && sessionOpened}
       <div class="is-flex chat-history chat-history-subs">
         {#each history as chatMessage, index}
           {#each chatMessage.messages as message, i}
@@ -350,6 +342,11 @@
                 <span
                   class="subtitle-box {chatMessage.actor === 'agent'
                     ? 'subs-message'
+                    : ''}
+                    {message.contentType === 'background-audio' ||
+                  (message.contentType === 'image' &&
+                    message.content.isBackground)
+                    ? 'display-content'
                     : ''}"
                 >
                   <span
@@ -437,7 +434,7 @@
               openVirtualKeyboard(
                 chatMessage,
                 "Type something to ask",
-                (result) => (chatMessage = result),
+                (result) => (chatMessage = result)
               )}
             placeholder="Type something to ask"
           />
@@ -491,11 +488,16 @@
     border-radius: 4px;
     display: block;
   }
+
   .agent-box {
     margin-bottom: 0em;
     max-height: 8rem;
     display: flex;
     min-width: 100%;
+  }
+
+  .display-content {
+    display: contents;
   }
 
   .subtitle-span {

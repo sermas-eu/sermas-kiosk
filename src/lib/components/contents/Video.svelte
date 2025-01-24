@@ -6,7 +6,7 @@
 
 <span class="video">
   <!-- svelte-ignore a11y-media-has-caption -->
-  <video>
+  <video controls autoplay>
     {#each content.sources as source}
       <source src={source} type={content.type} />
     {/each}

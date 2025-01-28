@@ -111,6 +111,16 @@
     audio.play();
   }
 
+  $: if (
+    !$backgroundImageAndSoundStore.isBackgroundAudioPlaying &&
+    settings.enableAudio &&
+    $backgroundImageAndSoundStore.backgroundAudioUrl
+  ) {
+    audio.pause();
+    $backgroundImageAndSoundStore.backgroundAudioUrl = undefined;
+    $backgroundImageAndSoundStore.backgroundAudioType = undefined;
+  }
+
   onMount(async () => {
     app = await toolkit.getApp();
     login = app?.settings?.login || false;

@@ -18,7 +18,7 @@ export const avatarModelStore: Writable<AvatarModel | undefined> = writable();
 export const backgroundImageAndSoundStore: Writable<BackgroundStoreDto> = writable({
   image: undefined,
   urlImage: "",
-  dafaultImage: undefined,
+  defaultImage: undefined,
   messageImage: false,
   backgroundAudioUrl: undefined,
   backgroundAudioType: undefined,

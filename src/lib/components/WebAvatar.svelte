@@ -102,7 +102,7 @@
     $backgroundImageAndSoundStore = {
       ...$backgroundImageAndSoundStore,
       image: background,
-      dafaultImage: background,
+      defaultImage: background,
       messageImage: false,
     };
 

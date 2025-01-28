@@ -36,13 +36,13 @@
     $backgroundImageAndSoundStore.image === "stream"
   ) {
     $backgroundImageAndSoundStore.image =
-      $backgroundImageAndSoundStore.dafaultImage;
+      $backgroundImageAndSoundStore.defaultImage;
 
-    if ($backgroundImageAndSoundStore.dafaultImage) {
-      setBackground($backgroundImageAndSoundStore.dafaultImage);
+    if ($backgroundImageAndSoundStore.defaultImage) {
+      setBackground($backgroundImageAndSoundStore.defaultImage);
     }
     $backgroundImageAndSoundStore.urlImage = "";
-    $backgroundImageAndSoundStore.dafaultImage = undefined;
+    $backgroundImageAndSoundStore.defaultImage = undefined;
     $backgroundImageAndSoundStore.messageImage = false;
     $backgroundImageAndSoundStore.isBackgroundAudioPlaying = false;
   }

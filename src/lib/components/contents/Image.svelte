@@ -6,7 +6,7 @@
   export let img: ImageContentDto;
   $: if (img.isBackground) {
     if (get(backgroundImageAndSoundStore).image !== "stream") {
-      $backgroundImageAndSoundStore.dafaultImage = get(
+      $backgroundImageAndSoundStore.defaultImage = get(
         backgroundImageAndSoundStore
       ).image;
     }

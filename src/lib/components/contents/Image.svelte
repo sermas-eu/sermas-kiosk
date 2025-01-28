@@ -1,11 +1,15 @@
 <script lang="ts">
   import { backgroundImageAndSoundStore } from "$lib/store";
   import { type ImageContentDto } from "@sermas/toolkit";
+  import { get } from "svelte/store";
 
   export let img: ImageContentDto;
   $: if (img.isBackground) {
-    $backgroundImageAndSoundStore.oldImage =
-      $backgroundImageAndSoundStore.image;
+    if (get(backgroundImageAndSoundStore).image !== "stream") {
+      $backgroundImageAndSoundStore.dafaultImage = get(
+        backgroundImageAndSoundStore
+      ).image;
+    }
     $backgroundImageAndSoundStore.image = "stream";
     $backgroundImageAndSoundStore.messageImage = true;
     $backgroundImageAndSoundStore.urlImage = img.src;

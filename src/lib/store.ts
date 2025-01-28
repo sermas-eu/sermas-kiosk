@@ -15,12 +15,12 @@ export const appConfigStore: Writable<PlatformAppDto> = writable();
 export const readyplayermeUrl: Writable<string> = writable("");
 
 export const avatarModelStore: Writable<AvatarModel | undefined> = writable();
-export const backgroundImageAndSoundStore: Writable<BackgroundStoreDto> =
-  writable({
-    image: undefined,
-    urlImage: "",
-    messageImage: false,
-    backgroundAudioUrl: undefined,
-    backgroundAudioType: undefined,
-    isBackgroundAudioPlaying: false,
-  });
+export const backgroundImageAndSoundStore: Writable<BackgroundStoreDto> = writable({
+  image: undefined,
+  urlImage: "",
+  dafaultImage: undefined,
+  messageImage: false,
+  backgroundAudioUrl: undefined,
+  backgroundAudioType: undefined,
+  isBackgroundAudioPlaying: false,
+});

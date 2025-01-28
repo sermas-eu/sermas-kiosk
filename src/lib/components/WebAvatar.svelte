@@ -22,6 +22,7 @@
   } from "@sermas/toolkit/utils";
   import { onDestroy, onMount } from "svelte";
   import Loader from "./Loader.svelte";
+  import { toBase64 } from "$lib/util";
 
   let enableAudio: boolean;
   let enableAvatar: boolean;
@@ -91,24 +92,6 @@
     $avatarModelStore?.setAnimationEnabled(enable);
   };
 
-  const toBase64 = (blob: Blob): Promise<string> => {
-    const fileReaderInstance = new FileReader();
-    fileReaderInstance.readAsDataURL(blob);
-    return new Promise((resolve, reject) => {
-      let done = false;
-      fileReaderInstance.onload = () => {
-        if (done) return;
-        done = true;
-        resolve(fileReaderInstance.result as string);
-      };
-      fileReaderInstance.onerror = (err) => {
-        if (done) return;
-        done = true;
-        reject(err);
-      };
-    });
-  };
-
   const setBackground = async (background: string) => {
     logger.debug(`Set background: ${background}`);
     let config = await toolkit.getAssetConfig("backgrounds", background);
@@ -119,8 +102,10 @@
     $backgroundImageAndSoundStore = {
       ...$backgroundImageAndSoundStore,
       image: background,
+      dafaultImage: background,
       messageImage: false,
     };
+
     if (blob) {
       $backgroundImageAndSoundStore.urlImage = `${await toBase64(blob)}`;
     }

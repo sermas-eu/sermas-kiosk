@@ -1,0 +1,11 @@
+declare module "svelte-icons/io/IoMdLogOut.svelte";
+declare module "svelte-icons/io/IoMdMic.svelte";
+declare module "svelte-icons/io/IoMdMicOff.svelte";
+declare module "svelte-icons/io/IoMdSettings.svelte";
+declare module "svelte-icons/io/IoMdVolumeHigh.svelte";
+declare module "svelte-icons/io/IoMdVolumeOff.svelte";
+declare module "svelte-icons/md/MdSync.svelte";
+declare module "svelte-icons/io/IoMdCloseCircleOutline.svelte";
+declare module "svelte-icons/md/MdMenu.svelte";
+declare module "svelte-icons/md/MdClose.svelte";
+declare module "svelte-icons/fa/FaVrCardboard.svelte";

@@ -17,9 +17,9 @@
   export let actor: DialogueActor | null;
   export let chunks: DialogueMessageUIContentDto[] | null;
   export let messageId: string | undefined;
-  let mex: string;
+  let mex: Record<string, string> = {};
 
-  let show: boolean = false;
+  let show: Record<string, boolean> = {};
   let chunkIdToShow: string | null = null;
   let duration: number | null = null;
   let settings: AppSettings;
@@ -31,7 +31,7 @@
 
   let tl = gsap.timeline();
   let ready = false;
-  let ref;
+  let ref: any = {};
 
   onMount(async () => {
     emitter.on("avatar.speech", ev);
@@ -43,13 +43,22 @@
   });
 
   const ev = (ev: AvatarAudioPlaybackStatus) => {
-    show = ev.status == "started" ? true : false;
+    if (ev.status == "started" && ev.chunkId) {
+      show[ev.chunkId] = true;
+    }
+
+    if (chunkIdToShow && ev.status === "started") {
+      ref[chunkIdToShow].remove();
+      delete ref[chunkIdToShow];
+      show[chunkIdToShow] = false;
+    }
+
     chunkIdToShow = ev.chunkId ? ev.chunkId : null;
     duration = ev.duration ? ev.duration : null;
   };
 
-  const renderMarkdown = async (text: string) => {
-    mex = DOMPurify.sanitize(await marked.parse(text));
+  const renderMarkdown = async (text: string, chunkId: string) => {
+    mex[chunkId] = DOMPurify.sanitize(await marked.parse(text));
   };
 
   $: if ($appReadyStore && $appSettingsStore) {
@@ -60,10 +69,10 @@
     (actor !== "agent" && content && content.text) ||
     !settings.enableAudio
   )
-    renderMarkdown(content.text);
+    renderMarkdown(content.text, String(Math.random()));
 
   $: if (
-    ((actor === "agent" && show) ||
+    ((actor === "agent" && chunkIdToShow && show[chunkIdToShow]) ||
       (actor === "agent" && !settings.enableAudio)) &&
     ready &&
     mex
@@ -71,9 +80,9 @@
     scrollText();
   }
 
-  $: if (actor === "agent" && show) {
+  $: if (actor === "agent" && chunkIdToShow && show[chunkIdToShow]) {
     const tmp = chunks?.find((o) => o.chunkId === chunkIdToShow);
-    if (tmp) renderMarkdown(tmp.content.text);
+    if (tmp) renderMarkdown(tmp.content.text, chunkIdToShow);
   }
 
   async function scrollText() {
@@ -127,10 +136,11 @@
   }
 </script>
 
-{#if (actor === "agent" && show && mex !== undefined) || actor !== "agent" || !settings.enableAudio}
+{#if (actor === "agent" && chunkIdToShow && mex[chunkIdToShow] !== undefined) || actor !== "agent" || !settings.enableAudio}
   <div
     id="box"
     class="subtitle-wrap message {actor == 'agent' ? 'agent-box' : 'user-box'}"
+    bind:this={ref[chunkIdToShow ? chunkIdToShow : String(Math.random())]}
   >
     <div class={actor == "agent" ? "agent-wrap" : ""}>
       <div
@@ -138,9 +148,8 @@
         class="message-{messageId || 'none'} subtitle {actor == 'agent'
           ? 'agent'
           : 'user'}"
-        bind:this={ref}
       >
-        {@html mex}
+        {@html mex[chunkIdToShow]}
       </div>
     </div>
   </div>

@@ -12,6 +12,7 @@
   interface mexDto {
     [id: string]: {
       mex: string | null;
+      mexToShow: string[];
       show: boolean;
       id: string;
     };
@@ -39,6 +40,8 @@
   });
 
   const ev = (ev: AvatarAudioPlaybackStatus) => {
+    console.warn("*** ev", ev);
+
     // TODO remove when ev.chunkid present
     if (Object.entries(mex).length !== 0 && mex.constructor === Object) {
       for (const [key, value] of Object.entries(mex)) {
@@ -47,7 +50,12 @@
     }
 
     if (ev.chunkId) {
-      mex[ev.chunkId] = { mex: null, show: false, id: ev.chunkId };
+      mex[ev.chunkId] = {
+        mex: null,
+        mexToShow: [],
+        show: false,
+        id: ev.chunkId,
+      };
     }
 
     // TODO remove when ev.chunkid present
@@ -55,6 +63,7 @@
 
     chunkIdToShow = ev.chunkId ? ev.chunkId : null;
     duration = ev.duration ? ev.duration : null;
+
   };
 
   const renderMarkdown = async (text: string, id?: string) => {
@@ -62,6 +71,14 @@
       mex[id].mex = DOMPurify.sanitize(await marked.parse(text));
       mex[id].id = id;
       mex[id].show = true;
+      console.warn("*** text", text);
+
+      const tmp = text.replace(/([.?!])\s*(?=[A-Z])/g, "$1|").split("|");
+      for (let i = 0; i < tmp.length; i++) {
+        tmp[i] = DOMPurify.sanitize(await marked.parse(tmp[i]));
+      }
+      mex[id].mexToShow = tmp;
+      console.warn("*** mex", mex);
     } else {
       mexSimple = DOMPurify.sanitize(await marked.parse(text));
     }
@@ -79,6 +96,8 @@
 
   $: if (actor === "agent" && show && settings.enableAudio) {
     const tmp = chunks?.find((o) => o.chunkId === chunkIdToShow);
+    console.warn("*** tmp", tmp?.content);
+
     if (tmp && tmp.content.chunkId)
       renderMarkdown(tmp.content.text, tmp.content.chunkId);
   }
@@ -99,6 +118,7 @@
             ? 'agent'
             : 'user'}"
         >
+          {chunkIdToShow}
           {@html mex[chunkIdToShow].mex}
         </div>
       </div>

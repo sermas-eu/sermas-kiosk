@@ -9,16 +9,26 @@
   import { onDestroy, onMount } from "svelte";
   import { appReadyStore, appSettingsStore } from "$lib/store";
 
+  interface mexDto {
+    [id: string]: {
+      mex: string | null;
+      show: boolean;
+      id: string;
+    };
+  }
+
   export let content;
   export let actor: DialogueActor | null;
   export let chunks: DialogueMessageUIContentDto[] | null;
   export let messageId: string | undefined;
-  let mex: string;
+  let mex: mexDto = {} as mexDto;
+  let mexSimple: string;
 
-  let show: Record<string, boolean> = {};
+  let show: boolean = false;
   let chunkIdToShow: string | null = null;
   let duration: number | null = null;
   let settings: AppSettings;
+  let ref: any = {};
 
   onMount(async () => {
     emitter.on("avatar.speech", ev);
@@ -29,18 +39,32 @@
   });
 
   const ev = (ev: AvatarAudioPlaybackStatus) => {
-    if (ev.status == "started" && ev.chunkId) {
-      chunkIdToShow = ev.chunkId;
-      show[chunkIdToShow] = true;
-    } else {
-      show = {};
-      chunkIdToShow = null;
+    // TODO remove when ev.chunkid present
+    if (Object.entries(mex).length !== 0 && mex.constructor === Object) {
+      for (const [key, value] of Object.entries(mex)) {
+        mex[key].show = false;
+      }
     }
+
+    if (ev.chunkId) {
+      mex[ev.chunkId] = { mex: null, show: false, id: ev.chunkId };
+    }
+
+    // TODO remove when ev.chunkid present
+    show = ev.status == "started" ? true : false;
+
+    chunkIdToShow = ev.chunkId ? ev.chunkId : null;
     duration = ev.duration ? ev.duration : null;
   };
 
-  const renderMarkdown = async (text: string) => {
-    mex = DOMPurify.sanitize(await marked.parse(text));
+  const renderMarkdown = async (text: string, id?: string) => {
+    if (id) {
+      mex[id].mex = DOMPurify.sanitize(await marked.parse(text));
+      mex[id].id = id;
+      mex[id].show = true;
+    } else {
+      mexSimple = DOMPurify.sanitize(await marked.parse(text));
+    }
   };
 
   $: if ($appReadyStore && $appSettingsStore) {
@@ -53,28 +77,51 @@
   )
     renderMarkdown(content.text);
 
-  $: if (actor === "agent" && show) {
+  $: if (actor === "agent" && show && settings.enableAudio) {
     const tmp = chunks?.find((o) => o.chunkId === chunkIdToShow);
-    if (tmp) renderMarkdown(tmp.content.text);
+    if (tmp && tmp.content.chunkId)
+      renderMarkdown(tmp.content.text, tmp.content.chunkId);
   }
 </script>
 
-{#if (actor === "agent" && chunkIdToShow && show[chunkIdToShow] && mex !== undefined) || actor !== "agent" || !settings.enableAudio}
-  <div
-    id="box"
-    class="subtitle-wrap message {actor == 'agent' ? 'agent-box' : 'user-box'}"
-  >
-    <div class={actor == "agent" ? "agent-wrap" : ""}>
-      <div
-        class="message-{messageId || 'none'} subtitle {actor == 'agent'
-          ? 'agent'
-          : 'user'}"
-      >
-        {@html mex}
+<span>
+  {#if actor === "agent" && show && chunkIdToShow && mex[chunkIdToShow].show && settings.enableAudio}
+    <div
+      id="box"
+      class="subtitle-wrap message {actor == 'agent'
+        ? 'agent-box'
+        : 'user-box'}"
+      bind:this={ref[chunkIdToShow]}
+    >
+      <div class={actor == "agent" ? "agent-wrap" : ""}>
+        <div
+          class="message-{messageId || 'none'} subtitle {actor == 'agent'
+            ? 'agent'
+            : 'user'}"
+        >
+          {@html mex[chunkIdToShow].mex}
+        </div>
       </div>
     </div>
-  </div>
-{/if}
+  {:else if mexSimple}
+    <div
+      id="box"
+      class="subtitle-wrap message {actor == 'agent'
+        ? 'agent-box'
+        : 'user-box'}"
+    >
+      <div class={actor == "agent" ? "agent-wrap" : ""}>
+        <div
+          class="message-{messageId || 'none'} subtitle {actor == 'agent'
+            ? 'agent'
+            : 'user'}"
+        >
+          {@html mexSimple}
+        </div>
+      </div>
+    </div>
+  {/if}
+</span>
 
 <style lang="scss">
   @use "bulma/sass/utilities/mixins";

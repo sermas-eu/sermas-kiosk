@@ -8,10 +8,6 @@
   import { marked } from "marked";
   import { onDestroy, onMount } from "svelte";
   import { appReadyStore, appSettingsStore } from "$lib/store";
-  import { gsap } from "gsap";
-  import { ScrollTrigger } from "gsap/dist/ScrollTrigger.js";
-  import { CustomEase } from "gsap/dist/CustomEase.js";
-  import { tick } from "svelte";
 
   export let content;
   export let actor: DialogueActor | null;
@@ -19,23 +15,13 @@
   export let messageId: string | undefined;
   let mex: string;
 
-  let show: boolean = false;
+  let show: Record<string, boolean> = {};
   let chunkIdToShow: string | null = null;
   let duration: number | null = null;
   let settings: AppSettings;
 
-  if (typeof window !== "undefined") {
-    gsap.registerPlugin(ScrollTrigger);
-    gsap.registerPlugin(CustomEase);
-  }
-
-  let tl = gsap.timeline();
-  let ready = false;
-  let ref;
-
   onMount(async () => {
     emitter.on("avatar.speech", ev);
-    ready = true;
   });
 
   onDestroy(() => {
@@ -43,8 +29,13 @@
   });
 
   const ev = (ev: AvatarAudioPlaybackStatus) => {
-    show = ev.status == "started" ? true : false;
-    chunkIdToShow = ev.chunkId ? ev.chunkId : null;
+    if (ev.status == "started" && ev.chunkId) {
+      chunkIdToShow = ev.chunkId;
+      show[chunkIdToShow] = true;
+    } else {
+      show = {};
+      chunkIdToShow = null;
+    }
     duration = ev.duration ? ev.duration : null;
   };
 
@@ -62,83 +53,22 @@
   )
     renderMarkdown(content.text);
 
-  $: if (
-    ((actor === "agent" && show) ||
-      (actor === "agent" && !settings.enableAudio)) &&
-    ready &&
-    mex
-  ) {
-    scrollText();
-  }
-
   $: if (actor === "agent" && show) {
     const tmp = chunks?.find((o) => o.chunkId === chunkIdToShow);
     if (tmp) renderMarkdown(tmp.content.text);
   }
-
-  async function scrollText() {
-    await tick();
-    const scroller = document.getElementById("scroller") as HTMLElement;
-    if (!scroller) return;
-
-    let scrollerheight = scroller.offsetHeight;
-    let time = !duration
-      ? Math.round(scrollerheight / 3)
-      : duration >= 30
-        ? duration * 1.15
-        : duration + 10;
-
-    // Slowly scroll the items
-    tl.to(scroller, {
-      y: -scrollerheight + 25,
-      duration: time,
-      ease: CustomEase.create(
-        "custom",
-        "M0,0 C0,0 0.671,0.783 0.888,1 0.926,1.037 1,1 1,1 "
-      ),
-    });
-
-    // Listen to the scrolltrigger, and sync the animation speed
-    ScrollTrigger.create({
-      trigger: scroller,
-      start: "top top",
-      end: "bottom bottom",
-      onUpdate: (self) => {
-        var velo = self.getVelocity();
-        var speed = velo * 0.01;
-        tl.timeScale(speed);
-      },
-    });
-
-    // On scrolling play the timeline
-    ScrollTrigger.addEventListener("scrollStart", function () {
-      tl.play();
-    });
-
-    // When scrolling is done, pause for a moment, then resume animation
-    ScrollTrigger.addEventListener("scrollEnd", function () {
-      tl.timeScale(1);
-      tl.pause();
-
-      setTimeout(() => {
-        tl.play();
-      }, 500);
-    });
-  }
 </script>
 
-{#if (actor === "agent" && show && mex !== undefined) || actor !== "agent" || !settings.enableAudio}
+{#if (actor === "agent" && chunkIdToShow && show[chunkIdToShow] && mex !== undefined) || actor !== "agent" || !settings.enableAudio}
   <div
     id="box"
     class="subtitle-wrap message {actor == 'agent' ? 'agent-box' : 'user-box'}"
   >
     <div class={actor == "agent" ? "agent-wrap" : ""}>
       <div
-        id="scroller"
         class="message-{messageId || 'none'} subtitle {actor == 'agent'
           ? 'agent'
           : 'user'}"
-        bind:this={ref}
       >
         {@html mex}
       </div>
@@ -196,19 +126,12 @@
   .agent-wrap {
     position: relative;
     display: block;
-    min-height: 6rem;
+    min-height: 100%;
   }
 
   .agent {
     color: var(--theme-secondary-text-color);
-    position: fixed;
     display: unset;
     padding-top: 1rem;
-  }
-
-  .scroller-copy {
-    position: relative;
-    height: 10px;
-    width: 100%;
   }
 </style>

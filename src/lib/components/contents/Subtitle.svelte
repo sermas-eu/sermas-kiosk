@@ -12,9 +12,10 @@
   interface mexDto {
     [id: string]: {
       mex: string | null;
-      mexToShow: string[];
+      mexList: string[];
       show: boolean;
       id: string;
+      duration: number | null;
     };
   }
 
@@ -27,7 +28,6 @@
 
   let show: boolean = false;
   let chunkIdToShow: string | null = null;
-  let duration: number | null = null;
   let settings: AppSettings;
   let ref: any = {};
 
@@ -40,8 +40,6 @@
   });
 
   const ev = (ev: AvatarAudioPlaybackStatus) => {
-    console.warn("*** ev", ev);
-
     // TODO remove when ev.chunkid present
     if (Object.entries(mex).length !== 0 && mex.constructor === Object) {
       for (const [key, value] of Object.entries(mex)) {
@@ -52,9 +50,10 @@
     if (ev.chunkId) {
       mex[ev.chunkId] = {
         mex: null,
-        mexToShow: [],
+        mexList: [],
         show: false,
         id: ev.chunkId,
+        duration: ev.duration ? ev.duration : null,
       };
     }
 
@@ -62,23 +61,23 @@
     show = ev.status == "started" ? true : false;
 
     chunkIdToShow = ev.chunkId ? ev.chunkId : null;
-    duration = ev.duration ? ev.duration : null;
-
   };
 
   const renderMarkdown = async (text: string, id?: string) => {
     if (id) {
-      mex[id].mex = DOMPurify.sanitize(await marked.parse(text));
       mex[id].id = id;
       mex[id].show = true;
-      console.warn("*** text", text);
 
       const tmp = text.replace(/([.?!])\s*(?=[A-Z])/g, "$1|").split("|");
       for (let i = 0; i < tmp.length; i++) {
         tmp[i] = DOMPurify.sanitize(await marked.parse(tmp[i]));
       }
-      mex[id].mexToShow = tmp;
-      console.warn("*** mex", mex);
+      mex[id].mexList = tmp;
+      if (mex[id].duration) {
+        startAnimation(mex[id].mexList, mex[id].duration * 1000, id);
+      } else {
+        mex[id].mex = DOMPurify.sanitize(await marked.parse(text));
+      }
     } else {
       mexSimple = DOMPurify.sanitize(await marked.parse(text));
     }
@@ -96,15 +95,33 @@
 
   $: if (actor === "agent" && show && settings.enableAudio) {
     const tmp = chunks?.find((o) => o.chunkId === chunkIdToShow);
-    console.warn("*** tmp", tmp?.content);
 
     if (tmp && tmp.content.chunkId)
       renderMarkdown(tmp.content.text, tmp.content.chunkId);
   }
+  const startAnimation = (mexList: string[], duration: number, id: string) => {
+    const start = new Date();
+    const end = new Date(start.getTime() + duration);
+
+    const interval = setInterval(() => {
+      const now = new Date();
+      const timeElapsed = end.getTime() - now.getTime();
+      const percentage = Math.round(
+        (100 * (duration - timeElapsed)) / duration
+      );
+
+      mex[id].mex = mexList[Math.floor((mexList.length * percentage) / 100)];
+
+      if (timeElapsed < 0) {
+        clearInterval(interval);
+        return;
+      }
+    }, 500);
+  };
 </script>
 
 <span>
-  {#if actor === "agent" && show && chunkIdToShow && mex[chunkIdToShow].show && settings.enableAudio}
+  {#if actor === "agent" && show && chunkIdToShow && mex[chunkIdToShow].show && mex[chunkIdToShow].mex != undefined && settings.enableAudio}
     <div
       id="box"
       class="subtitle-wrap message {actor == 'agent'

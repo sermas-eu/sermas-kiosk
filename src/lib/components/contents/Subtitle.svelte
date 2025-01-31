@@ -68,7 +68,7 @@
       mex[id].id = id;
       mex[id].show = true;
 
-      const tmp = text.replace(/([.?!])\s*(?=[A-Z])/g, "$1|").split("|");
+      const tmp = text.replace(/([.?!:])\s*(?=[A-Z\n])/g, "$1|").split("|");
       for (let i = 0; i < tmp.length; i++) {
         tmp[i] = DOMPurify.sanitize(await marked.parse(tmp[i]));
       }
@@ -135,7 +135,6 @@
             ? 'agent'
             : 'user'}"
         >
-          {chunkIdToShow}
           {@html mex[chunkIdToShow].mex}
         </div>
       </div>

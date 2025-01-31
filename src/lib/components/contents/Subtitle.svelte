@@ -41,6 +41,7 @@
 
   const ev = (ev: AvatarAudioPlaybackStatus) => {
     // TODO remove when ev.chunkid present
+    console.warn("***** SUBTITLES", ev);
 
     if (Object.entries(mex).length !== 0 && mex.constructor === Object) {
       for (const [key, value] of Object.entries(mex)) {

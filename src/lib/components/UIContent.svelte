@@ -7,7 +7,6 @@
     avatarLoadedStore,
   } from "$lib/store";
   import {
-    DEFAULT_AVATAR_LANGUAGE,
     type PlatformAppDto,
     type RepositoryAvatarDto,
     type TextUIContentDto,
@@ -59,8 +58,6 @@
 
   $: if ($appConfigStore) {
     app = $appConfigStore;
-    loadAvatar();
-    loadAvatarGender();
   }
 
   $: if ($appSettingsStore) {
@@ -70,19 +67,9 @@
     enableAudio = $appSettingsStore.enableAudio;
   }
 
-  const loadAvatarGender = async () => {
-    gender = (await toolkit.getAvatarGender()) || "F";
-    return gender;
-  };
-
-  const loadAvatar = async () => {
-    avatar = await toolkit.getAvatarConfig();
-    return avatar;
-  };
-
   const sendToken = () => {
     const iframe = document.getElementById(
-      "navigation-frame"
+      "navigation-frame",
     ) as HTMLIFrameElement;
     const iframeWin = iframe?.contentWindow;
     if (iframeWin) {
@@ -90,7 +77,7 @@
         JSON.stringify({
           appId: toolkit.getAppId(),
           token: toolkit.getToken(),
-        })
+        }),
       );
     }
   };
@@ -112,12 +99,15 @@
   const toggleLoadingDots = (show: boolean) => {
     if (!show) {
       waitingResponse = false;
-      clearTimeout(dotsTimeout);
+      if (dotsTimeout) clearTimeout(dotsTimeout);
       return;
     }
     waitingResponse = true;
     // off after MAX_RESPONSE_WAITING_SEC sec
-    setTimeout(() => toggleLoadingDots(false), MAX_RESPONSE_WAITING_SEC * 1000);
+    dotsTimeout = setTimeout(
+      () => toggleLoadingDots(false),
+      MAX_RESPONSE_WAITING_SEC * 1000,
+    );
   };
 
   onMount(async () => {
@@ -178,7 +168,7 @@
   const openVirtualKeyboard = (
     initValue: string,
     placehoder: string,
-    callback: (res: string) => void
+    callback: (res: string) => void,
   ) => {
     callbackFunc = callback;
     inputValue = initValue;
@@ -193,40 +183,26 @@
 
   const sendChatMessage = async () => {
     sendingMessage = true;
-    try {
-      const gender = await loadAvatarGender();
-      const avatar = await loadAvatar();
-      const chunkId = getChunkId();
-      const settings = toolkit.getSettings().get();
-      await toolkit.getApi().sendChatMessage({
-        appId: toolkit.getAppId(),
-        sessionId: toolkit.getSessionId(),
-        text: chatMessage,
-        messageId,
-        chunkId,
-        language: language || DEFAULT_AVATAR_LANGUAGE,
-        avatar: avatar?.id,
-        gender,
-        llm,
-        ttsEnabled: settings.ttsEnabled,
-      });
+
+    const dialogueMessage = await toolkit.sendChatMessage(chatMessage);
+    if (dialogueMessage) {
       const content: TextUIContentDto = {
+        messageId: dialogueMessage.messageId,
+        chunkId: dialogueMessage.chunkId,
+        appId: dialogueMessage.appId,
         contentType: "text",
         content: { text: chatMessage + " " },
-        messageId,
-        chunkId,
-        appId: toolkit.getAppId(),
         options: {},
       };
       await ui.appendContent("user", content);
       chatMessage = "";
       ui.stopAvatarSpeech(messageId);
-    } catch (e: any) {
-      logger.error(`Error sending chat message, e=${e.message}`);
-    } finally {
-      sendingMessage = false;
-      scrollChat();
+    } else {
+      // send failed
     }
+
+    sendingMessage = false;
+    scrollChat();
   };
 
   const showNavigation = () => {
@@ -434,7 +410,7 @@
               openVirtualKeyboard(
                 chatMessage,
                 "Type something to ask",
-                (result) => (chatMessage = result)
+                (result) => (chatMessage = result),
               )}
             placeholder="Type something to ask"
           />

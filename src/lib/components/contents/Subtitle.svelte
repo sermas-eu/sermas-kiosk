@@ -41,6 +41,7 @@
 
   const ev = (ev: AvatarAudioPlaybackStatus) => {
     // TODO remove when ev.chunkid present
+
     if (Object.entries(mex).length !== 0 && mex.constructor === Object) {
       for (const [key, value] of Object.entries(mex)) {
         mex[key].show = false;
@@ -107,7 +108,7 @@
       const now = new Date();
       const timeElapsed = end.getTime() - now.getTime();
       const percentage = Math.round(
-        (100 * (duration - timeElapsed)) / duration
+        (100 * (duration - timeElapsed)) / duration,
       );
 
       mex[id].mex = mexList[Math.floor((mexList.length * percentage) / 100)];

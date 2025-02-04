@@ -6,18 +6,14 @@
     appSettingsStore,
     avatarLoadedStore,
   } from "$lib/store";
-  import {
-    type PlatformAppDto,
-    type RepositoryAvatarDto,
-    type TextUIContentDto,
-  } from "@sermas/toolkit";
+  import { type PlatformAppDto } from "@sermas/toolkit";
   import { type ChatMessage, type SessionStatus } from "@sermas/toolkit/dto";
   import { Logger, getChunkId } from "@sermas/toolkit/utils";
   import { onDestroy, onMount } from "svelte";
   import AvatarName from "./AvatarName.svelte";
   import Loader from "./Loader.svelte";
-  import VirtualKeyboard from "./VirtualKeyboard.svelte";
   import RenderContent from "./contents/RenderContent.svelte";
+  import ChatBox from "./ChatBox.svelte";
 
   const logger = new Logger("ui");
 
@@ -25,15 +21,9 @@
 
   let history: ChatMessage[] = [];
   let lastMessage: ChatMessage | undefined;
-  let showStopButton = false;
   let sessionOpened: boolean = false;
   let navigationFrameEnabled = false;
 
-  let chatMessage = "";
-  let sendingMessage = false;
-
-  let avatar: RepositoryAvatarDto | undefined;
-  let gender: string | undefined;
   let language: string | undefined;
   let llm: Record<string, string | undefined> | undefined;
   let enableMic: boolean;
@@ -46,11 +36,6 @@
   const MAX_RESPONSE_WAITING_SEC = 15;
   let waitingResponse = false;
   let dotsTimeout: NodeJS.Timeout;
-
-  let showVirtualKeyboard = false;
-  let inputValue = "";
-  let placeholder = "";
-  let callbackFunc: (res: string) => void;
 
   let messageId = getChunkId();
 
@@ -140,10 +125,6 @@
       messageId = getChunkId();
     });
 
-    ui.on("ui.avatar.speaking", (isSpeaking: boolean) => {
-      showStopButton = isSpeaking;
-    });
-
     ui.on("ui.session.changed", (status: SessionStatus) => {
       sessionOpened = status === "started";
       if (!sessionOpened) history = [];
@@ -164,46 +145,6 @@
   onDestroy(async () => {
     await ui.destroy();
   });
-
-  const openVirtualKeyboard = (
-    initValue: string,
-    placehoder: string,
-    callback: (res: string) => void,
-  ) => {
-    callbackFunc = callback;
-    inputValue = initValue;
-    placeholder = placehoder;
-    showVirtualKeyboard = true;
-  };
-
-  const onVirtualKeyboardInput = (ev: CustomEvent) => {
-    showVirtualKeyboard = false;
-    callbackFunc(ev.detail.text);
-  };
-
-  const sendChatMessage = async () => {
-    sendingMessage = true;
-
-    const dialogueMessage = await toolkit.sendChatMessage(chatMessage);
-    if (dialogueMessage) {
-      const content: TextUIContentDto = {
-        messageId: dialogueMessage.messageId,
-        chunkId: dialogueMessage.chunkId,
-        appId: dialogueMessage.appId,
-        contentType: "text",
-        content: { text: chatMessage + " " },
-        options: {},
-      };
-      await ui.appendContent("user", content);
-      chatMessage = "";
-      ui.stopAvatarSpeech(messageId);
-    } else {
-      // send failed
-    }
-
-    sendingMessage = false;
-    scrollChat();
-  };
 
   const showNavigation = () => {
     navigationFrameEnabled = true;
@@ -391,40 +332,12 @@
       <Loader />
     {/if}
     {#if sessionOpened}
-      <div class="chat-input">
-        <button
-          disabled={(enableAudio && !showStopButton) || !enableAudio}
-          class="button is-medium is-primary ml-2 sermas-button"
-          on:click={() => ui.stopAvatarSpeech()}
-        >
-          <span class="icon is-medium">
-            <i class="fas fa-stop"></i>
-          </span>
-        </button>
-        <form on:submit|preventDefault={sendChatMessage} class="input-form">
-          <input
-            id="user-input"
-            class="input is-medium"
-            bind:value={chatMessage}
-            on:focus={(e) =>
-              openVirtualKeyboard(
-                chatMessage,
-                "Type something to ask",
-                (result) => (chatMessage = result),
-              )}
-            placeholder="Type something to ask"
-          />
-          <button
-            id="send-button"
-            class="button is-medium ml-2 is-primary sermas-button {sendingMessage
-              ? 'is-loading'
-              : ''}"
-            type="submit"
-          >
-            <span>Send</span>
-          </button>
-        </form>
-      </div>
+      <ChatBox
+        {messageId}
+        onMessageSent={() => {
+          scrollChat();
+        }}
+      />
     {/if}
     {#if navigationFrameEnabled}
       <div class="navigation-frame">
@@ -439,12 +352,6 @@
         ></iframe>
       </div>
     {/if}
-    <VirtualKeyboard
-      {placeholder}
-      showKeyboard={showVirtualKeyboard}
-      {inputValue}
-      on:virtual-keyboard-input={onVirtualKeyboardInput}
-    />
   </div>
 </span>
 
@@ -509,23 +416,6 @@
   .navigation-frame button {
     position: absolute;
     right: 0;
-  }
-
-  .chat-input {
-    display: flex;
-    flex-direction: row-reverse;
-    justify-content: space-between;
-  }
-
-  .input-form {
-    display: flex;
-    flex-direction: row;
-    flex-grow: 1;
-  }
-
-  .chat-input input {
-    backdrop-filter: blur(10px);
-    background-color: rgba(255, 255, 255, 0.7);
   }
 
   .message {
@@ -634,55 +524,7 @@
     padding-right: 3.7em;
   }
 
-  .loading-dots {
-    /* HTML: <div class="loader"></div> */
-    width: 50px;
-    aspect-ratio: 2;
-    --_g: no-repeat
-      radial-gradient(
-        circle closest-side,
-        var(--theme-primary-bg-color) 90%,
-        #0000
-      );
-    background:
-      var(--_g) 0% 50%,
-      var(--_g) 50% 50%,
-      var(--_g) 100% 50%;
-    background-size: calc(100% / 3) 50%;
-    animation: l3 1s infinite linear;
-  }
-  @keyframes l3 {
-    20% {
-      background-position:
-        0% 0%,
-        50% 50%,
-        100% 50%;
-    }
-    40% {
-      background-position:
-        0% 100%,
-        50% 0%,
-        100% 50%;
-    }
-    60% {
-      background-position:
-        0% 50%,
-        50% 100%,
-        100% 0%;
-    }
-    80% {
-      background-position:
-        0% 50%,
-        50% 50%,
-        100% 100%;
-    }
-  }
-
   @include mobile-view {
-    .chat-input {
-      bottom: 0.5em;
-    }
-
     .ui-content.is-flex {
       width: 100%;
       height: 60%;

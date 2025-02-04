@@ -23,6 +23,7 @@
   export let actor: DialogueActor | null;
   export let chunks: DialogueMessageUIContentDto[] | null;
   export let messageId: string | undefined;
+
   let mex: mexDto = {} as mexDto;
   let mexSimple: string;
 
@@ -32,16 +33,18 @@
   let ref: any = {};
 
   onMount(async () => {
-    emitter.on("avatar.speech", ev);
+    // console.warn("Subtitle content ----> ", content);
+    // console.warn("Subtitle chunks ----> ", chunks);
+    emitter.on("avatar.speech", onAvatarSpeech);
   });
 
   onDestroy(() => {
-    emitter.off("avatar.speech", ev);
+    emitter.off("avatar.speech", onAvatarSpeech);
   });
 
-  const ev = (ev: AvatarAudioPlaybackStatus) => {
+  const onAvatarSpeech = (ev: AvatarAudioPlaybackStatus) => {
     // TODO remove when ev.chunkid present
-    console.warn("***** SUBTITLES", ev);
+    // console.warn("***** SUBTITLES", ev);
 
     if (Object.entries(mex).length !== 0 && mex.constructor === Object) {
       for (const [key, value] of Object.entries(mex)) {
@@ -101,6 +104,7 @@
     if (tmp && tmp.content.chunkId)
       renderMarkdown(tmp.content.text, tmp.content.chunkId);
   }
+
   const startAnimation = (mexList: string[], duration: number, id: string) => {
     const start = new Date();
     const end = new Date(start.getTime() + duration);

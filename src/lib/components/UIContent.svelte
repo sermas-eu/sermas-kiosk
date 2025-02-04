@@ -156,6 +156,7 @@
 </script>
 
 <span>
+  <!-- agent subtitles (left) -->
   {#if lastMessage && $appSettingsStore.subtitlesEnabled && sessionOpened}
     <span id="ui-content-agent" class="ui-content-agent">
       <div
@@ -185,6 +186,8 @@
       </div>
     </span>
   {/if}
+
+  <!-- UI contents (right side) -->
   <div
     id="ui-content"
     class="ui-content is-flex {history.length ? '' : 'is-align-items-center'}
@@ -282,6 +285,7 @@
             {/if}
           {/each}
         {/each}
+
         {#each lastMessage.messages as message, i}
           {#if lastMessage.actor !== "agent" && lastMessage.messages.length === i + 1}
             <div class="subtitle-div">
@@ -331,6 +335,8 @@
     {:else}
       <Loader />
     {/if}
+
+    <!-- chatbox -->
     {#if sessionOpened}
       <ChatBox
         {messageId}
@@ -339,6 +345,8 @@
         }}
       />
     {/if}
+
+    <!-- navigation -->
     {#if navigationFrameEnabled}
       <div class="navigation-frame">
         <button

@@ -55,36 +55,42 @@
       $backgroundImageAndSoundStore.urlImage = `${await toBase64(blob)}`;
     }
   };
+
+  const getUiContent = <T = any,>(t: any) => t as T;
+
+  $: isSubtitle =
+    (subtitle && content.contentType === "dialogue-message") ||
+    (subtitle && content.contentType === "text");
 </script>
 
 <div
   class="ui-content {content.options?.fullscreen === true ? 'fullscreen' : ''} "
 >
-  {#if (subtitle && content.contentType === "dialogue-message") || (subtitle && content.contentType === "text")}
+  <!-- {#if (subtitle && content.contentType === "dialogue-message") || (subtitle && content.contentType === "text")}
     <Subtitle
-      content={content.content}
+      content={getUiContent(content.content)}
       messageId={content.messageId}
       {chunks}
       {actor}
-    />
-  {:else if content.contentType === "dialogue-message"}
-    <DialogueMessage message={content.content} />
+    /> -->
+  {#if content.contentType === "dialogue-message" && !isSubtitle}
+    <DialogueMessage message={getUiContent(content.content)} />
   {:else if content.contentType === "image"}
-    <Image img={content.content} />
+    <Image img={getUiContent(content.content)} />
   {:else if content.contentType === "webpage"}
-    <Webpage content={content.content} />
+    <Webpage content={getUiContent(content.content)} />
   {:else if content.contentType === "email"}
-    <Email content={content.content} />
+    <Email content={getUiContent(content.content)} />
   {:else if content.contentType === "html"}
-    <Html content={content.content} />
+    <Html content={getUiContent(content.content)} />
   {:else if content.contentType === "pdf"}
-    <Webpage content={content.content} />
+    <Webpage content={getUiContent(content.content)} />
   {:else if content.contentType === "link"}
-    <Link content={content.content} />
+    <Link content={getUiContent(content.content)} />
   {:else if content.contentType === "text"}
-    <Text content={content.content} />
+    <Text content={getUiContent(content.content)} />
   {:else if content.contentType === "video"}
-    <Video content={content.content} />
+    <Video content={getUiContent(content.content)} />
   {:else if content.contentType === "object" && content.content?.list && content.content?.list instanceof Array}
     <div class="obj-container">
       {#each content.content.list as cont}
@@ -94,15 +100,18 @@
       {/each}
     </div>
   {:else if content.contentType === "object"}
-    <Object content={content.content} />
+    <Object content={getUiContent(content.content)} />
   {:else if content.contentType === "buttons"}
-    <Buttons content={content.content} metadata={content.metadata} />
+    <Buttons
+      content={getUiContent(content.content)}
+      metadata={content.metadata}
+    />
   {:else if content.contentType === "quiz"}
-    <Quiz content={content.content} metadata={content.metadata} />
+    <Quiz content={getUiContent(content.content)} metadata={content.metadata} />
   {:else if content.contentType === "qrcode-scanner"}
-    <QrCodeScanner content={content.content} metadata={content.metadata} />
+    <QrCodeScanner content={getUiContent(content.content)} />
   {:else if content.contentType === "background-audio"}
-    <BackgroundAudio content={content.content} />
+    <BackgroundAudio content={getUiContent(content.content)} />
   {/if}
 </div>
 

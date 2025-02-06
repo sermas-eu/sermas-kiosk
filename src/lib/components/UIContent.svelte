@@ -11,13 +11,19 @@
     type RepositoryAvatarDto,
     type TextUIContentDto,
   } from "@sermas/toolkit";
-  import { type ChatMessage, type SessionStatus } from "@sermas/toolkit/dto";
+  import {
+    type SubtitleMessage,
+    type ChatMessage,
+    type SessionStatus,
+  } from "@sermas/toolkit/dto";
   import { Logger, getChunkId } from "@sermas/toolkit/utils";
   import { onDestroy, onMount } from "svelte";
   import AvatarName from "./AvatarName.svelte";
   import Loader from "./Loader.svelte";
   import VirtualKeyboard from "./VirtualKeyboard.svelte";
   import RenderContent from "./contents/RenderContent.svelte";
+  import Subtitle from "./contents/Subtitle.svelte";
+  import { emitter } from "@sermas/toolkit/events";
 
   const logger = new Logger("ui");
 
@@ -56,6 +62,9 @@
 
   let compRef: any = {};
 
+  let subtitle: SubtitleMessage;
+  let showSubsBlock: boolean = false;
+
   $: if ($appConfigStore) {
     app = $appConfigStore;
   }
@@ -66,21 +75,6 @@
     enableMic = $appSettingsStore.enableMic;
     enableAudio = $appSettingsStore.enableAudio;
   }
-
-  const sendToken = () => {
-    const iframe = document.getElementById(
-      "navigation-frame",
-    ) as HTMLIFrameElement;
-    const iframeWin = iframe?.contentWindow;
-    if (iframeWin) {
-      iframeWin?.postMessage(
-        JSON.stringify({
-          appId: toolkit.getAppId(),
-          token: toolkit.getToken(),
-        }),
-      );
-    }
-  };
 
   const scrollChat = () => {
     setTimeout(() => {
@@ -106,7 +100,7 @@
     // off after MAX_RESPONSE_WAITING_SEC sec
     dotsTimeout = setTimeout(
       () => toggleLoadingDots(false),
-      MAX_RESPONSE_WAITING_SEC * 1000,
+      MAX_RESPONSE_WAITING_SEC * 1000
     );
   };
 
@@ -159,16 +153,30 @@
         }
       }
     });
+
+    emitter.on("avatar.subtitle", subsEv);
+    emitter.on("avatar.subtitle.clean", showSubs);
   });
 
   onDestroy(async () => {
     await ui.destroy();
+    emitter.off("avatar.subtitle", subsEv);
+    emitter.off("avatar.subtitle.clean", showSubs);
   });
+
+  const subsEv = (ev: SubtitleMessage) => {
+    showSubsBlock = true;
+    subtitle = ev;
+  };
+
+  const showSubs = (ev: boolean) => {
+    showSubsBlock = !ev;
+  };
 
   const openVirtualKeyboard = (
     initValue: string,
     placehoder: string,
-    callback: (res: string) => void,
+    callback: (res: string) => void
   ) => {
     callbackFunc = callback;
     inputValue = initValue;
@@ -215,27 +223,18 @@
 </script>
 
 <span>
-  {#if lastMessage && $appSettingsStore.subtitlesEnabled && sessionOpened}
+  {#if subtitle && $appSettingsStore.subtitlesEnabled && sessionOpened}
     <span id="ui-content-agent" class="ui-content-agent">
       <div
         class="is-flex chat-history chat-history-subs chat-history-agent-subs"
       >
-        {#each lastMessage.messages as message}
-          {#if lastMessage.actor === "agent" && message.contentType === "dialogue-message"}
-            <div
-              class="subtitle-div"
-              id="subtitle-{message.messageId || 'none'}"
-            >
-              <span class="subtitle-box agent-box">
-                <RenderContent
-                  content={message}
-                  subtitle={$appSettingsStore.subtitlesEnabled}
-                  actor={lastMessage.actor}
-                />
-              </span>
-            </div>
-          {/if}
-        {/each}
+        {#if showSubsBlock}
+          <div class="subtitle-div" id="subtitle-{subtitle.id || 'none'}">
+            <span class="subtitle-box agent-box">
+              <Subtitle mex={subtitle.mex} id={subtitle.id} actor="agent" />
+            </span>
+          </div>
+        {/if}
         {#if waitingResponse}
           <div class="is-flex is-justify-content-center">
             <div class="loading-dots"></div>
@@ -410,7 +409,7 @@
               openVirtualKeyboard(
                 chatMessage,
                 "Type something to ask",
-                (result) => (chatMessage = result),
+                (result) => (chatMessage = result)
               )}
             placeholder="Type something to ask"
           />

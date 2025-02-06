@@ -1,8 +1,5 @@
 <script lang="ts">
-  import {
-    type DialogueMessageUIContentDto,
-    type UIContentDto,
-  } from "@sermas/toolkit";
+  import { type UIContentDto } from "@sermas/toolkit";
   import DialogueMessage from "./DialogueMessage.svelte";
   import Email from "./Email.svelte";
   import Html from "./Html.svelte";
@@ -15,20 +12,16 @@
   import Buttons from "./Buttons.svelte";
   import Quiz from "./Quiz.svelte";
   import QrCodeScanner from "./QrCodeScanner.svelte";
-  import Subtitle from "./Subtitle.svelte";
-  import { type DialogueActor } from "@sermas/toolkit/dto";
   import BackgroundAudio from "./BackgroundAudio.svelte";
   import { backgroundImageAndSoundStore } from "$lib/store";
   import { toolkit } from "$lib";
   import { toBase64 } from "$lib/util";
+  import Subtitle from "./Subtitle.svelte";
+  import { type DialogueActor } from "@sermas/toolkit/dto";
 
   export let content: UIContentDto;
   export let subtitle: boolean = false;
   export let actor: DialogueActor | null = null;
-
-  const chunks: DialogueMessageUIContentDto[] = content.metadata?.chunks
-    ? (content.metadata?.chunks as unknown as DialogueMessageUIContentDto[])
-    : [];
 
   $: if (
     content.isWelcome &&
@@ -60,13 +53,8 @@
 <div
   class="ui-content {content.options?.fullscreen === true ? 'fullscreen' : ''} "
 >
-  {#if (subtitle && content.contentType === "dialogue-message") || (subtitle && content.contentType === "text")}
-    <Subtitle
-      content={content.content}
-      messageId={content.messageId}
-      {chunks}
-      {actor}
-    />
+  {#if subtitle && content.contentType === "text" && content.messageId && content.content.text && actor === "user"}
+    <Subtitle mex={content.content.text} id={content.messageId} {actor} />
   {:else if content.contentType === "dialogue-message"}
     <DialogueMessage message={content.content} />
   {:else if content.contentType === "image"}

@@ -53,7 +53,7 @@
 <div
   class="ui-content {content.options?.fullscreen === true ? 'fullscreen' : ''} "
 >
-  {#if subtitle && content.contentType === "text" && content.messageId && content.content.text && actor === "user"}
+  {#if (subtitle && content.contentType === "text" && content.messageId && content.content.text && actor === "user") || (subtitle && content.contentType === "dialogue-message" && content.messageId && content.content.text && actor === "user")}
     <Subtitle mex={content.content.text} id={content.messageId} {actor} />
   {:else if content.contentType === "dialogue-message"}
     <DialogueMessage message={content.content} />

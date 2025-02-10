@@ -412,6 +412,7 @@
                 (result) => (chatMessage = result)
               )}
             placeholder="Type something to ask"
+            autocomplete="off"
           />
           <button
             id="send-button"

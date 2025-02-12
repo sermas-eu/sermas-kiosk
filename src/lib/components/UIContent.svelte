@@ -298,48 +298,50 @@
       </div>
     {:else if lastMessage && $appSettingsStore.subtitlesEnabled && sessionOpened}
       <div class="is-flex chat-history chat-history-subs">
-        {#each history as chatMessage, index}
-          {#each chatMessage.messages as message, i}
-            {#if chatMessage.actor === "agent" && message.contentType !== "dialogue-message"}
-              <div
-                class="subtitle-div {chatMessage.actor === 'agent' &&
-                message.contentType == 'buttons'
-                  ? 'button-div'
-                  : ''}"
-                bind:this={compRef[
-                  message.options?.clearScreen
-                    ? message.messageId
-                      ? message.messageId
-                      : String(Math.random())
-                    : "leave"
-                ]}
-              >
-                <span
-                  class="subtitle-box {chatMessage.actor === 'agent'
-                    ? 'subs-message'
-                    : ''}
-                    {message.contentType === 'background-audio' ||
-                  (message.contentType === 'image' &&
-                    message.content.isBackground)
-                    ? 'display-content'
+        <span class="scroll-span">
+          {#each history as chatMessage, index}
+            {#each chatMessage.messages as message, i}
+              {#if chatMessage.actor === "agent" && message.contentType !== "dialogue-message"}
+                <div
+                  class="subtitle-div {chatMessage.actor === 'agent' &&
+                  message.contentType == 'buttons'
+                    ? 'button-div'
                     : ''}"
+                  bind:this={compRef[
+                    message.options?.clearScreen
+                      ? message.messageId
+                        ? message.messageId
+                        : String(Math.random())
+                      : "leave"
+                  ]}
                 >
                   <span
-                    class="subtitle-span {chatMessage.actor === 'agent'
-                      ? 'button'
+                    class="subtitle-box {chatMessage.actor === 'agent'
+                      ? 'subs-message'
+                      : ''}
+                    {message.contentType === 'background-audio' ||
+                    (message.contentType === 'image' &&
+                      message.content.isBackground)
+                      ? 'display-content'
                       : ''}"
                   >
-                    <RenderContent
-                      content={message}
-                      subtitle={$appSettingsStore.subtitlesEnabled}
-                      actor={chatMessage.actor}
-                    />
+                    <span
+                      class="subtitle-span {chatMessage.actor === 'agent'
+                        ? 'button'
+                        : ''}"
+                    >
+                      <RenderContent
+                        content={message}
+                        subtitle={$appSettingsStore.subtitlesEnabled}
+                        actor={chatMessage.actor}
+                      />
+                    </span>
                   </span>
-                </span>
-              </div>
-            {/if}
+                </div>
+              {/if}
+            {/each}
           {/each}
-        {/each}
+        </span>
         {#each lastMessage.messages as message, i}
           {#if lastMessage.actor !== "agent" && lastMessage.messages.length === i + 1}
             <div class="subtitle-div">
@@ -487,6 +489,16 @@
     height: 100%;
     flex-direction: column;
     justify-content: end;
+  }
+
+  .scroll-span {
+    // flex-grow: 1;
+    // flex-wrap: nowrap;
+    min-height: 0;
+    overflow: scroll;
+    scrollbar-width: auto;
+    display: flex;
+    flex-direction: column;
   }
 
   .navigation-frame {

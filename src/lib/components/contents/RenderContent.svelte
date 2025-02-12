@@ -107,6 +107,7 @@
     display: flex;
     flex-direction: row;
     justify-content: space-between;
+    aspect-ratio: 16/9;
   }
   .obj-list {
     flex: auto;

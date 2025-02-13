@@ -13,41 +13,12 @@
   import Quiz from "./Quiz.svelte";
   import QrCodeScanner from "./QrCodeScanner.svelte";
   import BackgroundAudio from "./BackgroundAudio.svelte";
-  import { backgroundImageAndSoundStore } from "$lib/store";
-  import { toolkit } from "$lib";
-  import { toBase64 } from "$lib/util";
   import Subtitle from "./Subtitle.svelte";
   import { type DialogueActor } from "@sermas/toolkit/dto";
 
   export let content: UIContentDto;
   export let subtitle: boolean = false;
   export let actor: DialogueActor | null = null;
-
-  $: if (
-    content.isWelcome &&
-    $backgroundImageAndSoundStore.image &&
-    $backgroundImageAndSoundStore.image === "stream"
-  ) {
-    $backgroundImageAndSoundStore.image =
-      $backgroundImageAndSoundStore.defaultImage;
-
-    if ($backgroundImageAndSoundStore.defaultImage) {
-      setBackground($backgroundImageAndSoundStore.defaultImage);
-    }
-    $backgroundImageAndSoundStore.urlImage = "";
-    $backgroundImageAndSoundStore.defaultImage = undefined;
-    $backgroundImageAndSoundStore.messageImage = false;
-    $backgroundImageAndSoundStore.isBackgroundAudioPlaying = false;
-  }
-  const setBackground = async (background: string) => {
-    let config = await toolkit.getAssetConfig("backgrounds", background);
-    if (!config) return;
-
-    const blob = await toolkit.getApi().getAsset(config.type, config.id);
-    if (blob) {
-      $backgroundImageAndSoundStore.urlImage = `${await toBase64(blob)}`;
-    }
-  };
 </script>
 
 <div

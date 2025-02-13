@@ -5,6 +5,7 @@
     appConfigStore,
     appSettingsStore,
     avatarLoadedStore,
+    backgroundImageAndSoundStore,
   } from "$lib/store";
   import {
     type PlatformAppDto,
@@ -24,6 +25,7 @@
   import RenderContent from "./contents/RenderContent.svelte";
   import Subtitle from "./contents/Subtitle.svelte";
   import { emitter } from "@sermas/toolkit/events";
+  import { toBase64 } from "$lib/util";
 
   const logger = new Logger("ui");
 
@@ -132,7 +134,40 @@
       scrollChat();
       // messageId must change every time the avatar "interrupts" the conversation
       messageId = getChunkId();
+
+      if (
+        lastMessage &&
+        lastMessage.actor == "agent" &&
+        lastMessage.messages.length
+      ) {
+        if (
+          lastMessage.messages.filter((m) => m.isWelcome === true).length &&
+          $backgroundImageAndSoundStore.image &&
+          $backgroundImageAndSoundStore.image === "stream"
+        ) {
+          $backgroundImageAndSoundStore.image =
+            $backgroundImageAndSoundStore.defaultImage;
+
+          if ($backgroundImageAndSoundStore.defaultImage) {
+            setBackground($backgroundImageAndSoundStore.defaultImage);
+          }
+          $backgroundImageAndSoundStore.urlImage = "";
+          $backgroundImageAndSoundStore.defaultImage = undefined;
+          $backgroundImageAndSoundStore.messageImage = false;
+          $backgroundImageAndSoundStore.isBackgroundAudioPlaying = false;
+        }
+      }
     });
+
+    const setBackground = async (background: string) => {
+      let config = await toolkit.getAssetConfig("backgrounds", background);
+      if (!config) return;
+
+      const blob = await toolkit.getApi().getAsset(config.type, config.id);
+      if (blob) {
+        $backgroundImageAndSoundStore.urlImage = `${await toBase64(blob)}`;
+      }
+    };
 
     ui.on("ui.avatar.speaking", (isSpeaking: boolean) => {
       showStopButton = isSpeaking;

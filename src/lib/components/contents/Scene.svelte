@@ -8,7 +8,14 @@
   export let url: string;
 </script>
 
-<T.PerspectiveCamera makeDefault position={[5, 2, 5]} fov={25}>
+<T.PerspectiveCamera
+  makeDefault
+  position={[5, 5, 5]}
+  oncreate={(ref) => {
+    ref.lookAt(0, 1, 0);
+  }}
+  fov={25}
+>
   <OrbitControls autoRotate enableDamping />
 </T.PerspectiveCamera>
 

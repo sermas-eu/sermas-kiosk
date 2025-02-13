@@ -114,7 +114,7 @@
   .three-d {
     position: relative;
     width: 99%;
-    min-width: 150px;
+    min-width: 200px;
     min-height: 200px;
   }
 </style>

@@ -103,14 +103,15 @@
     left: 0;
   }
   .obj-container {
-    overflow: hidden;
+    overflow: visible;
     display: flex;
     flex-direction: row;
     justify-content: space-between;
     aspect-ratio: 16/9;
+    flex-wrap: wrap;
   }
   .obj-list {
-    flex: auto;
+    flex: 1;
   }
   .ui-content {
     display: inherit;

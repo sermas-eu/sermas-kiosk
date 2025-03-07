@@ -342,13 +342,15 @@
                   message.contentType == 'buttons'
                     ? 'button-div'
                     : ''}"
-                  bind:this={compRef[
-                    message.options?.clearScreen
-                      ? message.messageId
+                  bind:this={
+                    compRef[
+                      message.options?.clearScreen
                         ? message.messageId
-                        : String(Math.random())
-                      : "leave"
-                  ]}
+                          ? message.messageId
+                          : String(Math.random())
+                        : "leave"
+                    ]
+                  }
                 >
                   <span
                     class="subtitle-box {chatMessage.actor === 'agent'
@@ -530,7 +532,7 @@
     // flex-grow: 1;
     // flex-wrap: nowrap;
     min-height: 0;
-    overflow: scroll;
+    overflow: hidden scroll;
     scrollbar-width: auto;
     display: flex;
     flex-direction: column;

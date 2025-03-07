@@ -34,16 +34,28 @@
 
 <div class="quiz">
   <div class="quiz-question">{content.question}</div>
-  {#each content.answers as a, idx}
-    <div class="quiz-answer">
-      <button
-        on:click={() => clicked(a, idx)}
-        class="button is-multiline is-primary sermas-button"
-      >
-        {a.answer}
-      </button>
-    </div>
-  {/each}
+  <span class={content.answers[0].answerImage ? "image-wrap" : ""}>
+    {#each content.answers as a, idx}
+      {#if a.answerImage}
+        <button on:click={() => clicked(a, idx)} class="image-button">
+          <img
+            src={a.answerImage.src}
+            alt={a.answerImage.alt}
+            style="max-width:100%;"
+          />
+        </button>
+      {:else}
+        <div class="quiz-answer">
+          <button
+            on:click={() => clicked(a, idx)}
+            class="button is-multiline is-primary sermas-button"
+          >
+            {a.answer}
+          </button>
+        </div>
+      {/if}
+    {/each}
+  </span>
 </div>
 
 <style lang="scss">
@@ -75,5 +87,22 @@
     .quiz {
       width: 100%;
     }
+  }
+
+  .image-wrap {
+    display: flex;
+    flex-wrap: wrap;
+    flex-direction: row;
+  }
+
+  .image-button {
+    max-width: 31%;
+    flex: 1 0 33%;
+    margin: 5px;
+    max-height: 200px;
+    cursor: pointer;
+    padding: 0;
+    border: none;
+    background: none;
   }
 </style>

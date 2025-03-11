@@ -73,6 +73,13 @@
   const onSettings = (settings: AppSettings) => {
     appSettingsStore.set(settings);
     loadTheme(settings);
+    const sessionId = toolkit.getSessionId() || $sessionIdStore;
+    if (!sessionId) return;
+    toolkit.getApi().updateSession({
+      appId: toolkit.getAppId(),
+      sessionId,
+      settings
+    } as any);
   };
 
   const onFailure = (e: ErrorEventDto) => {

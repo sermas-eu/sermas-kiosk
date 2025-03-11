@@ -41,8 +41,8 @@
 	"dependencies": {
 		"@ricky0123/vad-web": "^0.0.19",
 		"@sermas/api-client": "^1.0.0-alpha.61",
-		"@sermas/sermas-toolkit-node-sdk": "^1.0.0-alpha.92",
 		"@sermas/toolkit": "^1.0.0-alpha.176",
+		"@sermas/sermas-toolkit-node-sdk": "^1.0.0-alpha.93",
 		"@sveltejs/adapter-node": "^1.3.1",
 		"@sveltejs/adapter-static": "^2.0.2",
 		"@threlte/core": "^7.3.1",
@@ -55,6 +55,7 @@
 		"dotenv": "^16.3.1",
 		"kioskboard": "^2.3.0",
 		"marked": "^12.0.2",
+		"new-github-issue-url": "^1.1.0",
 		"svelte-icons": "^2.1.0",
 		"three": "^0.171.0"
 	}

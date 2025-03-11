@@ -11,6 +11,8 @@
   import MdClose from "svelte-icons/md/MdClose.svelte";
   import FaVrCardboard from "svelte-icons/fa/FaVrCardboard.svelte";
 
+  import newGithubIssueUrl from "new-github-issue-url";
+
   import { toolkit } from "$lib";
   import {
     appConfigStore,
@@ -71,7 +73,7 @@
         function (err: any) {
           logger.error(`Could not copy text: ${text} [${err.message}]`);
           hasCopied = "copy failed";
-        }
+        },
       )
       .finally(() => {
         setTimeout(() => {
@@ -222,16 +224,45 @@
   const openGithubIssue = async (sessionId: string) => {
     const date = new Date();
     const insertDate = `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}`;
-    const project = settings.githubRepository
-      ? settings.githubRepository
-      : `pilots-${toolkit.getAppId()}`;
 
-    window
-      .open(
-        `https://github.com/sermas-eu/${project}/issues/new?labels=bug&title=New+bug+${insertDate}+SessionId+reference+${sessionId}&template=bug_report.md`,
-        "_blank"
-      )
-      ?.focus();
+    const isPilot = ["poa", "asa", "ra"].includes(toolkit.getAppId());
+    const repo = settings.githubRepository
+      ? settings.githubRepository
+      : isPilot
+        ? `pilots-${toolkit.getAppId()}`
+        : "sermas-kiosk";
+
+    const url = newGithubIssueUrl({
+      user: "sermas-eu",
+      repo,
+      labels: ["bug"],
+      title: "",
+      body: `**Describe the bug**
+A clear and concise description of what the bug is.
+
+**To Reproduce**
+Steps to reproduce the behavior:
+1. Go to '...'
+2. Click on '....'
+3. Scroll down to '....'
+4. See error
+
+**Expected behavior**
+A clear and concise description of what you expected to happen.
+
+**Screenshots**
+If applicable, add screenshots to help explain your problem.
+
+**References**
+- date: ${insertDate}
+- sessionId: ${sessionId}
+- version: ${version}
+- ref: ${window.location.toString()}
+- browser: ${navigator.userAgent}
+`,
+    });
+
+    window.open(url, "_blank")?.focus();
   };
 </script>
 

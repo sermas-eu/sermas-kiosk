@@ -19,3 +19,5 @@ services:
     volumes:
       - ./:/app
       - ../sermas-toolkit-web:/sermas-toolkit-web
+    ports:
+      - 9228:9228

@@ -11,7 +11,7 @@
 		"url": "https://github.com/sermas-eu/sermas-kiosk.git"
 	},
 	"scripts": {
-		"dev": "NODE_ENV=development vite dev --host 0.0.0.0 --port 3000",
+		"dev": "NODE_ENV=development NODE_OPTIONS='--inspect=0.0.0.0:9228' vite dev --debug --host 0.0.0.0 --port 3000",
 		"build": "vite build",
 		"preview": "vite preview",
 		"check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",

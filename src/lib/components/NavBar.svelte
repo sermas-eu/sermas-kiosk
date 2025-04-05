@@ -32,6 +32,8 @@
   import { onDestroy, onMount } from "svelte";
   import sermasLogo from "$lib/assets/images/sermas-logo-white.svg";
   import { sendStatus } from "@sermas/toolkit/events";
+  import Navigation from "./navbar/Navigation.svelte";
+  import Impressum from "./navbar/Impressum.svelte";
 
   let app: PlatformAppDto | undefined;
   let login: boolean;
@@ -361,323 +363,335 @@ If applicable, add screenshots to help explain your problem.
     </div>
 
     <nav class={!showMenu ? "hidden" : ""}>
-      <aside class="menu">
-        <p class="menu-label">General</p>
-        <ul class="menu-list">
-          <!-- <li><a>TODO Intro</a></li>
-          <li><a>TODO Free Chat</a></li> -->
-          <!-- <hr class="navbar-divider"> -->
-          <li class="list">
-            <a
-              title="Open settings"
-              href="#"
-              on:click|preventDefault={() => (showSettings = !showSettings)}
-              on:keydown|preventDefault={() => (showSettings = !showSettings)}
-              class="menu-item-w-icon {showSettings ? 'is-active' : ''}"
-            >
-              <span class="icon">
-                <IoMdSettings />
-              </span>
-              <span style="margin-left:0.5em;"> Settings </span>
-            </a>
-            {#if showSettings}
-              <div class="controls">
-                <ul class="">
-                  <li>
-                    <span class="li-item">
-                      <input
-                        type="checkbox"
-                        bind:checked={settings.subtitlesEnabled}
-                        on:change={setSubtitlesEnabled}
-                      />
-                      Show subtitles
-                    </span>
-                    <span class="li-item">
-                      <input
-                        type="checkbox"
-                        bind:checked={settings.virtualKeyboardEnabled}
-                        on:change={setVirtualKeyboardEnabled}
-                      />
-                      Enable Virtual keyboard
-                    </span>
-                    <span class="li-item">
-                      <span> Background </span>
-                      <select
-                        bind:value={settings.background}
-                        on:change={setBackground}
-                      >
-                        {#each repository?.backgrounds || {} as background}
-                          <option value={background?.id}
-                            >{background.name}</option
-                          >
-                        {/each}
-                      </select>
-                    </span>
-                  </li>
+      <div class="nav-content">
+        <Navigation />
+        <Impressum />
 
-                  <li>
-                    <span class="li-item">
-                      <span> Language </span>
-                      <select
-                        bind:value={settings.language}
-                        on:change={setLanguage}
-                      >
-                        {#each Object.keys(supportedLanguages) as key}
-                          <option value={key}>{supportedLanguages[key]}</option>
-                        {/each}
-                      </select>
-                    </span>
-                    <span class="li-item">
-                      {#each Object.entries(settings.llm || {}) as [tag, llmService]}
-                        {#if tag === "chat" || settings.devMode}
-                          <span> Large Language Model (LLM)</span>
-                          <select
-                            bind:value={settings.llm[tag]}
-                            on:change={() => setLLM(tag, llmService)}
-                          >
-                            <option value="" selected={!llmService}>
-                              default
-                            </option>
-                            {#each toolkit.getAvailableModels() as key}
-                              <option value={key} selected={llmService === key}>
-                                {key}
-                              </option>
-                            {/each}
-                          </select>
-                        {/if}
-                      {/each}
-                    </span>
-                    <span class="li-item">
-                      <span> Avatar </span>
-                      <select
-                        bind:value={settings.avatar}
-                        on:change={setModelName}
-                      >
-                        {#each repository?.avatars || [].sort() as avatar}
-                          <option value={avatar.id}>
-                            {avatar.name}
-                          </option>
-                        {/each}
-                      </select>
-                      <div class="row-container mt-1">
-                        <input
-                          class="rpm-url pl-1 mr-1 {rpmUrl != ''
-                            ? 'text-black'
-                            : ''}"
-                          bind:value={rpmUrl}
-                          placeholder="or paste RPM url"
-                        />
-                        <select
-                          class="pl-2 mr-1 gender"
-                          placeholder="Gender"
-                          bind:value={rpmGender}
-                        >
-                          <option value="F" selected>F</option>
-                          <option value="M">M</option>
-                        </select>
-                        {#if settings.rpmUrl == ""}
-                          <button
-                            class="load-button"
-                            disabled={rpmUrl == ""}
-                            on:click={() => setRPMUrl(rpmUrl)}>Load</button
-                          >
-                        {:else}
-                          <button on:click={() => setRPMUrl("")}>Unload</button>
-                        {/if}
-                      </div>
-                    </span>
-                    <span class="li-item">
-                      <span> Interaction start </span>
-                      <select
-                        bind:value={settings.interactionStart}
-                        on:change={setInteractionStart}
-                      >
-                        <option value="on-load">On load</option>
-                        <option value="touch">On touch</option>
-                        <option value="speak">On speak</option>
-                        <option value="intent-detection"
-                          >On intent detection (with Kinect)</option
-                        >
-                      </select>
-                    </span>
-                  </li>
-
-                  {#if $sessionIdStore}
+        <aside class="menu">
+          <p class="menu-label">General</p>
+          <ul class="menu-list">
+            <!-- <li><a>TODO Intro</a></li>
+            <li><a>TODO Free Chat</a></li> -->
+            <!-- <hr class="navbar-divider"> -->
+            <li class="list">
+              <a
+                title="Open settings"
+                href="#"
+                on:click|preventDefault={() => (showSettings = !showSettings)}
+                on:keydown|preventDefault={() => (showSettings = !showSettings)}
+                class="menu-item-w-icon {showSettings ? 'is-active' : ''}"
+              >
+                <span class="icon">
+                  <IoMdSettings />
+                </span>
+                <span style="margin-left:0.5em;"> Settings </span>
+              </a>
+              {#if showSettings}
+                <div class="controls">
+                  <ul class="">
                     <li>
-                      <span>
-                        <a
-                          href="#"
-                          class="has-text-grey-lighter a-no-padding"
-                          title={$sessionIdStore}
-                          on:click={(e) => copyClipboard($sessionIdStore)}
-                        >
-                          Copy Session ID
-                          <b class="has-text-white-ter">
-                            {hasCopied}
-                          </b>
-                        </a>
-                      </span>
-                      <span>
-                        <a
-                          href="#"
-                          class="has-text-grey-lighter a-no-padding"
-                          title="Open Issue"
-                          on:click={(e) => openGithubIssue($sessionIdStore)}
-                        >
-                          Open Github Issue
-                        </a>
-                      </span>
-                      <span>
-                        <a
-                          href="/{toolkit.getAppId()}/{$sessionIdStore}/stats"
-                          class="has-text-grey-ter a-no-padding"
-                          title="View stats"
-                          target="_blank"
-                          on:click={(e) => copyClipboard($sessionIdStore)}
-                        >
-                          Show statistics
-                        </a>
-                      </span>
-                    </li>
-                  {/if}
-
-                  {#if settings.devMode}
-                    <li class="menu-title">
-                      Development settings
-
                       <span class="li-item">
                         <input
                           type="checkbox"
-                          bind:checked={settings.enableMic}
+                          bind:checked={settings.subtitlesEnabled}
+                          on:change={setSubtitlesEnabled}
                         />
-                        Toggle Microphone
+                        Show subtitles
                       </span>
-                    </li>
-
-                    <li class="menu-title">
-                      Detectors
-
                       <span class="li-item">
                         <input
                           type="checkbox"
-                          bind:checked={settings.enableVideoDetection}
+                          bind:checked={settings.virtualKeyboardEnabled}
+                          on:change={setVirtualKeyboardEnabled}
                         />
-                        Toggle Video Detection
+                        Enable Virtual keyboard
                       </span>
-
                       <span class="li-item">
-                        <input
-                          type="checkbox"
-                          bind:checked={settings.showVideo}
-                          disabled={!settings.enableVideoDetection}
-                        />
-                        Toggle Video Rendering
-                      </span>
-
-                      <span class="li-item">
-                        <input
-                          type="checkbox"
-                          bind:checked={settings.enableMirrorMode}
-                          disabled={!settings.enableVideoDetection ||
-                            !settings.enableAnimation}
-                        />
-                        Mirror mode (holistic v1)
-                      </span>
-
-                      <span class="li-item">
-                        <input
-                          type="checkbox"
-                          bind:checked={settings.detectorHuman}
-                          disabled={!settings.enableVideoDetection}
-                        />
-                        Toggle Emotion (human)
-                      </span>
-
-                      <span class="li-item">
-                        <input
-                          type="checkbox"
-                          bind:checked={settings.qrcode}
-                          disabled={!settings.enableVideoDetection}
-                        />
-                        Toggle Qrcode (zbar)
-                      </span>
-
-                      <span class="li-item">
-                        <input
-                          type="checkbox"
-                          bind:checked={settings.detectorFaceLandmarker}
-                          disabled={!settings.enableVideoDetection}
-                        />
-                        Toggle Face mapping (faceLandmark)
-                      </span>
-                    </li>
-
-                    <li class="menu-title">
-                      Avatar
-
-                      <span class="li-item">
-                        <input
-                          type="checkbox"
-                          bind:checked={settings.enableAvatar}
-                        />
-                        Toggle Avatar
-                      </span>
-
-                      <span class="li-item">
-                        <input
-                          type="checkbox"
-                          bind:checked={settings.enableAnimation}
-                        />
-                        Toggle Animation
-                      </span>
-
-                      {#if settings && settings.animationList && settings.animationList.length}
-                        <span class="li-item">
-                          <span> Play Animation </span>
-                          <select
-                            bind:value={settings.animation}
-                            on:change={setAnimation}
-                            placeholder="Animation"
-                          >
-                            {#each settings.animationList as name}
-                              <option value={name}>{name}</option>
-                            {/each}
-                          </select>
-                        </span>
-                      {/if}
-
-                      <span class="li-item">
-                        <span> Face </span>
+                        <span> Background </span>
                         <select
-                          bind:value={settings.testFace}
-                          on:change={setFace}
+                          bind:value={settings.background}
+                          on:change={setBackground}
                         >
-                          {#each facesList as name}
-                            <option value={name}>{name}</option>
+                          {#each repository?.backgrounds || {} as background}
+                            <option value={background?.id}
+                              >{background.name}</option
+                            >
                           {/each}
                         </select>
                       </span>
                     </li>
-                  {/if}
-                </ul>
-              </div>
-            {/if}
-            {#if login}
-              <a
-                title="logout"
-                href="#"
-                on:click|preventDefault={logout}
-                class="menu-item-w-icon"
-              >
-                <span class="icon">
-                  <IoMdLogOut />
-                </span>
-                <span style="margin-left:0.5em;"> Logout </span>
-              </a>
-            {/if}
-          </li>
-        </ul>
-      </aside>
+
+                    <li>
+                      <span class="li-item">
+                        <span> Language </span>
+                        <select
+                          bind:value={settings.language}
+                          on:change={setLanguage}
+                        >
+                          {#each Object.keys(supportedLanguages) as key}
+                            <option value={key}
+                              >{supportedLanguages[key]}</option
+                            >
+                          {/each}
+                        </select>
+                      </span>
+                      <span class="li-item">
+                        {#each Object.entries(settings.llm || {}) as [tag, llmService]}
+                          {#if tag === "chat" || settings.devMode}
+                            <span> Large Language Model (LLM)</span>
+                            <select
+                              bind:value={settings.llm[tag]}
+                              on:change={() => setLLM(tag, llmService)}
+                            >
+                              <option value="" selected={!llmService}>
+                                default
+                              </option>
+                              {#each toolkit.getAvailableModels() as key}
+                                <option
+                                  value={key}
+                                  selected={llmService === key}
+                                >
+                                  {key}
+                                </option>
+                              {/each}
+                            </select>
+                          {/if}
+                        {/each}
+                      </span>
+                      <span class="li-item">
+                        <span> Avatar </span>
+                        <select
+                          bind:value={settings.avatar}
+                          on:change={setModelName}
+                        >
+                          {#each repository?.avatars || [].sort() as avatar}
+                            <option value={avatar.id}>
+                              {avatar.name}
+                            </option>
+                          {/each}
+                        </select>
+                        <div class="row-container mt-1">
+                          <input
+                            class="rpm-url pl-1 mr-1 {rpmUrl != ''
+                              ? 'text-black'
+                              : ''}"
+                            bind:value={rpmUrl}
+                            placeholder="or paste RPM url"
+                          />
+                          <select
+                            class="pl-2 mr-1 gender"
+                            placeholder="Gender"
+                            bind:value={rpmGender}
+                          >
+                            <option value="F" selected>F</option>
+                            <option value="M">M</option>
+                          </select>
+                          {#if settings.rpmUrl == ""}
+                            <button
+                              class="load-button"
+                              disabled={rpmUrl == ""}
+                              on:click={() => setRPMUrl(rpmUrl)}>Load</button
+                            >
+                          {:else}
+                            <button on:click={() => setRPMUrl("")}
+                              >Unload</button
+                            >
+                          {/if}
+                        </div>
+                      </span>
+                      <span class="li-item">
+                        <span> Interaction start </span>
+                        <select
+                          bind:value={settings.interactionStart}
+                          on:change={setInteractionStart}
+                        >
+                          <option value="on-load">On load</option>
+                          <option value="touch">On touch</option>
+                          <option value="speak">On speak</option>
+                          <option value="intent-detection"
+                            >On intent detection (with Kinect)</option
+                          >
+                        </select>
+                      </span>
+                    </li>
+
+                    {#if $sessionIdStore}
+                      <li>
+                        <span>
+                          <a
+                            href="#"
+                            class="has-text-grey-lighter a-no-padding"
+                            title={$sessionIdStore}
+                            on:click={(e) => copyClipboard($sessionIdStore)}
+                          >
+                            Copy Session ID
+                            <b class="has-text-white-ter">
+                              {hasCopied}
+                            </b>
+                          </a>
+                        </span>
+                        <span>
+                          <a
+                            href="#"
+                            class="has-text-grey-lighter a-no-padding"
+                            title="Open Issue"
+                            on:click={(e) => openGithubIssue($sessionIdStore)}
+                          >
+                            Open Github Issue
+                          </a>
+                        </span>
+                        <span>
+                          <a
+                            href="/{toolkit.getAppId()}/{$sessionIdStore}/stats"
+                            class="has-text-grey-ter a-no-padding"
+                            title="View stats"
+                            target="_blank"
+                            on:click={(e) => copyClipboard($sessionIdStore)}
+                          >
+                            Show statistics
+                          </a>
+                        </span>
+                      </li>
+                    {/if}
+
+                    {#if settings.devMode}
+                      <li class="menu-title">
+                        Development settings
+
+                        <span class="li-item">
+                          <input
+                            type="checkbox"
+                            bind:checked={settings.enableMic}
+                          />
+                          Toggle Microphone
+                        </span>
+                      </li>
+
+                      <li class="menu-title">
+                        Detectors
+
+                        <span class="li-item">
+                          <input
+                            type="checkbox"
+                            bind:checked={settings.enableVideoDetection}
+                          />
+                          Toggle Video Detection
+                        </span>
+
+                        <span class="li-item">
+                          <input
+                            type="checkbox"
+                            bind:checked={settings.showVideo}
+                            disabled={!settings.enableVideoDetection}
+                          />
+                          Toggle Video Rendering
+                        </span>
+
+                        <span class="li-item">
+                          <input
+                            type="checkbox"
+                            bind:checked={settings.enableMirrorMode}
+                            disabled={!settings.enableVideoDetection ||
+                              !settings.enableAnimation}
+                          />
+                          Mirror mode (holistic v1)
+                        </span>
+
+                        <span class="li-item">
+                          <input
+                            type="checkbox"
+                            bind:checked={settings.detectorHuman}
+                            disabled={!settings.enableVideoDetection}
+                          />
+                          Toggle Emotion (human)
+                        </span>
+
+                        <span class="li-item">
+                          <input
+                            type="checkbox"
+                            bind:checked={settings.qrcode}
+                            disabled={!settings.enableVideoDetection}
+                          />
+                          Toggle Qrcode (zbar)
+                        </span>
+
+                        <span class="li-item">
+                          <input
+                            type="checkbox"
+                            bind:checked={settings.detectorFaceLandmarker}
+                            disabled={!settings.enableVideoDetection}
+                          />
+                          Toggle Face mapping (faceLandmark)
+                        </span>
+                      </li>
+
+                      <li class="menu-title">
+                        Avatar
+
+                        <span class="li-item">
+                          <input
+                            type="checkbox"
+                            bind:checked={settings.enableAvatar}
+                          />
+                          Toggle Avatar
+                        </span>
+
+                        <span class="li-item">
+                          <input
+                            type="checkbox"
+                            bind:checked={settings.enableAnimation}
+                          />
+                          Toggle Animation
+                        </span>
+
+                        {#if settings && settings.animationList && settings.animationList.length}
+                          <span class="li-item">
+                            <span> Play Animation </span>
+                            <select
+                              bind:value={settings.animation}
+                              on:change={setAnimation}
+                              placeholder="Animation"
+                            >
+                              {#each settings.animationList as name}
+                                <option value={name}>{name}</option>
+                              {/each}
+                            </select>
+                          </span>
+                        {/if}
+
+                        <span class="li-item">
+                          <span> Face </span>
+                          <select
+                            bind:value={settings.testFace}
+                            on:change={setFace}
+                          >
+                            {#each facesList as name}
+                              <option value={name}>{name}</option>
+                            {/each}
+                          </select>
+                        </span>
+                      </li>
+                    {/if}
+                  </ul>
+                </div>
+              {/if}
+              {#if login}
+                <a
+                  title="logout"
+                  href="#"
+                  on:click|preventDefault={logout}
+                  class="menu-item-w-icon"
+                >
+                  <span class="icon">
+                    <IoMdLogOut />
+                  </span>
+                  <span style="margin-left:0.5em;"> Logout </span>
+                </a>
+              {/if}
+            </li>
+          </ul>
+        </aside>
+      </div>
       <div class="credits">
         <a href="https://sermasproject.eu" target="_blank">
           <img class="logo" src={sermasLogo} alt="SERMAS" />
@@ -704,12 +718,15 @@ If applicable, add screenshots to help explain your problem.
       color: rgba($secondary, 0.8);
     }
 
+    --navbar-toggle-height: 2.5em;
+    --credits-height: 2em;
+
     .navbar-toggle {
       cursor: pointer;
       font-size: 1em;
       text-align: center;
       position: relative;
-      height: 2.5em;
+      height: var(--navbar-toggle-height);
       border-radius: 0.5em;
       padding: 0.2em;
       display: flex;
@@ -746,14 +763,20 @@ If applicable, add screenshots to help explain your problem.
       top: 0;
       width: 18em;
       height: 100vh;
-      overflow-y: scroll;
+      overflow-y: hidden;
+
+      .nav-content {
+        height: calc(
+          100vh - (var(--navbar-toggle-height) + var(--credits-height) + 1em)
+        );
+        overflow-y: auto;
+      }
+
       .menu {
         margin-top: 1em;
         margin-left: 1em;
-        height: 85%;
 
         .menu-list {
-          height: 95%;
           li a {
             color: white;
           }
@@ -846,7 +869,7 @@ If applicable, add screenshots to help explain your problem.
         margin-left: 1em;
         color: white;
         display: flex;
-        height: 2em;
+        height: var(--credits-height);
         justify-content: center;
         text-align: center;
         align-items: center;

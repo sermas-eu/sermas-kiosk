@@ -7,7 +7,7 @@
         UIContentDto,
     } from "@sermas/api-client";
     import { onDestroy, onMount } from "svelte";
-    import NavigationItems from "./NavigationItems.svelte";
+    import NavigationMenuItems from "./NavigationMenuItems.svelte";
 
     let items: NavigationItemDto[] = [];
 
@@ -39,7 +39,7 @@
         <p class="menu-label">Navigation</p>
 
         <ul class="menu-list">
-            <NavigationItems {items} />
+            <NavigationMenuItems {items} />
         </ul>
     </aside>
 {/if}

@@ -25,7 +25,7 @@
                 context: {
                     item,
                 },
-                element: "navigation",
+                element: "navigation-menu",
                 value: item.id,
             },
         };

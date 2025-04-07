@@ -1,3 +1,10 @@
+import DOMPurify from "dompurify";
+import { marked } from "marked";
+
+export const renderMarkdown = async (text: string) => {
+  return DOMPurify.sanitize(await marked.parse(text));
+};
+
 const getLanguage = (language?: string) => {
   if (!language) {
     if (typeof navigator !== "undefined") {

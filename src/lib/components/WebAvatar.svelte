@@ -117,12 +117,12 @@
   };
 
   const triggerAnimation = (name: string) => {
-    logger.debug(`Triggered animation: ${name}`);
-    $avatarModelStore?.getAnimation()?.play("gesture", name);
+    logger.debug(`Triggered animation [disabled!]: ${name}`);
+    // $avatarModelStore?.getAnimation()?.play("gesture", name);
   };
 
   const loadAvatarConfig = async (
-    avatar: string
+    avatar: string,
   ): Promise<AvatarModelConfig | null> => {
     logger.debug(`loading avatar ${avatar}`);
 
@@ -193,7 +193,7 @@
     if ($appSettingsStore.devMode) {
       animationList = Array.from(
         $avatarModelStore?.getAnimation()?.getAnimations("gesture") || [],
-        (x: any) => x.name
+        (x: any) => x.name,
       );
       toolkit.getSettings().save({ animationList });
     }

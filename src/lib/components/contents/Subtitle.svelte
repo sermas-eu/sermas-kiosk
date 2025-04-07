@@ -1,19 +1,18 @@
 <script lang="ts">
+  import { renderMarkdown } from "$lib/util";
   import { type DialogueActor } from "@sermas/toolkit/dto";
-  import DOMPurify from "dompurify";
-  import { marked } from "marked";
 
   export let actor: DialogueActor | null;
   export let mex: string;
   export let id: string;
   let textToShow: string;
 
-  const renderMarkdown = async (text: string) => {
-    textToShow = DOMPurify.sanitize(await marked.parse(text));
+  const renderText = async (text: string) => {
+    textToShow = await renderMarkdown(text);
   };
 
   $: if (mex) {
-    renderMarkdown(mex);
+    renderText(mex);
   }
 </script>
 

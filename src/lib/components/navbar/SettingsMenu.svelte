@@ -545,6 +545,10 @@
 <style lang="scss">
     @import "../../../variables.scss";
 
+    aside {
+        margin: 1em 0 0 1em;
+    }
+
     .nav-container {
         position: absolute;
         z-index: 999;

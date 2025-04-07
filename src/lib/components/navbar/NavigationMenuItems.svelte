@@ -1,12 +1,12 @@
 <script lang="ts">
     import { toolkit } from "$lib";
     import type {
-        NavigationItemDto,
+        NavigationMenuItemDto,
         UIInteractionEventDto,
     } from "@sermas/api-client";
     import { UI_INTERACTION_TOPIC } from "@sermas/toolkit";
 
-    export let items: NavigationItemDto[];
+    export let items: NavigationMenuItemDto[];
 
     let isOpen: Record<string, boolean> = items.reduce(
         (obj, item) => ({
@@ -16,7 +16,7 @@
         {},
     );
 
-    const sendEvent = (item: NavigationItemDto) => {
+    const sendEvent = (item: NavigationMenuItemDto) => {
         const payload: UIInteractionEventDto = {
             appId: toolkit.getAppId(),
             sessionId: toolkit.getSessionId(),

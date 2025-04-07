@@ -2,14 +2,14 @@
     import { browser } from "$app/environment";
     import { toolkit } from "$lib";
     import type {
-        NavigationItemDto,
-        NavigationUIContentDto,
+        NavigationMenuItemDto,
+        NavigationMenuUIContentDto,
         UIContentDto,
     } from "@sermas/api-client";
     import { onDestroy, onMount } from "svelte";
     import NavigationMenuItems from "./NavigationMenuItems.svelte";
 
-    let items: NavigationItemDto[] = [];
+    let items: NavigationMenuItemDto[] = [];
 
     const onContent = (content: UIContentDto) => {
         // if (content.contentType === "clear-screen") {
@@ -17,7 +17,7 @@
         //     return;
         // }
         if (content.contentType === "navigation") {
-            const nav = content as NavigationUIContentDto;
+            const nav = content as NavigationMenuUIContentDto;
             items = nav.content.items;
         }
     };

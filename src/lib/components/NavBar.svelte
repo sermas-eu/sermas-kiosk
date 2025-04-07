@@ -19,7 +19,7 @@
     avatarModelStore,
     backgroundImageAndSoundStore,
   } from "$lib/store";
-  import type { PlatformAppDto, SessionChangedDto } from "@sermas/toolkit";
+  import type { SessionChangedDto } from "@sermas/toolkit";
   import { AppSettings } from "@sermas/toolkit/dto";
   import { sendStatus } from "@sermas/toolkit/events";
   import { Logger, addGlobal, setDefaultLogLevel } from "@sermas/toolkit/utils";
@@ -210,6 +210,7 @@
     <nav class={!showMenu ? "hidden" : ""}>
       <div class="nav-content">
         <NavigationMenu />
+        <!-- <hr class="navbar-divider" /> -->
         <Impressum />
         {#if settings}
           <SettingsMenu {settings} />
@@ -255,8 +256,7 @@
       padding: 0.2em;
       display: flex;
       flex-direction: row;
-      .navbar-button:hover,
-      .navbar-button.is-active {
+      .navbar-button:hover {
         color: rgba($primary, 1);
       }
     }
@@ -265,8 +265,7 @@
       margin-top: 1em;
       margin-left: 1em;
 
-      .navbar-button:hover,
-      .navbar-button.is-active {
+      .navbar-button:hover {
         color: rgba($secondary, 0.8);
       }
       .navbar-button {

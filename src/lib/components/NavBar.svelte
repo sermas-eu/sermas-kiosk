@@ -80,13 +80,19 @@
     }
   };
 
-  onMount(async () => {
+  onMount(() => {
     if (!browser) return;
 
     sessionId = toolkit.getSessionId();
     toolkit.getBroker().on("session.session", onSessionChanged);
-    xrSupported = (await $avatarModelStore?.getXR().isSupported()) || false;
   });
+
+  $: if ($avatarModelStore) {
+    $avatarModelStore
+      .getXR()
+      .isSupported()
+      .then((res) => (xrSupported = res));
+  }
 
   onDestroy(async () => {
     loaded = false;
@@ -108,6 +114,7 @@
   const onStartAR = async () => {
     if (!$avatarModelStore) return;
     xrSupported = await $avatarModelStore.getXR().start();
+    // $avatarModelStore.getModel().scale.set(4.5, 4.5, 4.5);
 
     if (!xrSupported) sendStatus("AR is not available on this device");
   };
@@ -241,6 +248,15 @@
 
     .navbar-button {
       color: rgba($secondary, 0.8);
+      display: flex;
+      align-content: center;
+      justify-content: center;
+    }
+    .navbar-button:first-child {
+      margin-left: 0.5rem;
+    }
+    .navbar-button:last-child {
+      margin-right: 0.5rem;
     }
 
     --navbar-toggle-height: 2.5em;
@@ -263,7 +279,6 @@
 
     .is-opened {
       margin-top: 1em;
-      margin-left: 1em;
 
       .navbar-button:hover {
         color: rgba($secondary, 0.8);

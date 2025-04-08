@@ -114,7 +114,6 @@
   const onStartAR = async () => {
     if (!$avatarModelStore) return;
     xrSupported = await $avatarModelStore.getXR().start();
-    // $avatarModelStore.getModel().scale.set(4.5, 4.5, 4.5);
 
     if (!xrSupported) sendStatus("AR is not available on this device");
   };

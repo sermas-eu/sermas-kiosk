@@ -39,10 +39,10 @@
     }
   };
   const onSpeaking = (userSpeaking: boolean, speechLength: number) => {
-    if (speechLength > 600) {
+    if (userSpeaking && speechLength > 1000) {
       toolkit.getAvatar()?.getHandler()?.pauseSpeech();
     } else {
-      // toolkit.getAvatar()?.getHandler()?.resumeSpeech();
+      toolkit.getAvatar()?.getHandler()?.resumeSpeech();
     }
     if (userSpeaking) {
       sendStatus("Listening...");

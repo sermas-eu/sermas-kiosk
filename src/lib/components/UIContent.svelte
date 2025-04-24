@@ -6,17 +6,17 @@
     appSettingsStore,
     avatarLoadedStore,
     backgroundImageAndSoundStore,
+    sessionIdStore,
   } from "$lib/store";
-  import {
-    type PlatformAppDto,
-    type RepositoryAvatarDto,
-    type TextUIContentDto,
-  } from "@sermas/toolkit";
-  import {
-    type SubtitleMessage,
-    type ChatMessage,
-    type SessionStatus,
+  import { deepCopy, toBase64 } from "$lib/util";
+  import { type PlatformAppDto, type TextUIContentDto } from "@sermas/toolkit";
+  import type {
+    ChatMessage,
+    SessionStatus,
+    SubtitleMessage,
+    UserSpeaking,
   } from "@sermas/toolkit/dto";
+  import { emitter } from "@sermas/toolkit/events";
   import { Logger, getChunkId } from "@sermas/toolkit/utils";
   import { onDestroy, onMount } from "svelte";
   import AvatarName from "./AvatarName.svelte";
@@ -24,15 +24,16 @@
   import VirtualKeyboard from "./VirtualKeyboard.svelte";
   import RenderContent from "./contents/RenderContent.svelte";
   import Subtitle from "./contents/Subtitle.svelte";
-  import { emitter } from "@sermas/toolkit/events";
-  import { toBase64 } from "$lib/util";
 
   const logger = new Logger("ui");
 
   const ui = toolkit.getUI();
 
   let history: ChatMessage[] = [];
+
   let lastMessage: ChatMessage | undefined;
+  let lastUserMessage: ChatMessage | undefined;
+
   let showStopButton = false;
   let sessionOpened: boolean = false;
   let navigationFrameEnabled = false;
@@ -40,8 +41,6 @@
   let chatMessage = "";
   let sendingMessage = false;
 
-  let avatar: RepositoryAvatarDto | undefined;
-  let gender: string | undefined;
   let language: string | undefined;
   let llm: Record<string, string | undefined> | undefined;
   let enableMic: boolean;
@@ -51,9 +50,12 @@
 
   let showHomepage = true;
 
-  const MAX_RESPONSE_WAITING_SEC = 15;
-  let waitingResponse = false;
-  let dotsTimeout: NodeJS.Timeout;
+  const MAX_RESPONSE_WAITING_MS = 15 * 1000;
+
+  let loadingDotsEnabled = false;
+  let dotsTimeout: NodeJS.Timeout | undefined;
+
+  let spinnerTimeout: NodeJS.Timeout;
 
   let showVirtualKeyboard = false;
   let inputValue = "";
@@ -65,7 +67,7 @@
   let compRef: any = {};
 
   let subtitle: SubtitleMessage;
-  let showSubsBlock: boolean = false;
+  let showSubtitlesBlock: boolean = false;
 
   $: if ($appConfigStore) {
     app = $appConfigStore;
@@ -90,20 +92,39 @@
     toolkit?.triggerInteraction("ui", "start");
   };
 
+  $: if ($sessionIdStore) {
+    sessionOpened = $sessionIdStore ? true : false;
+
+    if (sessionOpened) {
+      spinnerTimeout = setTimeout(() => {
+        if (lastMessage) return;
+        // show empty right block instead of an infinite spinner
+        lastMessage = {
+          actor: "agent",
+          ts: new Date(),
+          messages: [],
+        };
+      }, 2500);
+    } else {
+      lastMessage = undefined;
+    }
+  }
   $: if (!sessionOpened && (!history || !history?.length)) showHomepage = true;
 
-  const toggleLoadingDots = (show: boolean) => {
-    if (!show) {
-      waitingResponse = false;
-      if (dotsTimeout) clearTimeout(dotsTimeout);
-      return;
+  const showLoadingDots = (show: boolean) => {
+    if (dotsTimeout) {
+      clearTimeout(dotsTimeout);
+      dotsTimeout = undefined;
     }
-    waitingResponse = true;
-    // off after MAX_RESPONSE_WAITING_SEC sec
-    dotsTimeout = setTimeout(
-      () => toggleLoadingDots(false),
-      MAX_RESPONSE_WAITING_SEC * 1000
-    );
+
+    loadingDotsEnabled = show;
+
+    if (show) {
+      // remove after timeout
+      dotsTimeout = setTimeout(() => {
+        loadingDotsEnabled = false;
+      }, MAX_RESPONSE_WAITING_MS);
+    }
   };
 
   onMount(async () => {
@@ -111,18 +132,32 @@
 
     await ui.init();
 
+    ui.on("ui.session.changed", (status: SessionStatus) => {
+      sessionOpened = status === "started";
+      if (!sessionOpened) history = [];
+    });
+
     ui.on("ui.dialogue.history", (chatHistory: ChatMessage[]) => {
-      if (chatHistory.length == 0) {
-        if (lastMessage && lastMessage.messages) {
-          lastMessage.messages = [];
-        }
-        toggleLoadingDots(false);
-      } else {
-        toggleLoadingDots(chatHistory[chatHistory.length - 1].actor == "user");
-      }
+      // if (chatHistory.length === 0) {
+      //   if (lastMessage && lastMessage.messages) {
+      //     lastMessage.messages = [];
+      //   }
+      //   // showLoadingDots(false);
+      //   // } else {
+      //   //   const isLastMessageFromUser =
+      //   //     chatHistory[chatHistory.length - 1].actor === "user";
+      //   //   showLoadingDots(isLastMessageFromUser);
+      // }
+
       showHomepage = false;
+
       history = [...chatHistory];
-      if (history.length) lastMessage = history[history.length - 1];
+      if (history.length) {
+        lastMessage = history[history.length - 1];
+        if (lastMessage && lastMessage?.actor === "user") {
+          lastUserMessage = deepCopy(lastMessage);
+        }
+      }
 
       for (const [key, value] of Object.entries(compRef)) {
         if (key !== "leave" && value) {
@@ -171,11 +206,13 @@
 
     ui.on("ui.avatar.speaking", (isSpeaking: boolean) => {
       showStopButton = isSpeaking;
+      showLoadingDots(false);
     });
 
-    ui.on("ui.session.changed", (status: SessionStatus) => {
-      sessionOpened = status === "started";
-      if (!sessionOpened) history = [];
+    ui.on("ui.user.speaking", (speaking: UserSpeaking) => {
+      const showDots = speaking.status !== "noise";
+      showLoadingDots(showDots);
+      showSubtitlesBlock = false;
     });
 
     // TODO open navigation iframe on robot action
@@ -189,29 +226,29 @@
       }
     });
 
-    emitter.on("avatar.subtitle", subsEv);
-    emitter.on("avatar.subtitle.clean", showSubs);
+    emitter.on("avatar.subtitle", onAvatarSubtitle);
+    emitter.on("avatar.subtitle.clean", onAvatarSubitleClean);
   });
 
   onDestroy(async () => {
     await ui.destroy();
-    emitter.off("avatar.subtitle", subsEv);
-    emitter.off("avatar.subtitle.clean", showSubs);
+    emitter.off("avatar.subtitle", onAvatarSubtitle);
+    emitter.off("avatar.subtitle.clean", onAvatarSubitleClean);
   });
 
-  const subsEv = (ev: SubtitleMessage) => {
-    showSubsBlock = true;
+  const onAvatarSubtitle = (ev: SubtitleMessage) => {
+    showSubtitlesBlock = true;
     subtitle = ev;
   };
 
-  const showSubs = (ev: boolean) => {
-    showSubsBlock = !ev;
+  const onAvatarSubitleClean = (ev: boolean) => {
+    showSubtitlesBlock = !ev;
   };
 
   const openVirtualKeyboard = (
     initValue: string,
     placehoder: string,
-    callback: (res: string) => void
+    callback: (res: string) => void,
   ) => {
     callbackFunc = callback;
     inputValue = initValue;
@@ -258,19 +295,19 @@
 </script>
 
 <span>
-  {#if subtitle && $appSettingsStore.subtitlesEnabled && sessionOpened}
+  {#if (subtitle || loadingDotsEnabled) && $appSettingsStore.subtitlesEnabled && sessionOpened}
     <span id="ui-content-agent" class="ui-content-agent">
       <div
         class="is-flex chat-history chat-history-subs chat-history-agent-subs"
       >
-        {#if showSubsBlock}
+        {#if showSubtitlesBlock}
           <div class="subtitle-div" id="subtitle-{subtitle.id || 'none'}">
             <span class="subtitle-box agent-box">
               <Subtitle mex={subtitle.mex} id={subtitle.id} actor="agent" />
             </span>
           </div>
         {/if}
-        {#if waitingResponse}
+        {#if loadingDotsEnabled}
           <div class="is-flex is-justify-content-center">
             <div class="loading-dots"></div>
           </div>
@@ -325,13 +362,13 @@
             </div>
           </div>
         {/each}
-        {#if waitingResponse}
+        {#if loadingDotsEnabled}
           <div class="is-flex is-justify-content-center">
             <div class="loading-dots"></div>
           </div>
         {/if}
       </div>
-    {:else if lastMessage && $appSettingsStore.subtitlesEnabled && sessionOpened}
+    {:else if (lastMessage || lastUserMessage) && $appSettingsStore.subtitlesEnabled && sessionOpened}
       <div class="is-flex chat-history chat-history-subs">
         <span class="scroll-span">
           {#each history as chatMessage, index}
@@ -379,21 +416,24 @@
             {/each}
           {/each}
         </span>
-        {#each lastMessage.messages as message, i}
-          {#if lastMessage.actor !== "agent" && lastMessage.messages.length === i + 1}
-            <div class="subtitle-div">
-              <span class="subtitle-box">
-                <span class="subtitle-span">
-                  <RenderContent
-                    content={message}
-                    subtitle={$appSettingsStore.subtitlesEnabled}
-                    actor={lastMessage.actor}
-                  />
+
+        {#if lastUserMessage}
+          {#each lastUserMessage.messages as message, i}
+            {#if lastUserMessage.messages.length === i + 1}
+              <div class="subtitle-div">
+                <span class="subtitle-box">
+                  <span class="subtitle-span">
+                    <RenderContent
+                      content={message}
+                      subtitle={$appSettingsStore.subtitlesEnabled}
+                      actor={lastUserMessage.actor}
+                    />
+                  </span>
                 </span>
-              </span>
-            </div>
-          {/if}
-        {/each}
+              </div>
+            {/if}
+          {/each}
+        {/if}
       </div>
     {:else if !sessionOpened && showHomepage}
       <div class="welcome-box box block has-text-centered my-6">
@@ -448,7 +488,7 @@
               openVirtualKeyboard(
                 chatMessage,
                 "Type something to ask",
-                (result) => (chatMessage = result)
+                (result) => (chatMessage = result),
               )}
             placeholder="Type something to ask"
             autocomplete="off"
@@ -532,7 +572,7 @@
     // flex-grow: 1;
     // flex-wrap: nowrap;
     min-height: 0;
-    overflow: hidden scroll;
+    // overflow: hidden scroll;
     scrollbar-width: auto;
     display: flex;
     flex-direction: column;
@@ -564,6 +604,7 @@
     display: flex;
     flex-direction: row-reverse;
     justify-content: space-between;
+    width: 100%;
   }
 
   .input-form {

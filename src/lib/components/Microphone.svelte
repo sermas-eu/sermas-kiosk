@@ -6,7 +6,6 @@
   import { onDestroy, onMount } from "svelte";
 
   import { toolkit } from "$lib";
-  import type { AvatarAudioPlaybackStatus } from "@sermas/toolkit/avatar";
   import { sendStatus } from "@sermas/toolkit/events";
 
   const logger = new Logger("microphone");
@@ -37,15 +36,26 @@
     } else {
       toolkit.getAvatar()?.getHandler()?.resumeSpeech();
     }
+
+    // notify UI of speaking status
+    toolkit?.getUI()?.userSpeaking({
+      status: "completed",
+    });
   };
   const onSpeaking = (userSpeaking: boolean, speechLength: number) => {
-    if (userSpeaking && speechLength > 1000) {
+    const isSpeaking = userSpeaking && speechLength > 1000;
+    if (isSpeaking) {
       toolkit.getAvatar()?.getHandler()?.pauseSpeech();
     } else {
       toolkit.getAvatar()?.getHandler()?.resumeSpeech();
     }
     if (userSpeaking) {
       sendStatus("Listening...");
+
+      // notify UI of speaking status
+      toolkit?.getUI()?.userSpeaking({
+        status: isSpeaking ? "speaking" : "noise",
+      });
     } else {
       sendStatus("");
     }

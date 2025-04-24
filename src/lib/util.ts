@@ -53,3 +53,7 @@ export const toBase64 = (blob: Blob): Promise<string> => {
     };
   });
 };
+
+export const deepCopy = <T>(obj: T): T => {
+  return JSON.parse(JSON.stringify(obj));
+}

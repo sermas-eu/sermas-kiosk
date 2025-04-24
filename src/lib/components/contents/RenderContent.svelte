@@ -1,22 +1,34 @@
 <script lang="ts">
-  import { type UIContentDto } from "@sermas/toolkit";
+  import type {
+    ImageContentDto,
+    TextContentDto,
+    UIContentDto,
+    UIContentMetadataDto,
+    UIContentOptionsDto,
+  } from "@sermas/api-client";
+  import { type DialogueActor } from "@sermas/toolkit/dto";
+  import Subtitle from "../Subtitle.svelte";
+  import BackgroundAudio from "./BackgroundAudio.svelte";
+  import Buttons from "./Buttons.svelte";
   import DialogueMessage from "./DialogueMessage.svelte";
   import Email from "./Email.svelte";
   import Html from "./Html.svelte";
   import Image from "./Image.svelte";
   import Link from "./Link.svelte";
-  import Text from "./Text.svelte";
-  import Webpage from "./Webpage.svelte";
-  import Video from "./Video.svelte";
   import Object from "./Object.svelte";
-  import Buttons from "./Buttons.svelte";
-  import Quiz from "./Quiz.svelte";
   import QrCodeScanner from "./QrCodeScanner.svelte";
-  import BackgroundAudio from "./BackgroundAudio.svelte";
-  import Subtitle from "./Subtitle.svelte";
-  import { type DialogueActor } from "@sermas/toolkit/dto";
+  import Quiz from "./Quiz.svelte";
+  import Text from "./Text.svelte";
+  import Video from "./Video.svelte";
+  import Webpage from "./Webpage.svelte";
 
-  export let content: UIContentDto;
+  type UIContent = {
+    content: any;
+    metadata?: UIContentMetadataDto;
+    options?: UIContentOptionsDto & Record<string, any>;
+  } & UIContentDto;
+
+  export let content: UIContent;
   export let subtitle: boolean = false;
   export let actor: DialogueActor | null = null;
 </script>
@@ -25,7 +37,7 @@
   class="ui-content {content.options?.fullscreen === true ? 'fullscreen' : ''} "
 >
   {#if (subtitle && content.contentType === "text" && content.messageId && content.content.text && actor === "user") || (subtitle && content.contentType === "dialogue-message" && content.messageId && content.content.text && actor === "user")}
-    <Subtitle mex={content.content.text} id={content.messageId} {actor} />
+    <Subtitle message={content.content.text} id={content.messageId} {actor} />
   {:else if content.contentType === "dialogue-message"}
     <DialogueMessage message={content.content} />
   {:else if content.contentType === "image"}
@@ -59,7 +71,7 @@
   {:else if content.contentType === "quiz"}
     <Quiz content={content.content} metadata={content.metadata} />
   {:else if content.contentType === "qrcode-scanner"}
-    <QrCodeScanner content={content.content} metadata={content.metadata} />
+    <QrCodeScanner />
   {:else if content.contentType === "background-audio"}
     <BackgroundAudio content={content.content} />
   {/if}

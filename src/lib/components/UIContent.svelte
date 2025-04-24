@@ -64,7 +64,7 @@
 
   let messageId = getChunkId();
 
-  let compRef: any = {};
+  let lastClearScreenMessageId = getChunkId();
 
   let subtitle: SubtitleMessage;
   let showSubtitlesBlock: boolean = false;
@@ -151,7 +151,10 @@
 
       showHomepage = false;
 
-      history = [...chatHistory];
+      history = [...deepCopy(chatHistory)];
+
+      // console.warn("history", history);
+
       if (history.length) {
         lastMessage = history[history.length - 1];
         if (lastMessage && lastMessage?.actor === "user") {
@@ -159,11 +162,29 @@
         }
       }
 
-      for (const [key, value] of Object.entries(compRef)) {
-        if (key !== "leave" && value) {
-          compRef[key].remove();
-          delete compRef[key];
-        }
+      for (const message of history) {
+        (message.messages || []).forEach((uiContent) => {
+          const uiContentMessageId =
+            uiContent.messageId ||
+            getChunkId(new Date(uiContent.ts || message.ts));
+
+          uiContent.messageId = uiContentMessageId;
+
+          if (uiContentMessageId < lastClearScreenMessageId) {
+            // remove content
+            logger.debug(`remove content from ${uiContentMessageId}`);
+            return;
+          }
+
+          if (uiContent.contentType === "dialogue-message") return;
+
+          if (uiContent.options?.clearScreen) {
+            lastClearScreenMessageId = uiContentMessageId;
+            logger.debug(
+              `set cleat screen content from ${lastClearScreenMessageId}`,
+            );
+          }
+        });
       }
 
       scrollChat();
@@ -373,21 +394,12 @@
         <span class="scroll-span">
           {#each history as chatMessage, index}
             {#each chatMessage.messages as message, i}
-              {#if chatMessage.actor === "agent" && message.contentType !== "dialogue-message"}
+              {#if chatMessage.actor === "agent" && message.contentType !== "dialogue-message" && message.messageId && message.messageId >= lastClearScreenMessageId}
                 <div
                   class="subtitle-div {chatMessage.actor === 'agent' &&
                   message.contentType == 'buttons'
                     ? 'button-div'
                     : ''}"
-                  bind:this={
-                    compRef[
-                      message.options?.clearScreen
-                        ? message.messageId
-                          ? message.messageId
-                          : String(Math.random())
-                        : "leave"
-                    ]
-                  }
                 >
                   <span
                     class="subtitle-box {chatMessage.actor === 'agent'

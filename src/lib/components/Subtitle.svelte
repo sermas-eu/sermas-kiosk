@@ -3,7 +3,7 @@
   import { type DialogueActor } from "@sermas/toolkit/dto";
 
   export let actor: DialogueActor | null;
-  export let mex: string;
+  export let message: string;
   export let id: string;
   let textToShow: string;
 
@@ -11,8 +11,8 @@
     textToShow = await renderMarkdown(text);
   };
 
-  $: if (mex) {
-    renderText(mex);
+  $: if (message) {
+    renderText(message);
   }
 </script>
 
@@ -33,7 +33,7 @@
 
 <style lang="scss">
   @use "bulma/sass/utilities/mixins";
-  @import "../../../variables.scss";
+  @import "../../variables.scss";
   $breakpoint: 1201px;
 
   .subtitle-wrap {

@@ -23,7 +23,7 @@
   import Loader from "./Loader.svelte";
   import VirtualKeyboard from "./VirtualKeyboard.svelte";
   import RenderContent from "./contents/RenderContent.svelte";
-  import Subtitle from "./contents/Subtitle.svelte";
+  import Subtitle from "./Subtitle.svelte";
 
   const logger = new Logger("ui");
 
@@ -324,7 +324,11 @@
         {#if showSubtitlesBlock}
           <div class="subtitle-div" id="subtitle-{subtitle.id || 'none'}">
             <span class="subtitle-box agent-box">
-              <Subtitle mex={subtitle.mex} id={subtitle.id} actor="agent" />
+              <Subtitle
+                message={subtitle.message}
+                id={subtitle.id}
+                actor="agent"
+              />
             </span>
           </div>
         {/if}
@@ -585,9 +589,11 @@
     // flex-wrap: nowrap;
     min-height: 0;
     // overflow: hidden scroll;
+    overflow: auto;
     scrollbar-width: auto;
     display: flex;
     flex-direction: column;
+    margin: 0 0 0.5em 0;
   }
 
   .navigation-frame {

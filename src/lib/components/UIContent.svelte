@@ -8,7 +8,8 @@
     backgroundImageAndSoundStore,
     sessionIdStore,
   } from "$lib/store";
-  import { deepCopy, toBase64 } from "$lib/util";
+  import { deepCopy } from "deep-copy-ts";
+  import { toBase64 } from "$lib/util";
   import { type PlatformAppDto, type TextUIContentDto } from "@sermas/toolkit";
   import type {
     ChatMessage,
@@ -151,9 +152,11 @@
 
       showHomepage = false;
 
+      console.warn("chatHistory", chatHistory);
+
       history = [...deepCopy(chatHistory)];
 
-      // console.warn("history", history);
+      console.warn("history", history);
 
       if (history.length) {
         lastMessage = history[history.length - 1];

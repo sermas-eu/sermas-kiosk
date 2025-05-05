@@ -36,6 +36,7 @@
         secondaryBgColor: settings.theme.secondaryBgColor || "grey",
         primaryTextColor: settings.theme.primaryTextColor || "white",
         secondaryTextColor: settings.theme.secondaryTextColor || "#64539e",
+        subtitleTextColor: settings.theme.subtitleTextColor || "white",
       };
     }
   };
@@ -78,7 +79,7 @@
     toolkit.getApi().updateSession({
       appId: toolkit.getAppId(),
       sessionId,
-      settings
+      settings,
     } as any);
   };
 

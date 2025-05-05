@@ -85,7 +85,7 @@
   }
 
   .agent {
-    color: var(--theme-secondary-text-color);
+    color: var(--theme-subtitle-text-color);
     display: unset;
     padding-top: 1rem;
   }

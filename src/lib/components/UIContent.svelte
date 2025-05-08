@@ -182,7 +182,7 @@
           if (uiContent.options?.clearScreen) {
             lastClearScreenMessageId = uiContentMessageId;
             logger.debug(
-              `set cleat screen content from ${lastClearScreenMessageId}`,
+              `set clear screen content from ${lastClearScreenMessageId}`
             );
           }
         });
@@ -249,13 +249,13 @@
     });
 
     emitter.on("avatar.subtitle", onAvatarSubtitle);
-    emitter.on("avatar.subtitle.clean", onAvatarSubitleClean);
+    emitter.on("avatar.subtitle.clean", onAvatarSubtitleClean);
   });
 
   onDestroy(async () => {
     await ui.destroy();
     emitter.off("avatar.subtitle", onAvatarSubtitle);
-    emitter.off("avatar.subtitle.clean", onAvatarSubitleClean);
+    emitter.off("avatar.subtitle.clean", onAvatarSubtitleClean);
   });
 
   const onAvatarSubtitle = (ev: SubtitleMessage) => {
@@ -263,14 +263,14 @@
     subtitle = ev;
   };
 
-  const onAvatarSubitleClean = (ev: boolean) => {
+  const onAvatarSubtitleClean = (ev: boolean) => {
     showSubtitlesBlock = !ev;
   };
 
   const openVirtualKeyboard = (
     initValue: string,
     placehoder: string,
-    callback: (res: string) => void,
+    callback: (res: string) => void
   ) => {
     callbackFunc = callback;
     inputValue = initValue;
@@ -505,7 +505,7 @@
               openVirtualKeyboard(
                 chatMessage,
                 "Type something to ask",
-                (result) => (chatMessage = result),
+                (result) => (chatMessage = result)
               )}
             placeholder="Type something to ask"
             autocomplete="off"

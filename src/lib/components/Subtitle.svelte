@@ -38,7 +38,7 @@
 
   .subtitle-wrap {
     backdrop-filter: blur(10px);
-    opacity: 0.7;
+    opacity: 0.8;
     background-color: var(--theme-primary-bg-color);
     padding: 1em 1em;
     display: block;

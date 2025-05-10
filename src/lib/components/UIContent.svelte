@@ -24,10 +24,10 @@
   import AvatarName from "./AvatarName.svelte";
   import RenderContent from "./contents/RenderContent.svelte";
   import Loader from "./Loader.svelte";
+  import SpinnerRequest from "./SpinnerRequest.svelte";
   import SpinnerVoice from "./SpinnerVoice.svelte";
   import Subtitle from "./Subtitle.svelte";
   import VirtualKeyboard from "./VirtualKeyboard.svelte";
-  import SpinnerRequest from "./SpinnerRequest.svelte";
 
   type InteractionSpinner = {
     type: "voice" | "request";
@@ -376,15 +376,6 @@
             </span>
           </div>
         {/if}
-        {#if interactionSpinner.enabled}
-          <div class="is-flex is-justify-content-center">
-            {#if interactionSpinner.type === "voice"}
-              <SpinnerVoice />
-            {:else}
-              <SpinnerRequest />
-            {/if}
-          </div>
-        {/if}
       </div>
     </span>
   {/if}
@@ -485,22 +476,33 @@
           {/each}
         </span>
 
-        {#if lastUserMessage}
-          {#each lastUserMessage.messages as message, i}
-            {#if lastUserMessage.messages.length === i + 1}
-              <div class="subtitle-div">
-                <span class="subtitle-box">
-                  <span class="subtitle-span">
-                    <RenderContent
-                      content={message}
-                      subtitle={$appSettingsStore.subtitlesEnabled}
-                      actor={lastUserMessage.actor}
-                    />
+        {#if lastUserMessage || interactionSpinner.enabled}
+          <!-- interaction spinner -->
+          {#if interactionSpinner.enabled || !lastUserMessage}
+            <div class="interaction-spinner">
+              {#if interactionSpinner.type === "voice"}
+                <SpinnerVoice />
+              {:else}
+                <SpinnerRequest />
+              {/if}
+            </div>
+          {:else}
+            {#each lastUserMessage.messages as message, i}
+              {#if lastUserMessage.messages.length === i + 1}
+                <div class="subtitle-div">
+                  <span class="subtitle-box">
+                    <span class="subtitle-span">
+                      <RenderContent
+                        content={message}
+                        subtitle={$appSettingsStore.subtitlesEnabled}
+                        actor={lastUserMessage.actor}
+                      />
+                    </span>
                   </span>
-                </span>
-              </div>
-            {/if}
-          {/each}
+                </div>
+              {/if}
+            {/each}
+          {/if}
         {/if}
       </div>
     {:else if !sessionOpened && showHomepage}
@@ -792,6 +794,17 @@
 
   .stop-button {
     padding-right: 3.7em;
+  }
+
+  .interaction-spinner {
+    background-color: var(--theme-primary-bg-color);
+    border-radius: 4px;
+    backdrop-filter: blur(10px);
+    opacity: 0.8;
+    background-color: var(--theme-primary-bg-color);
+    padding: 1em 1em;
+    display: block;
+    margin: 0 0 0.5em 0;
   }
 
   @include mobile-view {

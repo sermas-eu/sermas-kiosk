@@ -6,7 +6,7 @@
 
 <style lang="scss">
   @import "../../variables.scss";
-  //  var(--theme-primary-bg-color)
+  //  var(--theme-primary-text-color)
 
   .spinner {
     margin: 0px auto 0;
@@ -17,7 +17,7 @@
   .spinner > div {
     width: 18px;
     height: 18px;
-    background-color: var(--theme-primary-bg-color);
+    background-color: var(--theme-primary-text-color);
 
     border-radius: 100%;
     display: inline-block;

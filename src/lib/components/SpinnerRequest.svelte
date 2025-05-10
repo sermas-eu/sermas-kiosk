@@ -5,11 +5,11 @@
 
 <style lang="scss">
   @import "../../variables.scss";
-  //  var(--theme-primary-bg-color)
+  //  var(--theme-primary-text-color)
 
   .spinner {
-    width: 40px;
-    height: 40px;
+    width: 25px;
+    height: 25px;
 
     position: relative;
     margin: 0px auto;
@@ -20,7 +20,7 @@
     width: 100%;
     height: 100%;
     border-radius: 50%;
-    background-color: var(--theme-primary-bg-color);
+    background-color: var(--theme-primary-text-color);
     opacity: 0.6;
     position: absolute;
     top: 0;

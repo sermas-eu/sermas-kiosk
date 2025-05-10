@@ -50,7 +50,7 @@
   };
 
   const onUserSpeaking = (sample: SpeechSampleResult) => {
-    if (sample.isSpeaking && !avatarSpeaking) {
+    if (sample.isSpeaking && avatarSpeaking) {
       logger.debug("Possible user speaking, pause avatar");
       toolkit.getAvatar()?.getHandler()?.pauseSpeech();
     }

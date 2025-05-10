@@ -8,23 +8,32 @@
     backgroundImageAndSoundStore,
     sessionIdStore,
   } from "$lib/store";
-  import { deepCopy } from "deep-copy-ts";
   import { toBase64 } from "$lib/util";
   import { type PlatformAppDto, type TextUIContentDto } from "@sermas/toolkit";
   import type {
     ChatMessage,
+    RequestProcessing,
     SessionStatus,
     SubtitleMessage,
     UserSpeaking,
   } from "@sermas/toolkit/dto";
   import { emitter } from "@sermas/toolkit/events";
   import { Logger, getChunkId } from "@sermas/toolkit/utils";
+  import { deepCopy } from "deep-copy-ts";
   import { onDestroy, onMount } from "svelte";
   import AvatarName from "./AvatarName.svelte";
-  import Loader from "./Loader.svelte";
-  import VirtualKeyboard from "./VirtualKeyboard.svelte";
   import RenderContent from "./contents/RenderContent.svelte";
+  import Loader from "./Loader.svelte";
+  import SpinnerVoice from "./SpinnerVoice.svelte";
   import Subtitle from "./Subtitle.svelte";
+  import VirtualKeyboard from "./VirtualKeyboard.svelte";
+  import SpinnerRequest from "./SpinnerRequest.svelte";
+
+  type InteractionSpinner = {
+    type: "voice" | "request";
+    enabled?: number;
+    timeout?: NodeJS.Timeout;
+  };
 
   const logger = new Logger("ui");
 
@@ -51,10 +60,11 @@
 
   let showHomepage = true;
 
-  const MAX_RESPONSE_WAITING_MS = 15 * 1000;
+  const SPINNER_TIMEOUT = 5 * 1000;
 
-  let loadingDotsEnabled = false;
-  let dotsTimeout: NodeJS.Timeout | undefined;
+  let interactionSpinner: InteractionSpinner = {
+    type: "voice",
+  };
 
   let spinnerTimeout: NodeJS.Timeout;
 
@@ -112,20 +122,42 @@
   }
   $: if (!sessionOpened && (!history || !history?.length)) showHomepage = true;
 
-  const showLoadingDots = (show: boolean) => {
-    if (dotsTimeout) {
-      clearTimeout(dotsTimeout);
-      dotsTimeout = undefined;
+  const showLoadingDots = (show: boolean, type?: "voice" | "request") => {
+    type = type || "voice";
+
+    if (type !== interactionSpinner.type) {
+      showLoadingDots(false, interactionSpinner.type);
     }
 
-    loadingDotsEnabled = show;
+    interactionSpinner.type = type;
+
+    if (show && interactionSpinner.enabled) {
+      return;
+    }
+
+    // avoid flickering
+    if (
+      interactionSpinner.enabled &&
+      Date.now() - interactionSpinner.enabled < 1000
+    ) {
+      return;
+    }
+
+    if (interactionSpinner.timeout) {
+      clearTimeout(interactionSpinner.timeout);
+      interactionSpinner.timeout = undefined;
+    }
+
+    interactionSpinner.enabled = show ? Date.now() : 0;
 
     if (show) {
       // remove after timeout
-      dotsTimeout = setTimeout(() => {
-        loadingDotsEnabled = false;
-      }, MAX_RESPONSE_WAITING_MS);
+      interactionSpinner.timeout = setTimeout(() => {
+        interactionSpinner.enabled = 0;
+      }, SPINNER_TIMEOUT);
     }
+
+    interactionSpinner = { ...interactionSpinner };
   };
 
   onMount(async () => {
@@ -182,7 +214,7 @@
           if (uiContent.options?.clearScreen) {
             lastClearScreenMessageId = uiContentMessageId;
             logger.debug(
-              `set clear screen content from ${lastClearScreenMessageId}`
+              `set clear screen content from ${lastClearScreenMessageId}`,
             );
           }
         });
@@ -226,14 +258,18 @@
       }
     };
 
+    ui.on("ui.user.request-processing", (req: RequestProcessing) => {
+      showLoadingDots(false, "request");
+    });
+
     ui.on("ui.avatar.speaking", (isSpeaking: boolean) => {
       showStopButton = isSpeaking;
-      showLoadingDots(false);
+      showLoadingDots(false, "voice");
     });
 
     ui.on("ui.user.speaking", (speaking: UserSpeaking) => {
-      const showDots = speaking.status !== "noise";
-      showLoadingDots(showDots);
+      const showDots = speaking.status !== "completed";
+      showLoadingDots(showDots, "voice");
       showSubtitlesBlock = false;
     });
 
@@ -270,7 +306,7 @@
   const openVirtualKeyboard = (
     initValue: string,
     placehoder: string,
-    callback: (res: string) => void
+    callback: (res: string) => void,
   ) => {
     callbackFunc = callback;
     inputValue = initValue;
@@ -317,7 +353,7 @@
 </script>
 
 <span>
-  {#if (subtitle || loadingDotsEnabled) && $appSettingsStore.subtitlesEnabled && sessionOpened}
+  {#if (subtitle || interactionSpinner.enabled) && $appSettingsStore.subtitlesEnabled && sessionOpened}
     <span id="ui-content-agent" class="ui-content-agent">
       <div
         class="is-flex chat-history chat-history-subs chat-history-agent-subs"
@@ -333,9 +369,13 @@
             </span>
           </div>
         {/if}
-        {#if loadingDotsEnabled}
+        {#if interactionSpinner.enabled}
           <div class="is-flex is-justify-content-center">
-            <div class="loading-dots"></div>
+            {#if interactionSpinner.type === "voice"}
+              <SpinnerVoice />
+            {:else}
+              <SpinnerRequest />
+            {/if}
           </div>
         {/if}
       </div>
@@ -388,9 +428,13 @@
             </div>
           </div>
         {/each}
-        {#if loadingDotsEnabled}
+        {#if interactionSpinner.enabled}
           <div class="is-flex is-justify-content-center">
-            <div class="loading-dots"></div>
+            {#if interactionSpinner.type === "voice"}
+              <SpinnerVoice />
+            {:else}
+              <SpinnerRequest />
+            {/if}
           </div>
         {/if}
       </div>
@@ -505,7 +549,7 @@
               openVirtualKeyboard(
                 chatMessage,
                 "Type something to ask",
-                (result) => (chatMessage = result)
+                (result) => (chatMessage = result),
               )}
             placeholder="Type something to ask"
             autocomplete="off"
@@ -741,50 +785,6 @@
 
   .stop-button {
     padding-right: 3.7em;
-  }
-
-  .loading-dots {
-    /* HTML: <div class="loader"></div> */
-    width: 50px;
-    aspect-ratio: 2;
-    --_g: no-repeat
-      radial-gradient(
-        circle closest-side,
-        var(--theme-primary-bg-color) 90%,
-        #0000
-      );
-    background:
-      var(--_g) 0% 50%,
-      var(--_g) 50% 50%,
-      var(--_g) 100% 50%;
-    background-size: calc(100% / 3) 50%;
-    animation: l3 1s infinite linear;
-  }
-  @keyframes l3 {
-    20% {
-      background-position:
-        0% 0%,
-        50% 50%,
-        100% 50%;
-    }
-    40% {
-      background-position:
-        0% 100%,
-        50% 0%,
-        100% 50%;
-    }
-    60% {
-      background-position:
-        0% 50%,
-        50% 100%,
-        100% 0%;
-    }
-    80% {
-      background-position:
-        0% 50%,
-        50% 50%,
-        100% 100%;
-    }
   }
 
   @include mobile-view {

@@ -7,7 +7,7 @@
   .spinner {
     width: 40px;
     height: 40px;
-    margin: 100px auto;
+    margin: 0px auto;
     background-color: var(--theme-primary-bg-color);
 
     border-radius: 100%;

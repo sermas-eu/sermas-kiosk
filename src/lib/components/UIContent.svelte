@@ -122,11 +122,14 @@
   }
   $: if (!sessionOpened && (!history || !history?.length)) showHomepage = true;
 
-  const showLoadingDots = (show: boolean, type?: "voice" | "request") => {
+  const showInteractionSpinner = (
+    show: boolean,
+    type?: "voice" | "request",
+  ) => {
     type = type || "voice";
 
     if (type !== interactionSpinner.type) {
-      showLoadingDots(false, interactionSpinner.type);
+      showInteractionSpinner(false, interactionSpinner.type);
     }
 
     interactionSpinner.type = type;
@@ -164,6 +167,10 @@
     if (!browser) return;
 
     await ui.init();
+
+    ui.on("ui.user.request-processing", (ev: RequestProcessing) => {
+      showInteractionSpinner(ev.status === "started", "request");
+    });
 
     ui.on("ui.session.changed", (status: SessionStatus) => {
       sessionOpened = status === "started";
@@ -259,17 +266,17 @@
     };
 
     ui.on("ui.user.request-processing", (req: RequestProcessing) => {
-      showLoadingDots(false, "request");
+      showInteractionSpinner(false, "request");
     });
 
     ui.on("ui.avatar.speaking", (isSpeaking: boolean) => {
       showStopButton = isSpeaking;
-      showLoadingDots(false, "voice");
+      showInteractionSpinner(false, "voice");
     });
 
     ui.on("ui.user.speaking", (speaking: UserSpeaking) => {
       const showDots = speaking.status !== "completed";
-      showLoadingDots(showDots, "voice");
+      showInteractionSpinner(showDots, "voice");
       showSubtitlesBlock = false;
     });
 

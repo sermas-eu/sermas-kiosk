@@ -13,6 +13,7 @@
   import { type PlatformAppDto, type TextUIContentDto } from "@sermas/toolkit";
   import type {
     ChatMessage,
+    DialogueProgess,
     SessionStatus,
     SubtitleMessage,
     UserSpeaking,
@@ -69,6 +70,8 @@
 
   let subtitle: SubtitleMessage;
   let showSubtitlesBlock: boolean = false;
+
+  let systemProgress: string = 'progress'
 
   $: if ($appConfigStore) {
     app = $appConfigStore;
@@ -132,6 +135,11 @@
     if (!browser) return;
 
     await ui.init();
+
+    ui.on("ui.dialogue.progress", (ev: DialogueProgess) => {
+      console.log('progress',ev)
+      systemProgress = ev.event
+    });
 
     ui.on("ui.session.changed", (status: SessionStatus) => {
       sessionOpened = status === "started";
@@ -335,7 +343,10 @@
         {/if}
         {#if loadingDotsEnabled}
           <div class="is-flex is-justify-content-center">
-            <div class="loading-dots"></div>
+            <div>
+              <div class="loading-dots"></div>
+              <div class="progress-event">{systemProgress}</div>
+            </div>
           </div>
         {/if}
       </div>
@@ -390,7 +401,10 @@
         {/each}
         {#if loadingDotsEnabled}
           <div class="is-flex is-justify-content-center">
+            <div>
             <div class="loading-dots"></div>
+            <div class="progress-event">{systemProgress}</div>
+          </div>
           </div>
         {/if}
       </div>
@@ -745,7 +759,7 @@
 
   .loading-dots {
     /* HTML: <div class="loader"></div> */
-    width: 50px;
+    width: 100px;
     aspect-ratio: 2;
     --_g: no-repeat
       radial-gradient(
@@ -760,6 +774,14 @@
     background-size: calc(100% / 3) 50%;
     animation: l3 1s infinite linear;
   }
+
+  .progress-event{
+    color: var(--theme-primary-text-color);
+    font-weight: bold;
+    width: 100px;
+    text-align:center;
+  }
+
   @keyframes l3 {
     20% {
       background-position:

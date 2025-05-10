@@ -26,6 +26,7 @@
   import VirtualKeyboard from "./VirtualKeyboard.svelte";
   import RenderContent from "./contents/RenderContent.svelte";
   import Subtitle from "./Subtitle.svelte";
+    import SystemProgress from "./contents/SystemProgress.svelte";
 
   const logger = new Logger("ui");
 
@@ -71,7 +72,7 @@
   let subtitle: SubtitleMessage;
   let showSubtitlesBlock: boolean = false;
 
-  let systemProgress: string = 'progress'
+  let progressEvent: string = 'loading'
 
   $: if ($appConfigStore) {
     app = $appConfigStore;
@@ -138,7 +139,7 @@
 
     ui.on("ui.dialogue.progress", (ev: DialogueProgess) => {
       console.log('progress',ev)
-      systemProgress = ev.event
+      progressEvent = ev.event
     });
 
     ui.on("ui.session.changed", (status: SessionStatus) => {
@@ -342,12 +343,7 @@
           </div>
         {/if}
         {#if loadingDotsEnabled}
-          <div class="is-flex is-justify-content-center">
-            <div>
-              <div class="loading-dots"></div>
-              <div class="progress-event">{systemProgress}</div>
-            </div>
-          </div>
+          <SystemProgress event={progressEvent}/>
         {/if}
       </div>
     </span>
@@ -400,12 +396,7 @@
           </div>
         {/each}
         {#if loadingDotsEnabled}
-          <div class="is-flex is-justify-content-center">
-            <div>
-            <div class="loading-dots"></div>
-            <div class="progress-event">{systemProgress}</div>
-          </div>
-          </div>
+          <SystemProgress  event={progressEvent}/>
         {/if}
       </div>
     {:else if (lastMessage || lastUserMessage) && $appSettingsStore.subtitlesEnabled && sessionOpened}
@@ -757,57 +748,6 @@
     padding-right: 3.7em;
   }
 
-  .loading-dots {
-    /* HTML: <div class="loader"></div> */
-    width: 100px;
-    aspect-ratio: 2;
-    --_g: no-repeat
-      radial-gradient(
-        circle closest-side,
-        var(--theme-primary-bg-color) 90%,
-        #0000
-      );
-    background:
-      var(--_g) 0% 50%,
-      var(--_g) 50% 50%,
-      var(--_g) 100% 50%;
-    background-size: calc(100% / 3) 50%;
-    animation: l3 1s infinite linear;
-  }
-
-  .progress-event{
-    color: var(--theme-primary-text-color);
-    font-weight: bold;
-    width: 100px;
-    text-align:center;
-  }
-
-  @keyframes l3 {
-    20% {
-      background-position:
-        0% 0%,
-        50% 50%,
-        100% 50%;
-    }
-    40% {
-      background-position:
-        0% 100%,
-        50% 0%,
-        100% 50%;
-    }
-    60% {
-      background-position:
-        0% 50%,
-        50% 100%,
-        100% 0%;
-    }
-    80% {
-      background-position:
-        0% 50%,
-        50% 50%,
-        100% 100%;
-    }
-  }
 
   @include mobile-view {
     .chat-input {

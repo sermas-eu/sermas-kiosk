@@ -9,7 +9,7 @@
   //  var(--theme-primary-bg-color)
 
   .spinner {
-    margin: 100px auto 0;
+    margin: 0px auto 0;
     width: 70px;
     text-align: center;
   }

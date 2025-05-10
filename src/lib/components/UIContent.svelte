@@ -60,13 +60,13 @@
 
   let showHomepage = true;
 
-  const SPINNER_TIMEOUT = 5 * 1000;
+  const SPINNER_TIMEOUT = 10 * 1000;
 
   let interactionSpinner: InteractionSpinner = {
     type: "voice",
   };
 
-  let spinnerTimeout: NodeJS.Timeout;
+  let pageContentSpinnerTimeout: NodeJS.Timeout;
 
   let showVirtualKeyboard = false;
   let inputValue = "";
@@ -107,7 +107,7 @@
     sessionOpened = $sessionIdStore ? true : false;
 
     if (sessionOpened) {
-      spinnerTimeout = setTimeout(() => {
+      pageContentSpinnerTimeout = setTimeout(() => {
         if (lastMessage) return;
         // show empty right block instead of an infinite spinner
         lastMessage = {
@@ -277,7 +277,7 @@
     ui.on("ui.user.speaking", (speaking: UserSpeaking) => {
       const showDots = speaking.status !== "completed";
       showInteractionSpinner(showDots, "voice");
-      showSubtitlesBlock = false;
+      // showSubtitlesBlock = false;
     });
 
     // TODO open navigation iframe on robot action

@@ -3,7 +3,7 @@
   import { browser } from "$app/environment";
   import { page } from "$app/stores";
   import { toolkit } from "$lib";
-    import { onMount } from "svelte";
+  import { onMount } from "svelte";
 
   const noPrivacyPage = "/no-privacy";
 
@@ -19,7 +19,6 @@
     let timer = setTimeout(checkPrivacy, 1000);
     return () => clearTimeout(timer);
   });
-
 
   const checkPrivacy = () => {
     // console.warn($page.url.pathname);

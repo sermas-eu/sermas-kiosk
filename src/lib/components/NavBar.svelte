@@ -27,7 +27,7 @@
   import Impressum from "./navbar/Impressum.svelte";
   import NavigationMenu from "./navbar/NavigationMenu.svelte";
   import SettingsMenu from "./navbar/SettingsMenu.svelte";
-
+  
   const logger = new Logger("navbar");
 
   let settings: AppSettings;
@@ -75,6 +75,7 @@
   const onSessionChanged = (ev: SessionChangedDto) => {
     if (ev.operation === "updated" && ev.record.closedAt) {
       sessionId = undefined;
+      if (ev.record.settings?.resetPrivacyEverySession) localStorage.removeItem("privacy");
     } else {
       sessionId = ev.record.sessionId;
     }

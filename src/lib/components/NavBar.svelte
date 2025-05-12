@@ -27,7 +27,7 @@
   import Impressum from "./navbar/Impressum.svelte";
   import NavigationMenu from "./navbar/NavigationMenu.svelte";
   import SettingsMenu from "./navbar/SettingsMenu.svelte";
-  
+
   const logger = new Logger("navbar");
 
   let settings: AppSettings;

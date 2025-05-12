@@ -7,7 +7,7 @@
   $: if (img.isBackground) {
     if (get(backgroundImageAndSoundStore).image !== "stream") {
       $backgroundImageAndSoundStore.defaultImage = get(
-        backgroundImageAndSoundStore
+        backgroundImageAndSoundStore,
       ).image;
     }
     $backgroundImageAndSoundStore.image = "stream";

@@ -6,23 +6,23 @@
 
 <div class="is-flex is-justify-content-center">
   <div>
-  <div class="loading-dots"></div>
-  <div class="progress-event">
-    {#if event == 'stt'}
-      Speech to text
-    {:else if event == 'analyze'}
-      Analizyng input
-    {:else if event == 'llm'}
-      Calling LLM
-    {:else if event == 'translate'}
-      Translating
-    {:else if event == 'tts'}
-      Text to speech
-    {:else}
-      {event}
-    {/if}
+    <div class="loading-dots"></div>
+    <div class="progress-event">
+      {#if event == 'stt'}
+        Speech to text
+      {:else if event == 'analyze'}
+        Analizyng input
+      {:else if event == 'llm'}
+        Calling LLM
+      {:else if event == 'translate'}
+        Translating
+      {:else if event == 'tts'}
+        Text to speech
+      {:else}
+        {event}
+      {/if}
+    </div>
   </div>
-</div>
 </div>
 
 
@@ -49,6 +49,7 @@
 
   .progress-event{
     color: var(--theme-primary-text-color);
+    font-size: 1.3rem;
     font-weight: bold;
     width: 100px;
     text-align:center;

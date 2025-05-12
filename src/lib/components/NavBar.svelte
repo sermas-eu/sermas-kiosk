@@ -75,8 +75,7 @@
   const onSessionChanged = (ev: SessionChangedDto) => {
     if (ev.operation === "updated" && ev.record.closedAt) {
       sessionId = undefined;
-      if (ev.record.settings?.resetPrivacyEverySession) localStorage.removeItem("privacy");
-    } else {
+      localStorage.removeItem("privacy");  // TODO: Fix using the proper condition
       sessionId = ev.record.sessionId;
     }
   };

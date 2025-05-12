@@ -76,6 +76,7 @@
     if (ev.operation === "updated" && ev.record.closedAt) {
       sessionId = undefined;
       localStorage.removeItem("privacy");  // TODO: Fix using the proper condition
+    } else {
       sessionId = ev.record.sessionId;
     }
   };

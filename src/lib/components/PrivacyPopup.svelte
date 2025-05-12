@@ -3,6 +3,7 @@
   import { browser } from "$app/environment";
   import { page } from "$app/stores";
   import { toolkit } from "$lib";
+    import { onMount } from "svelte";
 
   const noPrivacyPage = "/no-privacy";
 
@@ -14,11 +15,18 @@
   let radio1 = false,
     radio2 = false;
 
+  onMount(() => {
+    let timer = setTimeout(checkPrivacy, 1000);
+    return () => clearTimeout(timer);
+  });
+
+
   const checkPrivacy = () => {
     // console.warn($page.url.pathname);
     isPrivacyPage = $page.url.pathname.startsWith(noPrivacyPage);
     if (isPrivacyPage) return;
     privacy = localStorage.getItem("privacy") as PrivacyOptions;
+    console.log(`Privacy is ${privacy}`);
   };
 
   const setPrivacy = async (option: PrivacyOptions) => {

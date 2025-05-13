@@ -1,7 +1,7 @@
 <script lang="ts">
-  import { env } from "$env/dynamic/public";
   import { browser } from "$app/environment";
   import { page } from "$app/stores";
+  import { env } from "$env/dynamic/public";
   import { toolkit } from "$lib";
 
   const noPrivacyPage = "/no-privacy";

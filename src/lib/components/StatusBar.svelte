@@ -18,6 +18,11 @@
     };
 
     const onProgress = (ev: SystemProgressEvent) => {
+        if (ev.status == 'error'){
+            console.warn(`Unrecognized speech: ${ev.error}`);
+            system = `Unrecognized speech`;
+            return;
+        }
         // system = "";
         // progress = ev.event;
         switch (ev.event) {

@@ -1,12 +1,14 @@
 <script lang="ts">
   import { browser } from "$app/environment";
   import { appSettingsStore } from "$lib/store";
-  import type { AudioDetection } from "@sermas/toolkit/detection";
+  import type {
+    AudioDetection,
+    SpeechSampleResult,
+  } from "@sermas/toolkit/detection";
   import { Logger } from "@sermas/toolkit/utils";
   import { onDestroy, onMount } from "svelte";
 
   import { toolkit } from "$lib";
-  import { sendStatus } from "@sermas/toolkit/events";
 
   const logger = new Logger("microphone");
 
@@ -29,11 +31,15 @@
     avatarSpeaking = isSpeaking;
   };
 
-  const onSpeechDetected = (detection: { speech: boolean }) => {
+  const onUserSpeechClassification = (detection: { speech: boolean }) => {
     if (detection.speech) {
-      // toolkit.getAvatar()?.getHandler()?.pauseSpeech();
-      toolkit.getAvatar()?.getHandler()?.stopSpeech();
+      if (!avatarSpeaking) {
+        // pause the avatar and await for a STOP/CONTINUE depending on the backend audio detection
+        logger.debug(`User speech detected, pausing avatar`);
+        toolkit.getAvatar()?.getHandler()?.pauseSpeech();
+      }
     } else {
+      logger.debug(`User not speaking, resuming avatar`);
       toolkit.getAvatar()?.getHandler()?.resumeSpeech();
     }
 
@@ -42,23 +48,17 @@
       status: "completed",
     });
   };
-  const onSpeaking = (userSpeaking: boolean, speechLength: number) => {
-    const isSpeaking = userSpeaking && speechLength > 1000;
-    if (isSpeaking) {
-      toolkit.getAvatar()?.getHandler()?.pauseSpeech();
-    } else {
-      toolkit.getAvatar()?.getHandler()?.resumeSpeech();
-    }
-    if (userSpeaking) {
-      sendStatus("Listening...");
 
-      // notify UI of speaking status
-      toolkit?.getUI()?.userSpeaking({
-        status: isSpeaking ? "speaking" : "noise",
-      });
-    } else {
-      sendStatus("");
+  const onUserSpeaking = (sample: SpeechSampleResult) => {
+    if (sample.isSpeaking && avatarSpeaking) {
+      logger.debug("Possible user speaking, pause avatar");
+      toolkit.getAvatar()?.getHandler()?.pauseSpeech();
     }
+
+    // notify UI of speaking status
+    toolkit?.getUI()?.userSpeaking({
+      status: sample.isSpeaking ? "speaking" : "noise",
+    });
   };
 
   const start = async () => {
@@ -72,14 +72,11 @@
       logger.debug(`Load audio detection`);
       detection = toolkit.getAudioDetection();
 
-      detection.on("speaking", onSpeaking);
+      detection.on("speaking", onUserSpeaking);
       await detection.start();
-
-      const vadOption = detection.getVADConfig();
-      logger.debug(`VAD config: ${JSON.stringify(vadOption)}`);
     }
 
-    toolkit.on("detection.speech", onSpeechDetected);
+    toolkit.on("detection.speech", onUserSpeechClassification);
     toolkit.on("ui.avatar.speaking", onAvatarSpeakingChanged);
   };
 
@@ -91,7 +88,7 @@
     detection = undefined;
 
     toolkit.off("ui.avatar.speaking", onAvatarSpeakingChanged);
-    toolkit.off("detection.speech", onSpeechDetected);
+    toolkit.off("detection.speech", onUserSpeechClassification);
 
     started = false;
   };

@@ -22,11 +22,11 @@
     onMount(() => {
         if (!browser) return;
         toolkit.getUI().on("ui.status", onStatus);
-        toolkit.getBroker().on("dialogue.progress", onProgress);
+        toolkit.getUI().on("dialogue.progress", onProgress);
     });
 
     onDestroy(() => {
-        toolkit.getBroker().off("ui.status", onStatus);
+        // toolkit.getBroker().off("ui.status", onStatus);
         // toolkit.getUI().off("dialogue.progress", onProgress);
     });
 </script>

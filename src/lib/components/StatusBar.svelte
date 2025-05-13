@@ -6,7 +6,7 @@
     import SystemProgress from "./SystemProgress.svelte";
 
     export let system = "";
-    let progress = "loading";
+    let progress = "";
 
     const onStatus = (ev: UiStatus) => {
         system = ev.message;

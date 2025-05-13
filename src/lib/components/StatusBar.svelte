@@ -8,66 +8,83 @@
         UserSpeaking,
     } from "@sermas/toolkit/dto";
     import { onDestroy, onMount } from "svelte";
+    import { Logger } from "@sermas/toolkit/utils";
+
+    const logger = new Logger("status");
 
     export let system = "";
 
     let userSpeaking = false;
 
+    const setSystemMessage = (message?: string) => {
+        if (message === undefined) return;
+        if (message === system) return;
+        system = message;
+    };
+
     const onStatus = (ev: UiStatus) => {
-        system = ev.message;
+        setSystemMessage(ev.message);
     };
 
     const onProgress = (ev: SystemProgressEvent) => {
         // system = "";
         // progress = ev.event;
+        let message: string | undefined;
         switch (ev.event) {
             case "stt":
-                system = "Processing audio";
+                message = "Processing audio";
                 break;
             case "analyze":
-                system = "Analyzing audio";
+                message = "Analyzing audio";
                 break;
             case "llm":
-                system = "Reasoning";
+                message = "Reasoning";
                 break;
             case "translate":
-                system = "Translating";
-                break;
+            // message = "Translating";
+            // break;
             case "tts":
-                system = "Answering";
+                message = "Answering";
                 break;
             case "ended":
-                system = "";
+                message = "";
                 break;
             default:
-                system = ev.event;
+                logger.debug(`Missing status label ${ev.event}`);
+                message = ev.event;
                 break;
         }
+        setSystemMessage(message);
     };
 
     const onUserSpeaking = (ev: UserSpeaking) => {
+        let message: string | undefined = undefined;
         switch (ev.status) {
             case "speaking":
-                system = "Listening";
+                message = "Listening";
                 userSpeaking = true;
                 break;
             case "noise":
-                if (!userSpeaking) system = "Noise detected";
+                if (!userSpeaking) message = "Noise detected";
                 break;
             case "completed":
                 userSpeaking = false;
-                system = "";
+                message = "";
                 break;
         }
+        setSystemMessage(message);
     };
 
     const onAvatarSpeaking = (isSpeaking: boolean) => {
-        if (!userSpeaking && isSpeaking) system = "Avatar speaking";
+        if (userSpeaking) return;
+        const message = isSpeaking ? "Speaking" : "";
+        setSystemMessage(message);
     };
 
     const onRequestProcessing = (ev: RequestProcessing) => {
         if (ev.status === "started") {
-            system = "Sending request";
+            const message = "Processing";
+            setSystemMessage(message);
         }
     };
 

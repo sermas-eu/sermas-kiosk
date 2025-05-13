@@ -2,6 +2,7 @@
     import { browser } from "$app/environment";
     import { toolkit } from "$lib";
     import type { SystemProgressEvent, UiStatus } from "@sermas/toolkit/dto";
+    import { sendStatus } from "@sermas/toolkit/events";
     import { onDestroy, onMount } from "svelte";
     import SystemProgress from "./SystemProgress.svelte";
 
@@ -9,17 +10,19 @@
     let progress = "";
 
     const onStatus = (ev: UiStatus) => {
+        console.warn(ev);
         system = ev.message;
     };
 
     const onProgress = (ev: SystemProgressEvent) => {
+        console.warn(ev);
         progress = ev.event;
     };
 
     onMount(() => {
         if (!browser) return;
-        toolkit.getBroker().on("ui.status", onStatus);
-        toolkit.getUI().on("dialogue.progress", onProgress);
+        toolkit.getUI().on("ui.status", onStatus);
+        toolkit.getBroker().on("dialogue.progress", onProgress);
     });
 
     onDestroy(() => {
@@ -30,7 +33,7 @@
 
 <div class="status-bar px-5 text-yellow-500" id="status-bar">
     <div class="system">{system || ""}</div>
-    <div class="system"><SystemProgress event={progress}/></div>
+    <div class="system"><SystemProgress event={progress} /></div>
 </div>
 
 <style lang="scss">

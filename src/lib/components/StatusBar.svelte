@@ -1,27 +1,36 @@
 <script lang="ts">
     import { browser } from "$app/environment";
     import { toolkit } from "$lib";
-    import type { UiStatus } from "@sermas/toolkit/dto";
+    import type { SystemProgressEvent, UiStatus } from "@sermas/toolkit/dto";
     import { onDestroy, onMount } from "svelte";
+    import SystemProgress from "./SystemProgress.svelte";
 
     export let system = "";
+    let progress = "loading";
 
     const onStatus = (ev: UiStatus) => {
         system = ev.message;
     };
 
+    const onProgress = (ev: SystemProgressEvent) => {
+        progress = ev.event;
+    };
+
     onMount(() => {
         if (!browser) return;
         toolkit.getBroker().on("ui.status", onStatus);
+        toolkit.getUI().on("dialogue.progress", onProgress);
     });
 
     onDestroy(() => {
         toolkit.getBroker().off("ui.status", onStatus);
+        // toolkit.getUI().off("dialogue.progress", onProgress);
     });
 </script>
 
 <div class="status-bar px-5 text-yellow-500" id="status-bar">
     <div class="system">{system || ""}</div>
+    <div class="system"><SystemProgress event={progress}/></div>
 </div>
 
 <style lang="scss">
@@ -39,6 +48,7 @@
         z-index: 20;
         align-items: center;
         text-shadow: 1px 1px 2px #333;
+        display: inline-block;
     }
 
     .system {

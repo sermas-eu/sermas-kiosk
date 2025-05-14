@@ -93,7 +93,10 @@
     started = false;
   };
 
-  onDestroy(stop);
+  onDestroy(() => {
+    stop();
+    mounted = false;
+  });
   onMount(() => {
     mounted = true;
     start();

@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { onMount } from 'svelte';
   import { renderMarkdown } from "$lib/util";
   import { type DialogueActor } from "@sermas/toolkit/dto";
 
@@ -14,22 +15,34 @@
   $: if (message) {
     renderText(message);
   }
+  let visible: boolean = true;
+
+  onMount(() => {
+    if (actor !== 'user') return; 
+    const timer = setTimeout(() => {
+      visible = false;
+    }, 10*1000);
+
+    return () => clearTimeout(timer);
+  });
 </script>
 
-<div
-  id="box"
-  class="subtitle-wrap message {actor == 'agent' ? 'agent-box' : 'user-box'}"
->
-  <div class={actor == "agent" ? "agent-wrap" : ""}>
-    <div
-      class="content message-{id || 'none'} subtitle {actor == 'agent'
-        ? 'agent'
-        : 'user'}"
-    >
-      {@html textToShow}
+{#if visible}
+  <div
+    id="box"
+    class="subtitle-wrap message {actor == 'agent' ? 'agent-box' : 'user-box'}"
+  >
+    <div class={actor == "agent" ? "agent-wrap" : ""}>
+      <div
+        class="content message-{id || 'none'} subtitle {actor == 'agent'
+          ? 'agent'
+          : 'user'}"
+      >
+        {@html textToShow}
+      </div>
     </div>
   </div>
-</div>
+{/if}
 
 <style lang="scss">
   @use "bulma/sass/utilities/mixins";

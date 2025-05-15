@@ -7,7 +7,7 @@
     appSettingsStore,
     sessionIdStore,
   } from "$lib/store";
-  import { AppSettings } from "@sermas/toolkit/dto";
+  import { AppSettings, type SessionStatusEvent } from "@sermas/toolkit/dto";
 
   import Theme from "$lib/components/Theme.svelte";
   import {
@@ -99,9 +99,8 @@
     } as any);
   };
 
-  const onSessionStatusChanged = (ev: {
-    status: "closed" | "created" | "updated";
-  }) => {
+  const onSessionStatusChanged = (ev: SessionStatusEvent) => {
+    if (toolkit?.getSessionId() !== ev.sessionId) return;
     if (ev.status !== "closed") return;
     logger.log(`Session closed, reloading page`);
     document?.location?.reload();

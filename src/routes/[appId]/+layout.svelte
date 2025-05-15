@@ -99,6 +99,15 @@
     } as any);
   };
 
+  const onSessionStatusChanged = (ev: {
+    status: "closed" | "created" | "updated";
+  }) => {
+    console.log("Session status changed", ev);
+    if (ev.status !== "closed") return;
+    document?.location?.reload();
+    logger.log(`Session closed, reloading page`);
+  };
+
   onMount(async () => {
     const appId = $page.params.appId;
     let token: string | null = null;
@@ -124,6 +133,7 @@
     toolkit.on("failure", onFailure);
 
     toolkit.on("window.close", onWindowClose);
+    toolkit.on("session.status", onSessionStatusChanged);
 
     await toolkit.init(token || undefined);
 
@@ -140,6 +150,7 @@
       toolkit.off("ready", onReady);
       toolkit.off("settings", onSettings);
       toolkit.off("session", onSessionChange);
+      toolkit.off("session.status", onSessionStatusChanged);
       toolkit.off("failure", onFailure);
       toolkit.off("window.close", onWindowClose);
       await toolkit?.destroy();

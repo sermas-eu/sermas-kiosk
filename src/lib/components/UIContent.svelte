@@ -93,7 +93,9 @@
 
   const scrollChat = () => {
     setTimeout(() => {
-      const element = document.getElementById("chat-history");
+      const elements = document.getElementsByClassName("scroll-span");
+      if (!elements || elements.length === 0) return;
+      const element = elements[0] as HTMLElement;
       if (!element) return;
       element.scrollTop = element.scrollHeight;
     }, 100);

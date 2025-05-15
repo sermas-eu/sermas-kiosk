@@ -7,7 +7,7 @@
     appSettingsStore,
     sessionIdStore,
   } from "$lib/store";
-  import { AppSettings } from "@sermas/toolkit/dto";
+  import { AppSettings, type SessionStatusEvent } from "@sermas/toolkit/dto";
 
   import Theme from "$lib/components/Theme.svelte";
   import {
@@ -99,6 +99,13 @@
     } as any);
   };
 
+  const onSessionStatusChanged = (ev: SessionStatusEvent) => {
+    if (toolkit?.getSessionId() !== ev.sessionId) return;
+    if (ev.status !== "closed") return;
+    logger.log(`Session closed, reloading page`);
+    document?.location?.reload();
+  };
+
   onMount(async () => {
     const appId = $page.params.appId;
     let token: string | null = null;
@@ -124,6 +131,7 @@
     toolkit.on("failure", onFailure);
 
     toolkit.on("window.close", onWindowClose);
+    toolkit.on("session.status", onSessionStatusChanged);
 
     await toolkit.init(token || undefined);
 
@@ -140,6 +148,7 @@
       toolkit.off("ready", onReady);
       toolkit.off("settings", onSettings);
       toolkit.off("session", onSessionChange);
+      toolkit.off("session.status", onSessionStatusChanged);
       toolkit.off("failure", onFailure);
       toolkit.off("window.close", onWindowClose);
       await toolkit?.destroy();

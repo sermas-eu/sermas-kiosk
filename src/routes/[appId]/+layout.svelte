@@ -102,7 +102,6 @@
   const onSessionStatusChanged = (ev: {
     status: "closed" | "created" | "updated";
   }) => {
-    console.log("Session status changed", ev);
     if (ev.status !== "closed") return;
     document?.location?.reload();
     logger.log(`Session closed, reloading page`);

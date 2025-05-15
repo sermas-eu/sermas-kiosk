@@ -103,8 +103,8 @@
     status: "closed" | "created" | "updated";
   }) => {
     if (ev.status !== "closed") return;
-    document?.location?.reload();
     logger.log(`Session closed, reloading page`);
+    document?.location?.reload();
   };
 
   onMount(async () => {

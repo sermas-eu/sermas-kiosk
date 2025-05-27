@@ -103,8 +103,11 @@
     const toolkitSessionId = toolkit?.getSessionId();
     if (toolkitSessionId !== undefined && toolkitSessionId !== ev.sessionId) return;
     if (ev.status !== "closed") return;
-    logger.log(`Session closed, reloading page`);
-    window?.location?.reload();
+    const settings = toolkit.getSettings()?.get();
+    if (settings?.interactionStart === 'on-load') {
+      logger.log(`Session closed, reloading page`);
+      window?.location?.reload();
+    }
   };
 
   onMount(async () => {

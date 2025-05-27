@@ -100,10 +100,11 @@
   };
 
   const onSessionStatusChanged = (ev: SessionStatusEvent) => {
-    if (toolkit?.getSessionId() !== ev.sessionId) return;
+    const toolkitSessionId = toolkit?.getSessionId();
+    if (toolkitSessionId !== undefined && toolkitSessionId !== ev.sessionId) return;
     if (ev.status !== "closed") return;
     logger.log(`Session closed, reloading page`);
-    document?.location?.reload();
+    window?.location?.reload();
   };
 
   onMount(async () => {

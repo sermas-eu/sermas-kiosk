@@ -1,5 +1,5 @@
 networks:
-  sermas_dev:
+  vipp_dev:
     external: true
 
 services:
@@ -13,7 +13,7 @@ services:
         aliases:
           - kiosk
           - sermas-toolkit-api-kiosk-1
-      sermas_dev:
+      vipp_dev:
     build: .
     image: ghcr.io/sermas-eu/kiosk:dev
     volumes:

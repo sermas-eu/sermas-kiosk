@@ -15,7 +15,7 @@ static/models*
 static/*.onnx
 static/*.wasm
 static/backgrounds
-static/sermas-repository*
+static/vippstar-repository*
 static/repository*
 static.*/
 

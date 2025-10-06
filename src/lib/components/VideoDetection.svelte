@@ -17,7 +17,7 @@
 
   const logger = new Logger("VideoDetection");
 
-  const enableHuman = false;
+  const ENABLE_HUMAN_DETECTOR = true;
 
   let enableTestFaces: boolean;
   let sessionId: string | undefined;
@@ -79,7 +79,7 @@
   const createHuman = () =>
     new HumanDetector(
       {
-        detectionThreshold: 5000,
+        detectionThreshold: 1000,
       },
       () =>
         new Worker(
@@ -92,7 +92,7 @@
     // let's wait for holistic to be part of @mediapipe/tasks-vision
     // see https://github.com/google/mediapipe/issues/2506
 
-    if (enableHuman === false) {
+    if (!ENABLE_HUMAN_DETECTOR) {
       logger.warn(`Human detector disabled`);
       return;
     }

@@ -7,12 +7,16 @@
   import UiContent from "$lib/components/UIContent.svelte";
   import VideoDetection from "$lib/components/VideoDetection.svelte";
   import WebAvatar from "$lib/components/WebAvatar.svelte";
+  import PushToTalk from "$lib/components/PushToTalk.svelte";
   import { appReadyStore } from "$lib/store";
   import { browser } from "$app/environment";
 
   let loading = true;
   $: if (browser && $appReadyStore) loading = !$appReadyStore;
 
+
+ function onStart() { console.log('start voice capture'); }
+  function onStop()  { console.log('stop voice capture'); }
 </script>
 
 
@@ -26,5 +30,6 @@
     <WebAvatar />
     <UiContent />
     <StatusBar />
+    <PushToTalk size={80} on:start={onStart} on:stop={onStop}/>
   </Auth>
 {/if}

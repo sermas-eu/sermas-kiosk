@@ -36,9 +36,12 @@
             //     userSpeaking = true;
             //     status = "Listening..."
             //     break;
-            // case "noise":
-            //     if (!userSpeaking) message = "Noise detected";
-            //     break;
+            case "noise":
+                status = "Push to talk";
+                userSpeaking = false;
+                message = "";
+                stopMic();
+                break;
             case "completed":
                 userSpeaking = false;
                 message = "";
@@ -88,13 +91,9 @@
         toolkit.getUI().on("ui.user.speaking", onUserSpeaking);
     });
 
-    onDestroy(() => {
-        // toolkit.getBroker().off("ui.status", onStatus);
-        // toolkit.getUI().off("dialogue.progress", onProgress);
-    });
 </script>
 
-{#if pushToTalkEnabled && enableMic && !processingAudio}
+{#if pushToTalkEnabled && enableMic}
 <div class="push-to-talk" id="push-to-talk">
     <button class="push-to-talk-btn sermas-button is-large  {listening ? 'listening' : ''}" on:mouseup={startMic}>
         <div class="ptt-icon"><i class="fas fa-microphone"></i></div>

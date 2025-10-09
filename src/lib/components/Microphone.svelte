@@ -20,7 +20,7 @@
 
   let avatarSpeaking = false;
 
-  $: enableMic ? !$appSettingsStore.pushToTalkEnabled ? start(): stop() : stop();
+  $: enableMic ? start(): stop();
 
   $: if ($appSettingsStore && $appSettingsStore.enableMic !== enableMic) {
     enableMic = $appSettingsStore.enableMic ? true : false;
@@ -28,10 +28,22 @@
 
   $: if ($appSettingsStore && $appSettingsStore.pushToTalkEnabled !== pushToTalkEnabled) {
     pushToTalkEnabled = $appSettingsStore.pushToTalkEnabled ? true : false;
-    if (pushToTalkEnabled) stop();
+    if (pushToTalkEnabled) pause();
   }
 
   let detection: AudioDetection | undefined;
+
+  export const pause = () => {
+    if (detection) {
+      detection.pause();
+    }
+  };
+
+  export const restore = () => {
+    if (detection) {
+      detection.restore();
+    }
+  };
 
   const onAvatarSpeakingChanged = async (isSpeaking: boolean) => {
     avatarSpeaking = isSpeaking;
@@ -72,16 +84,21 @@
     if (!enableMic) return;
     if (started) return;
     if (!mounted) return;
-    started = true;
-
+    
     if (!detection) {
       logger.debug(`Load audio detection`);
       detection = toolkit.getAudioDetection();
 
       detection.on("speaking", onUserSpeaking);
       await detection.start();
+      
+      if ($appSettingsStore.pushToTalkEnabled) {
+        logger.debug(`Push to talk enabled, pausing detection`);
+        detection.pause();
+      }
     }
-
+    started = true;
+    
     toolkit.on("detection.speech", onUserSpeechClassification);
     toolkit.on("ui.avatar.speaking", onAvatarSpeakingChanged);
   };
@@ -105,8 +122,6 @@
   });
   onMount(() => {
     mounted = true;
-    if (!$appSettingsStore.pushToTalkEnabled) {
-      start();
-    }
+    start();
   });
 </script>

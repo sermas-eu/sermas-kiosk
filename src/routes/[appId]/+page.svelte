@@ -16,8 +16,8 @@
 
   let childComponent: Microphone;
 
- function onStart() { console.log('start voice capture'); childComponent.start()}
-  function onStop()  { console.log('stop voice capture'); childComponent.stop() }
+ function onStart() { console.log('start voice capture'); childComponent.restore()}
+  function onStop()  { console.log('stop voice capture'); childComponent.pause() }
 </script>
 
 

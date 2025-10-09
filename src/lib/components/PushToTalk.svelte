@@ -30,6 +30,7 @@
 
     const onUserSpeaking = (ev: UserSpeaking) => {
         let message: string | undefined = undefined;
+        console.log(ev.status)
         switch (ev.status) {
             // case "speaking":
             //     message = "Listening";
@@ -37,10 +38,10 @@
             //     status = "Listening..."
             //     break;
             case "noise":
-                status = "Push to talk";
-                userSpeaking = false;
-                message = "";
-                stopMic();
+                // status = "Push to talk";
+                // userSpeaking = false;
+                // message = "";
+                // stopMic();
                 break;
             case "completed":
                 userSpeaking = false;
@@ -81,6 +82,7 @@
     }
 
     const stopMic = () => {
+        console.log('stopMic');
         dispatch('stop');
         active = false;
     }
@@ -107,8 +109,8 @@
 
 
     .ptt-status {
-      padding-top: 5px;
-        font-size: 1.1em;
+        padding-top: 3px;
+        font-size: 1.2em;
         //font-weight: bold;
         height: 50%;
     }

@@ -14,9 +14,10 @@
   let loading = true;
   $: if (browser && $appReadyStore) loading = !$appReadyStore;
 
+  let childComponent;
 
- function onStart() { console.log('start voice capture'); }
-  function onStop()  { console.log('stop voice capture'); }
+ function onStart() { console.log('start voice capture'); childComponent.start()}
+  function onStop()  { console.log('stop voice capture'); childComponent.stop() }
 </script>
 
 
@@ -25,11 +26,11 @@
 {:else}
   <Auth>
     <NavBar />
-    <Microphone />
+    <Microphone bind:this={childComponent}/>
     <VideoDetection />
     <WebAvatar />
     <UiContent />
     <StatusBar />
-    <PushToTalk size={80} on:start={onStart} on:stop={onStop}/>
+    <PushToTalk on:start={onStart} on:stop={onStop}/>
   </Auth>
 {/if}

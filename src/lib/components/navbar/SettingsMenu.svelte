@@ -89,6 +89,10 @@
     settings.virtualKeyboardEnabled = ev.target.checked;
   };
 
+  const setPushToTalkEnabled = (ev: any) => {
+    settings.pushToTalkEnabled = ev.target.checked;
+  };
+
   const setSubtitlesEnabled = (ev: any) => {
     settings.subtitlesEnabled = ev.target.checked;
   };
@@ -210,6 +214,14 @@
                     on:change={setVirtualKeyboardEnabled}
                   />
                   Enable Virtual keyboard
+                </span>
+                <span class="li-item">
+                  <input
+                    type="checkbox"
+                    bind:checked={settings.pushToTalkEnabled}
+                    on:change={setPushToTalkEnabled}
+                  />
+                  Enable Push-To-Talk
                 </span>
                 <span class="li-item">
                   <span> Background </span>

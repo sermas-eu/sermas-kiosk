@@ -13,16 +13,22 @@
   const logger = new Logger("microphone");
 
   let enableMic: boolean;
+  let pushToTalkEnabled: boolean;
 
   let started = false;
   let mounted = false;
 
   let avatarSpeaking = false;
 
-  $: enableMic ? start() : stop();
+  $: enableMic ? !$appSettingsStore.pushToTalkEnabled ? start(): stop() : stop();
 
   $: if ($appSettingsStore && $appSettingsStore.enableMic !== enableMic) {
     enableMic = $appSettingsStore.enableMic ? true : false;
+  }
+
+  $: if ($appSettingsStore && $appSettingsStore.pushToTalkEnabled !== pushToTalkEnabled) {
+    pushToTalkEnabled = $appSettingsStore.pushToTalkEnabled ? true : false;
+    if (pushToTalkEnabled) stop();
   }
 
   let detection: AudioDetection | undefined;
@@ -61,7 +67,7 @@
     });
   };
 
-  const start = async () => {
+  export const start = async () => {
     if (!browser) return;
     if (!enableMic) return;
     if (started) return;
@@ -80,8 +86,8 @@
     toolkit.on("ui.avatar.speaking", onAvatarSpeakingChanged);
   };
 
-  const stop = async () => {
-    if (enableMic) return;
+  export const stop = async () => {
+    if (enableMic && !pushToTalkEnabled) return;
     if (!started) return;
 
     detection?.stop();
@@ -99,6 +105,8 @@
   });
   onMount(() => {
     mounted = true;
-    start();
+    if (!$appSettingsStore.pushToTalkEnabled) {
+      start();
+    }
   });
 </script>

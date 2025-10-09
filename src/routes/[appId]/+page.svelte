@@ -7,12 +7,17 @@
   import UiContent from "$lib/components/UIContent.svelte";
   import VideoDetection from "$lib/components/VideoDetection.svelte";
   import WebAvatar from "$lib/components/WebAvatar.svelte";
+  import PushToTalk from "$lib/components/PushToTalk.svelte";
   import { appReadyStore } from "$lib/store";
   import { browser } from "$app/environment";
 
   let loading = true;
   $: if (browser && $appReadyStore) loading = !$appReadyStore;
 
+  let childComponent: Microphone;
+
+ function onStart() { console.log('start voice capture'); childComponent.restore()}
+  function onStop()  { console.log('stop voice capture'); childComponent.pause() }
 </script>
 
 
@@ -21,10 +26,10 @@
 {:else}
   <Auth>
     <NavBar />
-    <Microphone />
+    <Microphone bind:this={childComponent}/>
     <VideoDetection />
     <WebAvatar />
-    <UiContent />
+    <UiContent on:start={onStart} on:stop={onStop}/>
     <StatusBar />
   </Auth>
 {/if}

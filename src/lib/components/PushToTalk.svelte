@@ -29,24 +29,9 @@
     }
 
     const onUserSpeaking = (ev: UserSpeaking) => {
-        let message: string | undefined = undefined;
-        console.log(ev.status)
         switch (ev.status) {
-            // case "speaking":
-            //     message = "Listening";
-            //     userSpeaking = true;
-            //     status = "Listening..."
-            //     break;
-            case "noise":
-                // status = "Push to talk";
-                // userSpeaking = false;
-                // message = "";
-                // stopMic();
-                break;
             case "completed":
                 userSpeaking = false;
-                message = "";
-                // status = "Wait..."
                 status = "Push to talk";
                 stopMic();
                 break;
@@ -63,7 +48,6 @@
             processingAudio = false;
             return;
         }
-        console.log('progress event', ev.event);
         processingAudio = ev.event == 'ended' ? false : true;
     };
 
@@ -82,6 +66,7 @@
     }
 
     const stopMic = () => {
+        if (!pushToTalkEnabled) return
         console.log('stopMic');
         dispatch('stop');
         active = false;

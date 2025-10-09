@@ -548,15 +548,17 @@
     {/if}
     {#if sessionOpened}
       <div class="chat-input">
+        {#if showStopButton}
         <button
           disabled={(enableAudio && !showStopButton) || !enableAudio}
           class="button is-medium is-primary ml-2 sermas-button"
           on:click={() => ui.stopAvatarSpeech()}
         >
-          <span class="icon is-medium">
-            <i class="fas fa-stop"></i>
-          </span>
-        </button>
+        <span class="icon is-medium">
+          <i class="fas fa-stop"></i>
+        </span>
+      </button>
+      {/if}
         <form on:submit|preventDefault={sendChatMessage} class="input-form">
           <input
             id="user-input"
@@ -571,6 +573,7 @@
             placeholder="Type something to ask"
             autocomplete="off"
           />
+          {#if chatMessage.trim().length > 0}
           <button
             id="send-button"
             class="button is-medium ml-2 is-primary sermas-button {sendingMessage
@@ -580,6 +583,7 @@
           >
             <span>Send</span>
           </button>
+          {/if}
         </form>
         <PushToTalk on:start={onStart} on:stop={onStop}/>
       </div>

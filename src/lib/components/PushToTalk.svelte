@@ -127,7 +127,7 @@
         width: 120px;
         height: 50px;
         border: none;
-        border-radius: 10px;
+        border-radius: 7px;
         opacity: 0.8;
         background-color: #444;
         color: white;
@@ -161,15 +161,4 @@
         color: white;
     }
 
-
-    @include mobile-view {
-        .status-bar {
-            display: none;
-        }
-        #push-to-talk{
-            left: 50%;
-            transform: translateX(-50%);
-            bottom: 17vh;
-        }
-    }
 </style>

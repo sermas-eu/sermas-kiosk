@@ -14,7 +14,7 @@
   let loading = true;
   $: if (browser && $appReadyStore) loading = !$appReadyStore;
 
-  let childComponent;
+  let childComponent: Microphone;
 
  function onStart() { console.log('start voice capture'); childComponent.start()}
   function onStop()  { console.log('stop voice capture'); childComponent.stop() }
@@ -29,8 +29,7 @@
     <Microphone bind:this={childComponent}/>
     <VideoDetection />
     <WebAvatar />
-    <UiContent />
+    <UiContent on:start={onStart} on:stop={onStop}/>
     <StatusBar />
-    <PushToTalk on:start={onStart} on:stop={onStop}/>
   </Auth>
 {/if}

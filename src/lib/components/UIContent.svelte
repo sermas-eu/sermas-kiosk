@@ -20,7 +20,7 @@
   import { emitter } from "@sermas/toolkit/events";
   import { Logger, getChunkId } from "@sermas/toolkit/utils";
   import { deepCopy } from "deep-copy-ts";
-  import { onDestroy, onMount } from "svelte";
+  import { createEventDispatcher, onDestroy, onMount } from "svelte";
   import AvatarName from "./AvatarName.svelte";
   import RenderContent from "./contents/RenderContent.svelte";
   import Loader from "./Loader.svelte";
@@ -28,6 +28,7 @@
   import SpinnerVoice from "./SpinnerVoice.svelte";
   import Subtitle from "./Subtitle.svelte";
   import VirtualKeyboard from "./VirtualKeyboard.svelte";
+    import PushToTalk from "./PushToTalk.svelte";
 
   type InteractionSpinner = {
     type: "voice" | "request";
@@ -90,6 +91,11 @@
     enableMic = $appSettingsStore.enableMic;
     enableAudio = $appSettingsStore.enableAudio;
   }
+
+  const dispatch = createEventDispatcher();
+
+  function onStart() { dispatch('start');}
+  function onStop()  { dispatch('stop'); }
 
   const scrollChat = () => {
     setTimeout(() => {
@@ -575,6 +581,7 @@
             <span>Send</span>
           </button>
         </form>
+        <PushToTalk on:start={onStart} on:stop={onStop}/>
       </div>
     {/if}
     {#if navigationFrameEnabled}

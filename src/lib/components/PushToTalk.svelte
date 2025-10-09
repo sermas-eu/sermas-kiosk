@@ -63,13 +63,23 @@
         processingAudio = ev.event == 'ended' ? false : true;
     };
 
-    const startMic = (ev) => {
+    let active = false;
+
+    const startMic = () => {
+        if (active == true) {
+            stopMic();
+            processingAudio = false;
+            status = "Push to talk";
+            return
+        }
         status = "Listening..."
         dispatch('start');
+        active = true;
     }
 
-    const stopMic = (ev) => {
+    const stopMic = () => {
         dispatch('stop');
+        active = false;
     }
 
     onMount(() => {
@@ -96,23 +106,7 @@
 <style lang="scss">
     @import "../../variables.scss";
 
-    #push-to-talk{
-        position: absolute;
-        left: 25%;
-        bottom: 25vh;
-    }
-    .push-to-talk-btn{
-        position: flex;
-        flex-direction: column;
-        width: 100px;
-        height: 100px;
-        border: none;
-        border-radius: 100px !important;
-        opacity: 0.8;
-    }
-    .push-to-talk-btn:active{
-        opacity: 1.0;
-    }
+
     .ptt-status {
       padding-top: 5px;
         font-size: 1.1em;
@@ -121,7 +115,7 @@
     }
     .ptt-icon{
         padding-top:5px;
-        font-size: 3em;
+        font-size: 1.5em;
         height: 50%;
     }
 
@@ -130,14 +124,15 @@
         flex-direction: column;
         align-items: center;
         justify-content: center;
-        width: 100px;
-        height: 100px;
+        width: 120px;
+        height: 50px;
         border: none;
-        border-radius: 100px !important;
+        border-radius: 10px;
         opacity: 0.8;
         background-color: #444;
         color: white;
         transition: background-color 0.3s ease, transform 0.3s ease;
+        margin-right: 5px;
     }
 
     .push-to-talk-btn:active {
@@ -160,11 +155,11 @@
         }
     }
 
-.push-to-talk-btn.listening {
-    background-color: #0078ff;
-    animation: pulse 1.5s infinite;
-    color: white;
-}
+    .push-to-talk-btn.listening {
+        background-color: #0078ff;
+        animation: pulse 1.5s infinite;
+        color: white;
+    }
 
 
     @include mobile-view {

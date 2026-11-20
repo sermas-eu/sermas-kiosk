@@ -11,7 +11,7 @@
     } from "@sermas/api-client";
     import { onDestroy, onMount } from "svelte";
 
-    let interval: NodeJS.Timeout;
+    let interval: ReturnType<typeof setTimeout>;
 
     let session: SessionDto;
     let ready = false;
@@ -40,6 +40,7 @@
 
     const loadMonitoringHistory = async () => {
         const { appId, sessionId } = $page.params;
+        if (!appId || !sessionId) return;
         history = await toolkit.getApiClient().api.platform.monitoringSearch({
             requestBody: {
                 appId,
@@ -61,6 +62,7 @@
 
     const loadSession = async () => {
         const { appId, sessionId } = $page.params;
+        if (!appId || !sessionId) return;
         session = await toolkit.getApiClient().api.session.readSession({
             sessionId,
         });

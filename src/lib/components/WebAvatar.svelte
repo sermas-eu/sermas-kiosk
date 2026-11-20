@@ -27,7 +27,6 @@
   let enableAudio: boolean;
   let enableAvatar: boolean;
   let enableAnimation: boolean;
-  let enableMirrorMode: boolean;
   let avatar: string;
   let animation: string;
   let animationList: string[] = [];
@@ -50,7 +49,6 @@
 
     enableAvatar = settings.enableAvatar;
     enableAnimation = settings.enableAnimation;
-    enableMirrorMode = settings.enableMirrorMode;
     rpmUrl = settings.rpmUrl;
     rpmGender = settings.rpmGender;
     avatar = settings.avatar;
@@ -64,7 +62,6 @@
   $: enableAudio, $avatarModelStore?.toggleAudio(enableAudio);
   $: enableAvatar ? start() : stop();
   $: enableAnimation ? enableAnim(true) : enableAnim();
-  $: enableMirrorMode ? enableMirror(true) : enableMirror();
   $: avatar && repository, reload();
   $: rpmUrl || rpmGender, reload();
   $: animation, triggerAnimation(animation);
@@ -109,11 +106,6 @@
     if (blob) {
       $backgroundImageAndSoundStore.urlImage = `${await toBase64(blob)}`;
     }
-  };
-
-  const enableMirror = (enable = false) => {
-    logger.debug(`Enable mirror mode: ${enable}`);
-    $avatarModelStore?.setMirrorModeEnabled(enable);
   };
 
   const triggerAnimation = (name: string) => {

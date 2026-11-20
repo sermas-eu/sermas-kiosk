@@ -327,7 +327,7 @@
                       href="#"
                       class="has-text-grey-lighter a-no-padding"
                       title={$sessionIdStore}
-                      on:click={(e) => copyClipboard($sessionIdStore)}
+                      on:click={(_e) => copyClipboard($sessionIdStore)}
                     >
                       Copy Session ID
                       <b class="has-text-white-ter">
@@ -340,7 +340,7 @@
                       href="#"
                       class="has-text-grey-lighter a-no-padding"
                       title="Open Issue"
-                      on:click={(e) => openGithubIssue($sessionIdStore)}
+                      on:click={(_e) => openGithubIssue($sessionIdStore)}
                     >
                       Open Github Issue
                     </a>
@@ -351,7 +351,7 @@
                       class="has-text-grey-ter a-no-padding"
                       title="View stats"
                       target="_blank"
-                      on:click={(e) => copyClipboard($sessionIdStore)}
+                      on:click={(_e) => copyClipboard($sessionIdStore)}
                     >
                       Show statistics
                     </a>
@@ -387,25 +387,6 @@
                       disabled={!settings.enableVideoDetection}
                     />
                     Toggle Video Rendering
-                  </span>
-
-                  <span class="li-item">
-                    <input
-                      type="checkbox"
-                      bind:checked={settings.enableMirrorMode}
-                      disabled={!settings.enableVideoDetection ||
-                        !settings.enableAnimation}
-                    />
-                    Mirror mode (holistic v1)
-                  </span>
-
-                  <span class="li-item">
-                    <input
-                      type="checkbox"
-                      bind:checked={settings.detectorHuman}
-                      disabled={!settings.enableVideoDetection}
-                    />
-                    Toggle Emotion (human)
                   </span>
 
                   <span class="li-item">

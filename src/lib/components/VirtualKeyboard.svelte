@@ -72,7 +72,8 @@ const openKeyboard = async () => {
     return
   }
   await tick();
-  KioskBoard.run('.js-kioskboard-input', options)
+  // kioskboard's typings miss some of the options it accepts
+  KioskBoard.run('.js-kioskboard-input', options as any)
   await sleep(500);
   document.getElementById("keyboard-input-text")?.focus()
 }

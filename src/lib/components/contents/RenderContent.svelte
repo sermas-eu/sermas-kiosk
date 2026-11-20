@@ -1,7 +1,5 @@
 <script lang="ts">
   import type {
-    ImageContentDto,
-    TextContentDto,
     UIContentDto,
     UIContentMetadataDto,
     UIContentOptionsDto,

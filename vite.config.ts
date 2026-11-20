@@ -1,15 +1,14 @@
 import { sveltekit } from '@sveltejs/kit/vite';
 import { defineConfig } from 'vite';
-import { mediapipe } from 'vite-plugin-mediapipe';
 import { viteStaticCopy } from 'vite-plugin-static-copy';
 
-import pkg from './package.json' assert { type: 'json' };
-import { SermasViteConfig, getCopyFiles } from './vite.config.toolkit'
+import pkg from './package.json' with { type: 'json' };
+import { toolkitDedupe, toolkitDir } from './svelte.config.toolkit.js';
+import { SermasViteConfig, getCopyFiles } from './vite.config.toolkit.ts';
 
 export default defineConfig({
 	plugins: [
     sveltekit(),
-    mediapipe(),
     viteStaticCopy({
       targets: [
         // add copy files
@@ -22,6 +21,9 @@ export default defineConfig({
       "@undecaf/zbar-wasm"
     ]
   },
+  resolve: {
+    dedupe: toolkitDedupe,
+  },
   ssr: {
 		noExternal: ['three']
 	},
@@ -33,9 +35,7 @@ export default defineConfig({
     // allow to serve files from ../*
     // eg. from sermas-toolkit
     fs: {
-      allow: [
-        '../'
-      ]
+      allow: ['.', toolkitDir]
     },
     hmr: {
       overlay: false

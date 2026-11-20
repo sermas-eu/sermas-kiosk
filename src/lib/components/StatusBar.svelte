@@ -46,8 +46,7 @@
                 message = "Reasoning";
                 break;
             case "translate":
-            // message = "Translating";
-            // break;
+            // falls through: translation is shown as answering
             case "tts":
                 message = "Answering";
                 break;

@@ -3,30 +3,23 @@
   import { toolkit } from "$lib";
   import { appSettingsStore, sessionIdStore } from "$lib/store";
   import {
-    HumanDetector,
     QrcodeDetector,
-    type HumanDetectionResult,
+    type FaceLandmarkDetectorResult,
   } from "@sermas/toolkit/detection";
-  import { AppSettings } from "@sermas/toolkit/dto";
+  import type { AppSettings } from "@sermas/toolkit/dto";
 
-  import type { FaceLandmarkDetectorResult } from "@sermas/toolkit/detection";
-  import { HolisticDetector } from "@sermas/toolkit/detection";
   import { emitter, sendStatus } from "@sermas/toolkit/events";
   import { Logger, type PerformanceEvent } from "@sermas/toolkit/utils";
   import { onDestroy, onMount } from "svelte";
 
   const logger = new Logger("VideoDetection");
 
-  const ENABLE_HUMAN_DETECTOR = true;
-
   let enableTestFaces: boolean;
   let sessionId: string | undefined;
   let testFace: string;
   let enableVideoDetection: boolean;
   let showVideo = false;
-  let mirrorMode: boolean;
   let detectorFaceLandmarker: boolean;
-  let detectorHuman: boolean;
   let qrcode: boolean;
 
   const S_KEY = "KeyS";
@@ -54,9 +47,7 @@
     testFace = settings.testFace;
     enableVideoDetection = settings.enableVideoDetection;
     showVideo = settings.showVideo;
-    mirrorMode = settings.enableMirrorMode;
     detectorFaceLandmarker = settings.detectorFaceLandmarker;
-    detectorHuman = settings.detectorHuman;
     qrcode = settings.qrcode;
   };
 
@@ -65,44 +56,10 @@
   $: if (showVideo !== undefined && enableVideoDetection && videoDetection)
     videoDetection.toggleRender(showVideo);
 
-  $: if (mirrorMode !== undefined && videoDetection && browser)
-    toggleMirrorMode();
-
   $: if (detectorFaceLandmarker !== undefined && videoDetection && browser)
     toggleFaceLandmarker();
 
-  $: if (detectorHuman !== undefined && videoDetection && browser)
-    toggleHuman();
-
   $: if (qrcode !== undefined && videoDetection && browser) toggleQrcode();
-
-  const createHuman = () =>
-    new HumanDetector(
-      {
-        detectionThreshold: 1000,
-      },
-      () =>
-        new Worker(
-          new URL("@sermas/toolkit/detectors/human.worker", import.meta.url),
-          { type: "module" },
-        ),
-    );
-
-  const toggleHuman = () => {
-    // let's wait for holistic to be part of @mediapipe/tasks-vision
-    // see https://github.com/google/mediapipe/issues/2506
-
-    if (!ENABLE_HUMAN_DETECTOR) {
-      logger.warn(`Human detector disabled`);
-      return;
-    }
-
-    if (detectorHuman) {
-      videoDetection.add(createHuman());
-    } else {
-      videoDetection.remove("human");
-    }
-  };
 
   const loadFaceLandmarker = async () => {
     if (faceLandmarkerModule) return;
@@ -132,17 +89,7 @@
     }
   };
 
-  const toggleMirrorMode = () => {
-    // let's wait for holistic to be part of @mediapipe/tasks-vision
-    // see https://github.com/google/mediapipe/issues/2506
-    if (mirrorMode) {
-      videoDetection.add(new HolisticDetector());
-    } else {
-      videoDetection.remove("holistic_v1");
-    }
-  };
-
-  const onPerformance = async (ev: PerformanceEvent) => {
+  const onPerformance = async (_ev: PerformanceEvent) => {
     // if (ev.status === "degraded") {
     //   logger.warn("Disabling video detecions");
     //   enableVideoDetection = false;
@@ -263,10 +210,6 @@
       if (!enableTestFaces) {
         toolkit.emit("avatar.face", result.faceBlendshapes[0].categories);
       }
-    });
-
-    videoDetection.on("holistic_v1", (ev: HumanDetectionResult) => {
-      toolkit.emit("detection.pose", ev);
     });
   };
 

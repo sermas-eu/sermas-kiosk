@@ -5,6 +5,10 @@ export const renderMarkdown = async (text: string) => {
   return DOMPurify.sanitize(await marked.parse(text));
 };
 
+/** HTML from UI content messages is untrusted: sanitize before {@html}. */
+export const sanitizeHtml = (html: string | undefined) =>
+  html ? DOMPurify.sanitize(html) : "";
+
 const getLanguage = (language?: string) => {
   if (!language) {
     if (typeof navigator !== "undefined") {

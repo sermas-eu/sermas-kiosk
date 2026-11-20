@@ -18,7 +18,7 @@ tasks:
       - npm ci --no-audit --no-fund
 
   dev:
-    desc: "Run with hot reload on :3001 (TOOLKIT_FROM_TS=1 uses ../sermas-toolkit-web sources)"
+    desc: "Run with hot reload on :3001; compiles the toolkit from TOOLKIT_DIR (default ../sermas-toolkit-web)"
     cmds:
       - |
         export NVM_DIR="${NVM_DIR:-$HOME/.nvm}"
@@ -31,7 +31,6 @@ tasks:
         [ -f '{{.ENV_FILE}}' ] && . '{{.ENV_FILE}}'
         set +a
         export NODE_ENV=development
-        export BUILD_FROM_TS='{{.TOOLKIT_FROM_TS | default "0"}}'
         npx vite dev --host 0.0.0.0 --port 3001 --strictPort
 
   build:
@@ -48,6 +47,11 @@ tasks:
     desc: "Lint"
     cmds:
       - npm run lint
+
+  test:
+    desc: "Component tests (task test -- <pattern>)"
+    cmds:
+      - npm test -- {{.CLI_ARGS}}
 
   docker:build:
     desc: "Build the image locally (never pushed)"

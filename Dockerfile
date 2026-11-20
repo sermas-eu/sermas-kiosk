@@ -1,19 +1,19 @@
-FROM node:18 AS build
+# Built with the toolkit sources as the extra build context `toolkit`
+# (docker-compose.yaml sets it to the sermas-toolkit-web checkout).
+FROM node:24-slim AS build
+WORKDIR /app/sermas-kiosk
+COPY package.json package-lock.json .npmrc ./
+RUN npm ci --no-audit --no-fund
+COPY --from=toolkit src /app/sermas-toolkit-web/src
+COPY . .
+ENV TOOLKIT_DIR=/app/sermas-toolkit-web
+RUN npm run build && npm prune --omit=dev --no-audit --no-fund
 
-ARG BUILD_FROM_TS=0
-
+FROM node:24-slim
 WORKDIR /app
-ADD ./package.json .
-RUN npm i
-ADD . .
-
-RUN BUILD_FROM_TS=${BUILD_FROM_TS} npm run build
-
-FROM node:18 AS dev
-WORKDIR /app
-
-COPY --from=build /app /app
-RUN rm -rf /app/src
-
-ENTRYPOINT [ "node" ]
-CMD [ "-r", "dotenv/config", "./build" ]
+COPY --from=build /app/sermas-kiosk/package.json ./
+COPY --from=build /app/sermas-kiosk/node_modules ./node_modules
+COPY --from=build /app/sermas-kiosk/build ./build
+ENV NODE_ENV=production
+USER node
+CMD ["node", "build"]

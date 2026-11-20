@@ -1,8 +1,8 @@
 import { AppSettings } from "@sermas/toolkit/dto";
-import { PlatformAppDto } from "@sermas/toolkit";
+import { type PlatformAppDto } from "@sermas/toolkit";
 import { writable, type Writable } from "svelte/store";
 import { AvatarModel } from "@sermas/toolkit/avatar";
-import { BackgroundStoreDto } from "./components/dto/storeDto";
+import { type BackgroundStoreDto } from "./components/dto/storeDto";
 
 export const appReadyStore: Writable<boolean> = writable(false);
 export const avatarLoadedStore: Writable<boolean> = writable(false);

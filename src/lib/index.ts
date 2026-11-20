@@ -1,5 +1,5 @@
 import { env } from "$env/dynamic/public"
-import { SermasToolkit, SermasToolkitOptions } from "@sermas/toolkit"
+import { SermasToolkit, type SermasToolkitOptions } from "@sermas/toolkit"
 
 export let toolkit: SermasToolkit
 

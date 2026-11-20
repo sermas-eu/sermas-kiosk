@@ -1,20 +1,42 @@
+// The kiosk compiles @sermas/toolkit from its sources (sermas-toolkit-web),
+// in dev and in the image. TOOLKIT_DIR points at that checkout.
+import path from "node:path";
 
+export const toolkitDir = path.resolve(
+  process.env.TOOLKIT_DIR || "../sermas-toolkit-web",
+);
+
+/** @param {string} p */
+const src = (p) => path.join(toolkitDir, "src", p);
+
+// keep in line with "exports" in sermas-toolkit-web/package.json
 export const toolkitAliases = {
-    // <sermas-toolkit-web>
-    // NOTE: keep in line with toolkit 'exports' defined in @sermas/toolkit/package.json 
-    "@sermas/toolkit/utils": "../sermas-toolkit-web/src/utils.ts",
-    "@sermas/toolkit/detectors/human.worker": "../sermas-toolkit-web/src/detection/video/human/human.worker.ts",
-    "@sermas/toolkit/detectors/face-landmarker": "../sermas-toolkit-web/src/detection/video/mediapipe/v2/face-landmarker/index.ts",
-    "@sermas/toolkit/detection": "../sermas-toolkit-web/src/detection/index.ts",
-    "@sermas/toolkit/events": "../sermas-toolkit-web/src/events.ts",
-    "@sermas/toolkit/dto": "../sermas-toolkit-web/src/dto.ts",
-    "@sermas/toolkit/ui": "../sermas-toolkit-web/src/ui.ts",
-    "@sermas/toolkit/avatar": "../sermas-toolkit-web/src/avatar/index.ts",
-    "@sermas/toolkit/settings": "../sermas-toolkit-web/src/settings.ts",
+  "@sermas/toolkit/utils": src("utils.ts"),
+  "@sermas/toolkit/detectors/face-landmarker": src(
+    "detection/video/mediapipe/v2/face-landmarker/index.ts",
+  ),
+  "@sermas/toolkit/detection": src("detection/index.ts"),
+  "@sermas/toolkit/events": src("events.ts"),
+  "@sermas/toolkit/dto": src("dto.ts"),
+  "@sermas/toolkit/ui": src("ui.ts"),
+  "@sermas/toolkit/avatar": src("avatar/index.ts"),
+  "@sermas/toolkit/settings": src("settings.ts"),
+  "@sermas/toolkit": src("index.ts"),
+};
 
-    '@sermas/toolkit': '../sermas-toolkit-web/src',
-    '@sermas/toolkit/*': '../sermas-toolkit-web/*',
-
-    // </sermas-toolkit-web>
-
-}
+// the toolkit's runtime dependencies resolve to the kiosk's single copy
+export const toolkitDedupe = [
+  "three",
+  "mqtt",
+  "keycloak-js",
+  "axios",
+  "buffer",
+  "eventemitter2",
+  "ulidx",
+  "@sermas/api-client",
+  "@mediapipe/tasks-audio",
+  "@mediapipe/tasks-vision",
+  "@ricky0123/vad-web",
+  "@undecaf/zbar-wasm",
+  "@lookingglass/webxr",
+];

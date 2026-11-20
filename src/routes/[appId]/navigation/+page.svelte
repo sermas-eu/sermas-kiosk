@@ -1,8 +1,7 @@
 <script lang="ts">
     import { browser } from "$app/environment";
     import { page } from "$app/stores";
-    import { env } from "$env/dynamic/public";
-    import { createToolkit } from "$lib";
+        import { createToolkit } from "$lib";
     import NavigationMap from "$lib/components/NavigationMap.svelte";
     import NavigationStatus from "$lib/components/NavigationStatus.svelte";
     import VideoFeed from "$lib/components/VideoFeed.svelte";
@@ -66,7 +65,7 @@
         await loadRobotData();
     };
 
-    const onMessage = async (event: MessageEvent<any>) => {
+    const onMessage = async (_event: MessageEvent<any>) => {
         // if (event.origin.indexOf("https://kiosk.local.sermas.spindoxlabs.it") === -1) {
         //     console.warn("Unknown origin ", event.origin)
         //     return
@@ -92,7 +91,9 @@
             token = data.accessToken;
         }
 
-        setTimeout(() => initToolkit(appId, data.accessToken), 3000);
+        const accessToken = data.accessToken;
+        if (appId && accessToken)
+            setTimeout(() => initToolkit(appId, accessToken), 3000);
     });
 
     onDestroy(async () => {

@@ -19,7 +19,6 @@
   } from "@sermas/toolkit/dto";
   import { emitter } from "@sermas/toolkit/events";
   import { Logger, getChunkId } from "@sermas/toolkit/utils";
-  import { deepCopy } from "deep-copy-ts";
   import { createEventDispatcher, onDestroy, onMount } from "svelte";
   import AvatarName from "./AvatarName.svelte";
   import RenderContent from "./contents/RenderContent.svelte";
@@ -33,7 +32,7 @@
   type InteractionSpinner = {
     type: "voice" | "request";
     enabled?: number;
-    timeout?: NodeJS.Timeout;
+    timeout?: ReturnType<typeof setTimeout>;
   };
 
   const logger = new Logger("ui");
@@ -67,7 +66,7 @@
     type: "voice",
   };
 
-  let pageContentSpinnerTimeout: NodeJS.Timeout;
+  let pageContentSpinnerTimeout: ReturnType<typeof setTimeout>;
 
   let showVirtualKeyboard = false;
   let inputValue = "";
@@ -203,14 +202,14 @@
 
       showHomepage = false;
 
-      history = [...deepCopy(chatHistory)];
+      history = [...structuredClone(chatHistory)];
 
       // console.warn("history", history);
 
       if (history.length) {
         lastMessage = history[history.length - 1];
         if (lastMessage && lastMessage?.actor === "user") {
-          lastUserMessage = deepCopy(lastMessage);
+          lastUserMessage = structuredClone(lastMessage);
         }
       }
 
@@ -277,7 +276,7 @@
       }
     };
 
-    ui.on("ui.user.request-processing", (req: RequestProcessing) => {
+    ui.on("ui.user.request-processing", (_req: RequestProcessing) => {
       showInteractionSpinner(false, "request");
     });
 
@@ -399,7 +398,7 @@
   >
     {#if history.length && !$appSettingsStore.subtitlesEnabled && sessionOpened}
       <div class="chat-history" id="chat-history">
-        {#each history as chatMessage, i}
+        {#each history as chatMessage, _i}
           <div class="chat-message actor-{chatMessage.actor}">
             <div class="actor sermas-actor with-neumorphism">
               {#if chatMessage.actor === "agent"}
@@ -451,8 +450,8 @@
     {:else if (lastMessage || lastUserMessage) && $appSettingsStore.subtitlesEnabled && sessionOpened}
       <div class="is-flex chat-history chat-history-subs">
         <span class="scroll-span">
-          {#each history as chatMessage, index}
-            {#each chatMessage.messages as message, i}
+          {#each history as chatMessage, _index}
+            {#each chatMessage.messages as message, _i}
               {#if chatMessage.actor === "agent" && message.contentType !== "dialogue-message" && message.messageId && message.messageId >= lastClearScreenMessageId}
                 <div
                   class="subtitle-div {chatMessage.actor === 'agent' &&
@@ -568,7 +567,7 @@
             id="user-input"
             class="input is-medium"
             bind:value={chatMessage}
-            on:focus={(e) =>
+            on:focus={(_e) =>
               openVirtualKeyboard(
                 chatMessage,
                 "Type something to ask",

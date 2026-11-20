@@ -8,3 +8,6 @@ vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
 public/unity
 src/lib/models
+.env
+.env.*
+!.env.example

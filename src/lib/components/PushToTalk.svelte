@@ -7,7 +7,7 @@
     SystemProgressEvent,
         UserSpeaking,
     } from "@sermas/toolkit/dto";
-    import { createEventDispatcher, onDestroy, onMount } from "svelte";
+    import { createEventDispatcher, onMount } from "svelte";
 
     const dispatch = createEventDispatcher();
 

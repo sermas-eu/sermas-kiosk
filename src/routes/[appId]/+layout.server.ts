@@ -3,7 +3,7 @@ import { env as envPrivate } from '$env/dynamic/private';
 import { env as envPublic } from '$env/dynamic/public';
 import { getAvatarToken } from "@sermas/sermas-toolkit-node-sdk";
 
-export const load: LayoutServerLoad = async ({ params, setHeaders }) => {
+export const load: LayoutServerLoad = async ({ params }) => {
   // setHeaders({
   //   'Cross-Origin-Opener-Policy': 'same-origin',
   //   'Cross-Origin-Embedder-Policy': 'require-corp',

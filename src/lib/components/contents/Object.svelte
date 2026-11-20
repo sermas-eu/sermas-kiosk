@@ -4,9 +4,9 @@
   import { logger } from "@sermas/toolkit/utils";
   import Scene from "./Scene.svelte";
   import * as THREE from "three";
-  import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
-  import { FBXLoader } from "three/examples/jsm/loaders/FBXLoader";
-  import { OBJLoader } from "three/examples/jsm/loaders/OBJLoader";
+  import { OrbitControls } from "three/addons/controls/OrbitControls.js";
+  import { FBXLoader } from "three/addons/loaders/FBXLoader.js";
+  import { OBJLoader } from "three/addons/loaders/OBJLoader.js";
   import { onMount } from "svelte";
 
   export let content: ObjectContentDto;

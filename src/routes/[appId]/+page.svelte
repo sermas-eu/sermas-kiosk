@@ -7,7 +7,6 @@
   import UiContent from "$lib/components/UIContent.svelte";
   import VideoDetection from "$lib/components/VideoDetection.svelte";
   import WebAvatar from "$lib/components/WebAvatar.svelte";
-  import PushToTalk from "$lib/components/PushToTalk.svelte";
   import { appReadyStore } from "$lib/store";
   import { browser } from "$app/environment";
 

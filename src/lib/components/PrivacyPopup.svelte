@@ -34,7 +34,7 @@
     checkPrivacy();
   };
 
-  $: if (browser) checkPrivacy();
+  if (browser) checkPrivacy();
 </script>
 
 {#if privacy !== "yes" && !isPrivacyPage}

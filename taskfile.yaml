@@ -1,0 +1,49 @@
+version: "3"
+
+# sermas-kiosk tasks. Run standalone, or from sermas-dev, which sets SERMAS_DEV_ROOT so
+# that `dev` reads the stack's config/kiosk/.env.
+
+vars:
+  ENV_FILE: '{{if .SERMAS_DEV_ROOT}}{{.SERMAS_DEV_ROOT}}/config/kiosk/.env{{else}}{{.ROOT_DIR}}/.env{{end}}'
+
+tasks:
+
+  default:
+    cmds:
+      - task --list
+
+  setup:
+    desc: "Install dependencies (npm ci)"
+    cmds:
+      - npm ci --no-audit --no-fund
+
+  dev:
+    desc: "Run with hot reload on :3001 (TOOLKIT_FROM_TS=1 uses ../sermas-toolkit-web sources)"
+    cmds:
+      - |
+        set -a
+        [ -f '{{.ENV_FILE}}' ] && . '{{.ENV_FILE}}'
+        set +a
+        export NODE_ENV=development
+        export BUILD_FROM_TS='{{.TOOLKIT_FROM_TS | default "0"}}'
+        npx vite dev --host 0.0.0.0 --port 3001 --strictPort
+
+  build:
+    desc: "Production build"
+    cmds:
+      - npm run build
+
+  check:
+    desc: "svelte-check"
+    cmds:
+      - npm run check
+
+  lint:
+    desc: "Lint"
+    cmds:
+      - npm run lint
+
+  docker:build:
+    desc: "Build the image locally (never pushed)"
+    cmds:
+      - docker compose build kiosk

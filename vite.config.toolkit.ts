@@ -34,9 +34,11 @@ export const SermasViteConfig = {
 export const getCopyFiles = () => {
     return copyFiles.map((filepath) => {
         const [src, dest] = filepath
+        // flat: vite-plugin-static-copy 4 keeps the source path otherwise
         return {
             src,
-            dest,
+            dest: dest || '.',
+            rename: { stripBase: true },
         }
     })
 }

@@ -8,13 +8,11 @@ import { SermasViteConfig, getCopyFiles } from './vite.config.toolkit.ts';
 
 export default defineConfig({
 	plugins: [
-    sveltekit(),
+    // before sveltekit(): in dev its handler would answer these paths first
     viteStaticCopy({
-      targets: [
-        // add copy files
-        ...getCopyFiles()
-      ]
-    })
+      targets: getCopyFiles(),
+    }),
+    sveltekit(),
   ],
   optimizeDeps: {
     exclude: [

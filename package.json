@@ -47,7 +47,6 @@
     "@mediapipe/tasks-audio": "^1.2.3",
     "@mediapipe/tasks-vision": "^1.2.3",
     "@ricky0123/vad-web": "^0.0.31",
-    "@sermas/sermas-toolkit-node-sdk": "^1.0.0-alpha.122",
     "@threlte/core": "^8.7.0",
     "@threlte/extras": "^9.23.1",
     "@threlte/xr": "^1.6.1",

@@ -12,6 +12,12 @@ export const apiClientDir = path.resolve(
   process.env.API_CLIENT_DIR || "../sermas-api-client",
 );
 
+// the server side's token helpers from the node SDK's sources
+// (sermas-toolkit-node-sdk); NODE_SDK_DIR points at that checkout
+export const nodeSdkDir = path.resolve(
+  process.env.NODE_SDK_DIR || "../sermas-toolkit-node-sdk",
+);
+
 /** @param {string} p */
 const src = (p) => path.join(toolkitDir, "src", p);
 
@@ -29,6 +35,12 @@ export const toolkitAliases = {
   "@sermas/toolkit/settings": src("settings.ts"),
   "@sermas/toolkit": src("index.ts"),
   "@sermas/api-client": path.join(apiClientDir, "src", "index.ts"),
+  "@sermas/sermas-toolkit-node-sdk/auth": path.join(
+    nodeSdkDir,
+    "src",
+    "modules",
+    "auth.ts",
+  ),
 };
 
 // the toolkit's runtime dependencies resolve to the kiosk's single copy

@@ -11,6 +11,7 @@ services:
       additional_contexts:
         toolkit: ${TOOLKIT_DIR:-../sermas-toolkit-web}
         api-client: ${API_CLIENT_DIR:-../sermas-api-client}
+        node-sdk: ${NODE_SDK_DIR:-../sermas-toolkit-node-sdk}
     image: sermas-kiosk:local
     restart: unless-stopped
     network_mode: host

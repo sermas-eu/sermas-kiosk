@@ -1,7 +1,7 @@
 import type { LayoutServerLoad } from "./$types";
 import * as envPrivate from '$app/env/private';
 import * as envPublic from '$app/env/public';
-import { getAvatarToken } from "@sermas/sermas-toolkit-node-sdk";
+import { getAvatarToken } from "@sermas/sermas-toolkit-node-sdk/auth";
 
 export const load: LayoutServerLoad = async ({ params }) => {
   return await getAvatarToken(params.appId, {

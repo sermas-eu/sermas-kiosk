@@ -13,9 +13,16 @@ tasks:
       - task --list
 
   setup:
-    desc: "Install dependencies (npm ci)"
+    desc: "Install dependencies (npm ci), and those of the toolkit and API client sources the kiosk compiles"
     cmds:
       - npm ci --no-audit --no-fund
+      # the bundle resolves their packages through the kiosk's own copy; their
+      # node_modules serve type checking (svelte-check) of their sources
+      - |
+        for dir in "${TOOLKIT_DIR:-../sermas-toolkit-web}" "${API_CLIENT_DIR:-../sermas-api-client}"; do
+          [ -f "$dir/package-lock.json" ] || { echo "  ! $dir: not checked out"; continue; }
+          (cd "$dir" && npm ci --no-audit --no-fund)
+        done
 
   dev:
     desc: "Run with hot reload on :3001; compiles the toolkit from TOOLKIT_DIR (default ../sermas-toolkit-web)"

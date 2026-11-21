@@ -5,7 +5,7 @@ import { defineConfig } from 'vite';
 import { viteStaticCopy } from 'vite-plugin-static-copy';
 
 import pkg from './package.json' with { type: 'json' };
-import { toolkitDedupe, toolkitDir } from './toolkit.config.js';
+import { apiClientDir, toolkitDedupe, toolkitDir } from './toolkit.config.js';
 import { toolkitAliases } from './toolkit.config.js';
 import { SermasViteConfig, getCopyFiles } from './vite.config.toolkit.ts';
 
@@ -40,7 +40,7 @@ export default defineConfig({
     // allow to serve files from ../*
     // eg. from sermas-toolkit
     fs: {
-      allow: ['.', toolkitDir]
+      allow: ['.', toolkitDir, apiClientDir]
     },
     hmr: {
       overlay: false

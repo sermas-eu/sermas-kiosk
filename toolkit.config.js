@@ -6,6 +6,12 @@ export const toolkitDir = path.resolve(
   process.env.TOOLKIT_DIR || "../sermas-toolkit-web",
 );
 
+// @sermas/api-client from its sources too (sermas-api-client); API_CLIENT_DIR
+// points at that checkout
+export const apiClientDir = path.resolve(
+  process.env.API_CLIENT_DIR || "../sermas-api-client",
+);
+
 /** @param {string} p */
 const src = (p) => path.join(toolkitDir, "src", p);
 
@@ -22,6 +28,7 @@ export const toolkitAliases = {
   "@sermas/toolkit/avatar": src("avatar/index.ts"),
   "@sermas/toolkit/settings": src("settings.ts"),
   "@sermas/toolkit": src("index.ts"),
+  "@sermas/api-client": path.join(apiClientDir, "src", "index.ts"),
 };
 
 // the toolkit's runtime dependencies resolve to the kiosk's single copy
@@ -33,7 +40,7 @@ export const toolkitDedupe = [
   "buffer",
   "eventemitter2",
   "ulidx",
-  "@sermas/api-client",
+  "jwt-decode",
   "@mediapipe/tasks-audio",
   "@mediapipe/tasks-vision",
   "@ricky0123/vad-web",

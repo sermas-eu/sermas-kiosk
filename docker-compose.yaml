@@ -10,6 +10,7 @@ services:
       context: .
       additional_contexts:
         toolkit: ${TOOLKIT_DIR:-../sermas-toolkit-web}
+        api-client: ${API_CLIENT_DIR:-../sermas-api-client}
     image: sermas-kiosk:local
     restart: unless-stopped
     network_mode: host

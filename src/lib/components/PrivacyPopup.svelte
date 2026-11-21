@@ -29,6 +29,10 @@
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          // the API records consent only for a verified caller
+          ...(toolkit.getToken()
+            ? { Authorization: `Bearer ${toolkit.getToken()}` }
+            : {}),
         },
       });
     checkPrivacy();

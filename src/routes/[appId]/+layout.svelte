@@ -206,7 +206,7 @@
 </div>
 
 <style lang="scss">
-  @import "../../variables.scss";
+  @use "../../variables.scss" as *;
 
   .error {
     padding-top: 10%;

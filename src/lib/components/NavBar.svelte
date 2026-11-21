@@ -256,7 +256,7 @@
 {/if}
 
 <style lang="scss">
-  @import "../../variables.scss";
+  @use "../../variables.scss" as *;
 
   .nav-container {
     position: absolute;

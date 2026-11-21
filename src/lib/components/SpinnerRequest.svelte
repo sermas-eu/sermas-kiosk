@@ -4,7 +4,7 @@
 </div>
 
 <style lang="scss">
-  @import "../../variables.scss";
+  @use "../../variables.scss" as *;
   //  var(--theme-primary-text-color)
 
   .spinner {

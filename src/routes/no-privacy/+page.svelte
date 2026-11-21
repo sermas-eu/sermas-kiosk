@@ -36,7 +36,7 @@
 </div>
 
 <style lang="scss">
-    @import "../../variables.scss";
+    @use "../../variables.scss" as *;
 
     .note {
         max-width: 35em;

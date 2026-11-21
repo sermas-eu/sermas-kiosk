@@ -39,7 +39,7 @@
 
 <style lang="scss">
   @use "bulma/sass/utilities/mixins";
-  @import "../../variables.scss";
+  @use "../../variables.scss" as *;
   $breakpoint: 1201px;
 
   .subtitle-wrap {

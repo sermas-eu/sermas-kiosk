@@ -22,16 +22,26 @@ export default defineConfig({
     }),
     sveltekit({
       adapter: adapter(),
-      alias: toolkitAliases,
       preprocess: vitePreprocess(),
     }),
   ],
+  css: {
+    preprocessorOptions: {
+      // Bulma's own deprecations (Sass if()) are not ours to fix
+      scss: { quietDeps: true },
+    },
+  },
   optimizeDeps: {
     exclude: [
       "@undecaf/zbar-wasm"
     ]
   },
   resolve: {
+    // exact matches; tsconfig.json mirrors them as `paths` for the type checker
+    alias: Object.entries(toolkitAliases).map(([name, target]) => ({
+      find: new RegExp(`^${name.replace(/[/.]/g, "\\$&")}$`),
+      replacement: target,
+    })),
     dedupe: toolkitDedupe,
   },
   ssr: {

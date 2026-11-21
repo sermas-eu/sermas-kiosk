@@ -63,7 +63,7 @@
 </div>
 
 <style lang="scss">
-  @import "../../../variables.scss";
+  @use "../../../variables.scss" as *;
 
   .quiz {
     // width: calc(var(--ui-content-width) / 1.5);

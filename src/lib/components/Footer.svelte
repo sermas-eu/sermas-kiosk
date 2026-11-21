@@ -24,7 +24,7 @@
 </footer>
 
 <style lang="scss">
-    @import "../../variables.scss";
+    @use "../../variables.scss" as *;
 
     .pre {
         font-family: "Courier New", Courier, monospace;

@@ -2,6 +2,9 @@
 # contexts `toolkit`, `api-client` and `node-sdk` (docker-compose.yaml sets them
 # to the sermas-toolkit-web, sermas-api-client and sermas-toolkit-node-sdk
 # checkouts).
+#
+# Every package is a devDependency, so adapter-node bundles what the server
+# imports into build/: the runtime image needs no node_modules.
 FROM node:24-slim AS build
 WORKDIR /app/sermas-kiosk
 COPY package.json package-lock.json .npmrc ./
@@ -13,12 +16,11 @@ COPY . .
 ENV TOOLKIT_DIR=/app/sermas-toolkit-web
 ENV API_CLIENT_DIR=/app/sermas-api-client
 ENV NODE_SDK_DIR=/app/sermas-toolkit-node-sdk
-RUN npm run build && npm prune --omit=dev --no-audit --no-fund
+RUN npm run build
 
 FROM node:24-slim
 WORKDIR /app
 COPY --from=build /app/sermas-kiosk/package.json ./
-COPY --from=build /app/sermas-kiosk/node_modules ./node_modules
 COPY --from=build /app/sermas-kiosk/build ./build
 ENV NODE_ENV=production
 USER node

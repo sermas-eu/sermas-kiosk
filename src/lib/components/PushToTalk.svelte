@@ -96,7 +96,7 @@
 {/if}
 
 <style lang="scss">
-    @import "../../variables.scss";
+    @use "../../variables.scss" as *;
 
 
     .ptt-status {

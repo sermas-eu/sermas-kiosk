@@ -116,7 +116,7 @@
 </div>
 
 <style lang="scss">
-    @import "../../variables.scss";
+    @use "../../variables.scss" as *;
 
     .status-bar {
         position: absolute;

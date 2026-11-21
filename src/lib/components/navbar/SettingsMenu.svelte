@@ -487,7 +487,7 @@
 {/if}
 
 <style lang="scss">
-  @import "../../../variables.scss";
+  @use "../../../variables.scss" as *;
   aside {
     margin: 1em 0 0 1em;
   }

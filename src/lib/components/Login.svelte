@@ -84,11 +84,11 @@
 </div>
 
 <style lang="scss">
-    @import "../../app.scss";
+    @use "../../variables.scss" as v;
 
     .login-img {
         backdrop-filter: blur(10px);
-        background-color: rgba($primary, 0.85);
+        background-color: rgba(v.$primary, 0.85);
         border-radius: 50%;
         height: 25vh;
         width: 25vh;

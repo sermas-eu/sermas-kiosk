@@ -262,7 +262,7 @@
 <div id="blendshape-controls"></div>
 
 <style lang="scss">
-  @import "../../variables.scss";
+  @use "../../variables.scss" as *;
 
   #blendshape-controls {
     position: absolute;

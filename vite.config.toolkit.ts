@@ -8,9 +8,11 @@ const copyFiles = [
     // @ricky0123/vad-web: the audio worklet and the Silero models
     ['node_modules/@ricky0123/vad-web/dist/vad.worklet.bundle.min.js', ''],
     ['node_modules/@ricky0123/vad-web/dist/silero_vad_v5.onnx', ''],
-    // onnxruntime-web: the WASM runtime the VAD loads
-    ['node_modules/onnxruntime-web/dist/*.wasm', ''],
-    ['node_modules/onnxruntime-web/dist/*.mjs', ''],
+    // onnxruntime-web: the WASM runtime the VAD loads. vad-web imports
+    // `onnxruntime-web/wasm`, which fetches only this variant; the others
+    // (jsep, jspi, asyncify: WebGPU/WebNN) are ~140 MB more
+    ['node_modules/onnxruntime-web/dist/ort-wasm-simd-threaded.wasm', ''],
+    ['node_modules/onnxruntime-web/dist/ort-wasm-simd-threaded.mjs', ''],
 ]
 
 // vite server options

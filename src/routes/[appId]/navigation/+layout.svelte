@@ -16,7 +16,7 @@
 
 <style lang="scss">
 
-  @import '../../../variables.scss';
+  @use '../../../variables.scss' as *;
 
   .app {
     position: relative;

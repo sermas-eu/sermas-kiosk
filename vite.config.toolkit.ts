@@ -38,7 +38,7 @@ export const getCopyFiles = () => {
         return {
             src,
             dest: dest || '.',
-            rename: { stripBase: true },
+            rename: { stripBase: true as const },
         }
     })
 }

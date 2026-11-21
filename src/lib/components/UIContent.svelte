@@ -4,6 +4,7 @@
   import {
     appConfigStore,
     appSettingsStore,
+    avatarFailedStore,
     avatarLoadedStore,
     backgroundImageAndSoundStore,
     sessionIdStore,
@@ -90,6 +91,9 @@
     enableMic = $appSettingsStore.enableMic;
     enableAudio = $appSettingsStore.enableAudio;
   }
+
+  // subtitles follow the avatar speech: without an avatar, show the chat history
+  $: showSubtitles = $appSettingsStore?.subtitlesEnabled && !$avatarFailedStore;
 
   const dispatch = createEventDispatcher();
 
@@ -371,7 +375,7 @@
 </script>
 
 <span>
-  {#if (subtitle || interactionSpinner.enabled) && $appSettingsStore.subtitlesEnabled && sessionOpened}
+  {#if (subtitle || interactionSpinner.enabled) && showSubtitles && sessionOpened}
     <span id="ui-content-agent" class="ui-content-agent">
       <div
         class="is-flex chat-history chat-history-subs chat-history-agent-subs"
@@ -396,7 +400,7 @@
     with-input-bar
     : ''} {$avatarLoadedStore ? '' : 'is-hidden'}"
   >
-    {#if history.length && !$appSettingsStore.subtitlesEnabled && sessionOpened}
+    {#if history.length && !showSubtitles && sessionOpened}
       <div class="chat-history" id="chat-history">
         {#each history as chatMessage, _i}
           <div class="chat-message actor-{chatMessage.actor}">
@@ -447,7 +451,7 @@
           </div>
         {/if}
       </div>
-    {:else if (lastMessage || lastUserMessage) && $appSettingsStore.subtitlesEnabled && sessionOpened}
+    {:else if (lastMessage || lastUserMessage) && showSubtitles && sessionOpened}
       <div class="is-flex chat-history chat-history-subs">
         <span class="scroll-span">
           {#each history as chatMessage, _index}
@@ -476,7 +480,7 @@
                     >
                       <RenderContent
                         content={message}
-                        subtitle={$appSettingsStore.subtitlesEnabled}
+                        subtitle={showSubtitles}
                         actor={chatMessage.actor}
                       />
                     </span>
@@ -505,7 +509,7 @@
                     <span class="subtitle-span">
                       <RenderContent
                         content={message}
-                        subtitle={$appSettingsStore.subtitlesEnabled}
+                        subtitle={showSubtitles}
                         actor={lastUserMessage.actor}
                       />
                     </span>

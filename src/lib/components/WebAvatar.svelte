@@ -4,6 +4,7 @@
   import {
     appConfigStore,
     appSettingsStore,
+    avatarFailedStore,
     avatarLoadedStore,
     avatarModelStore,
     backgroundImageAndSoundStore,
@@ -175,6 +176,11 @@
     }
 
     $avatarModelStore = await toolkit.createWebAvatar(avatarConfig);
+    if (!$avatarModelStore.getModel()) {
+      // no model (unreachable or missing): keep the UI usable, show the dialogue as text
+      logger.warn(`Avatar model not loaded, running text-only`);
+      avatarFailedStore.set(true);
+    }
 
     toolkit?.emit("avatar.status", "ready");
 
@@ -206,6 +212,7 @@
     }
     emitter.off("performance", onPerformance);
     started = false;
+    avatarFailedStore.set(false);
     avatarLoadedStore.set(false);
   };
 

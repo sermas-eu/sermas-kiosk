@@ -6,6 +6,8 @@ import { type BackgroundStoreDto } from "./components/dto/storeDto";
 
 export const appReadyStore: Writable<boolean> = writable(false);
 export const avatarLoadedStore: Writable<boolean> = writable(false);
+// the avatar could not load: the UI runs text-only (no speech-driven subtitles)
+export const avatarFailedStore: Writable<boolean> = writable(false);
 
 export const sessionIdStore: Writable<string | undefined> = writable();
 

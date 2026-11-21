@@ -7,12 +7,12 @@
   const noPrivacyPage = "/no-privacy";
 
   type PrivacyOptions = "yes" | "no" | null;
-  let privacy: PrivacyOptions = null;
+  let privacy: PrivacyOptions = $state(null);
 
-  let isPrivacyPage = true;
+  let isPrivacyPage = $state(true);
 
-  let radio1 = false,
-    radio2 = false;
+  let radio1 = $state(false),
+    radio2 = $state(false);
 
   const checkPrivacy = () => {
     // console.warn(page.url.pathname);
@@ -55,7 +55,7 @@
           <input
             type="radio"
             checked={radio1}
-            on:change={() => {
+            onchange={() => {
               radio1 = true;
             }}
           /> Yes
@@ -65,7 +65,7 @@
           <input
             type="radio"
             checked={!radio1}
-            on:change={() => {
+            onchange={() => {
               radio1 = false;
             }}
           /> No
@@ -80,7 +80,7 @@
           <input
             type="radio"
             checked={radio2}
-            on:change={() => {
+            onchange={() => {
               radio2 = true;
             }}
           /> Yes
@@ -90,7 +90,7 @@
           <input
             type="radio"
             checked={!radio2}
-            on:change={() => {
+            onchange={() => {
               radio2 = false;
             }}
           /> No
@@ -111,9 +111,9 @@
         <button
           class="button is-primary"
           disabled={!(radio1 && radio2)}
-          on:click={() => setPrivacy("yes")}>Yes</button
+          onclick={() => setPrivacy("yes")}>Yes</button
         >
-        <button class="button is-secondary" on:click={() => setPrivacy("no")}
+        <button class="button is-secondary" onclick={() => setPrivacy("no")}
           >No</button
         >
       </div>

@@ -9,7 +9,11 @@
   import { OBJLoader } from "three/addons/loaders/OBJLoader.js";
   import { onMount } from "svelte";
 
-  export let content: ObjectContentDto;
+  interface Props {
+    content: ObjectContentDto;
+  }
+
+  let { content }: Props = $props();
 
   onMount(async () => {
     if (content.type === "glb") return; // Nothing to do with GLB format, it is directly displayed using the Scene component

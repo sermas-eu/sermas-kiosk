@@ -2,18 +2,24 @@
   import { renderMarkdown } from "#lib/util.ts";
   import { type DialogueActor } from "@sermas/toolkit/dto";
 
-  export let actor: DialogueActor | null;
-  export let message: string;
-  export let id: string;
-  let textToShow: string;
+  interface Props {
+    actor: DialogueActor | null;
+    message: string;
+    id: string;
+  }
+
+  let { actor, message, id }: Props = $props();
+  let textToShow: string = $state()!;
 
   const renderText = async (text: string) => {
     textToShow = await renderMarkdown(text);
   };
 
-  $: if (message) {
-    renderText(message);
-  }
+  $effect(() => {
+    if (message) {
+      renderText(message);
+    }
+  });
 </script>
 
 <div

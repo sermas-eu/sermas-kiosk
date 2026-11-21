@@ -57,3 +57,11 @@ export const toBase64 = (blob: Blob): Promise<string> => {
     };
   });
 };
+
+/** Event handler wrapper calling `preventDefault()` first (replaces `on:x|preventDefault`). */
+export const preventDefault =
+  <E extends Event>(fn: (event: E) => unknown) =>
+  (event: E) => {
+    event.preventDefault();
+    fn(event);
+  };

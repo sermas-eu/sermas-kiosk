@@ -7,26 +7,31 @@
     SystemProgressEvent,
         UserSpeaking,
     } from "@sermas/toolkit/dto";
-    import { createEventDispatcher, onMount } from "svelte";
+    import { onMount } from "svelte";
 
-    const dispatch = createEventDispatcher();
+    interface Props {
+        onstart?: () => void;
+        onstop?: () => void;
+    }
 
-    $: listening = status.toLowerCase().includes("listening");
+    let { onstart, onstop }: Props = $props();
 
-    let status = "Push to talk";
+
+    let status = $state("Push to talk");
 
     let userSpeaking = false;
 
-    let pushToTalkEnabled: boolean;
-    let enableMic: boolean;
+    // undefined until the app settings are loaded
+    let enableMic: boolean | undefined = $derived(
+        $appSettingsStore ? !!$appSettingsStore.enableMic : undefined,
+    );
+    let pushToTalkEnabled: boolean | undefined = $derived(
+        $appSettingsStore
+            ? !!($appSettingsStore.pushToTalkEnabled && $appSettingsStore.enableMic)
+            : undefined,
+    );
 
-    $: if ($appSettingsStore && $appSettingsStore.enableMic !== enableMic) {
-        enableMic = $appSettingsStore.enableMic ? true : false;
-    }
 
-    $: if ($appSettingsStore && $appSettingsStore.pushToTalkEnabled !== pushToTalkEnabled) {
-        pushToTalkEnabled = $appSettingsStore.pushToTalkEnabled && $appSettingsStore.enableMic ? true : false;
-    }
 
     const onUserSpeaking = (ev: UserSpeaking) => {
         switch (ev.status) {
@@ -61,14 +66,14 @@
             return
         }
         status = "Listening..."
-        dispatch('start');
+        onstart?.();
         active = true;
     }
 
     const stopMic = () => {
         if (!pushToTalkEnabled) return
         console.log('stopMic');
-        dispatch('stop');
+        onstop?.();
         active = false;
     }
 
@@ -78,11 +83,12 @@
         toolkit.getUI().on("ui.user.speaking", onUserSpeaking);
     });
 
+    let listening = $derived(status.toLowerCase().includes("listening"));
 </script>
 
 {#if pushToTalkEnabled && enableMic}
 <div class="push-to-talk" id="push-to-talk">
-    <button class="push-to-talk-btn sermas-button is-large  {listening ? 'listening' : ''}" on:mouseup={startMic}>
+    <button class="push-to-talk-btn sermas-button is-large  {listening ? 'listening' : ''}" onmouseup={startMic}>
         <div class="ptt-icon"><i class="fas fa-microphone"></i></div>
         <div class="ptt-status">{status}</div>
     </button>

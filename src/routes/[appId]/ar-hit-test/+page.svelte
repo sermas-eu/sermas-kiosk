@@ -9,7 +9,7 @@
     import { OrbitControls } from "three/addons/controls/OrbitControls.js";
     import { XRControllerModelFactory } from "three/addons/webxr/XRControllerModelFactory.js";
 
-    export let data;
+    let { data } = $props();
 
     let toolkit: SermasToolkit;
     let apps: PlatformAppDto[] = [];

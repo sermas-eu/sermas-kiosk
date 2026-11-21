@@ -4,19 +4,19 @@
     import { toolkit } from "#lib";
     import Loader from "#lib/components/Loader.svelte";
     import { appReadyStore } from "#lib/store.ts";
-    import { toDateTime, toTime } from "#lib/util.ts";
+    import { preventDefault, toDateTime, toTime } from "#lib/util.ts";
     import {
         type MonitoringRecordDto,
         type SessionDto,
     } from "@sermas/api-client";
-    import { onDestroy, onMount } from "svelte";
+    import { onDestroy, onMount, untrack } from "svelte";
 
-    let interval: ReturnType<typeof setTimeout>;
+    let interval: ReturnType<typeof setTimeout> = $state()!;
 
-    let session: SessionDto;
-    let ready = false;
+    let session: SessionDto = $state()!;
+    let ready = $state(false);
 
-    let history: MonitoringRecordDto[] = [];
+    let history: MonitoringRecordDto[] = $state([]);
 
     onMount(async () => {
         if (!browser) return;
@@ -27,11 +27,6 @@
         if (interval) clearInterval(interval);
     });
 
-    $: if ($appReadyStore) {
-        ready = true;
-        interval = setInterval(() => refreshContents(), 1000);
-        refreshContents();
-    }
 
     const refreshContents = () => {
         loadSession();
@@ -94,6 +89,15 @@
         document.body.appendChild(link); // Required for FF
         link.click();
     };
+    $effect.pre(() => {
+        if ($appReadyStore) {
+            untrack(() => {
+                ready = true;
+                interval = setInterval(() => refreshContents(), 1000);
+                refreshContents();
+            });
+        }
+    });
 </script>
 
 {#if !ready}
@@ -124,7 +128,7 @@
                         <a
                             class="button is-small is-primary"
                             href="#"
-                            on:click|preventDefault={() => exportCsv()}
+                            onclick={preventDefault(() => exportCsv())}
                         >
                             Export
                         </a>

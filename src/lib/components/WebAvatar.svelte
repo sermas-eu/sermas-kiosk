@@ -21,26 +21,28 @@
     addGlobal,
     type PerformanceEvent,
   } from "@sermas/toolkit/utils";
-  import { onDestroy, onMount } from "svelte";
+  import { onDestroy, onMount, untrack } from "svelte";
   import Loader from "./Loader.svelte";
   import { toBase64 } from "#lib/util.ts";
 
-  let enableAudio: boolean;
-  let enableAvatar: boolean;
-  let enableAnimation: boolean;
-  let avatar: string;
-  let animation: string;
+  let enableAudio: boolean = $state()!;
+  let enableAvatar: boolean = $state()!;
+  let enableAnimation: boolean = $state()!;
+  let avatar: string = $state()!;
+  let animation: string = $state()!;
   let animationList: string[] = [];
 
   let mounted = false;
   let started = false;
 
-  let rpmUrl: string | undefined = undefined;
-  let rpmGender: string | undefined = undefined;
+  let rpmUrl: string | undefined = $state(undefined);
+  let rpmGender: string | undefined = $state(undefined);
 
-  let repository: RepositoryConfigDto;
+  let repository: RepositoryConfigDto | undefined = $derived(
+    $appConfigStore?.repository,
+  );
 
-  let background: string = "";
+  let background: string = $state("");
 
   const logger = new Logger("WebAvatar");
 
@@ -58,20 +60,8 @@
     enableAudio = settings.enableAudio;
   };
 
-  $: if ($appSettingsStore) updateSettings($appSettingsStore);
 
-  $: enableAudio, $avatarModelStore?.toggleAudio(enableAudio);
-  $: enableAvatar ? start() : stop();
-  $: enableAnimation ? enableAnim(true) : enableAnim();
-  $: avatar && repository, reload();
-  $: rpmUrl || rpmGender, reload();
-  $: animation, triggerAnimation(animation);
-  $: background, setBackground(background);
 
-  $: if ($appConfigStore) {
-    // logger.debug("app config", $appConfigStore);
-    repository = $appConfigStore.repository;
-  }
 
   const onPerformance = (ev: PerformanceEvent) => {
     if (!$avatarModelStore) return;
@@ -221,6 +211,41 @@
     start();
   });
   onDestroy(stop);
+  // each effect depends only on the values read before untrack(), as the
+  // former `$:` statements did
+  $effect.pre(() => {
+    const settings = $appSettingsStore;
+    if (settings) untrack(() => updateSettings(settings));
+  });
+  $effect.pre(() => {
+    const model = $avatarModelStore;
+    const on = enableAudio;
+    untrack(() => model?.toggleAudio(on));
+  });
+  $effect.pre(() => {
+    const on = enableAvatar;
+    untrack(() => (on ? start() : stop()));
+  });
+  $effect.pre(() => {
+    const on = enableAnimation;
+    untrack(() => (on ? enableAnim(true) : enableAnim()));
+  });
+  $effect.pre(() => {
+    void [avatar, repository];
+    untrack(reload);
+  });
+  $effect.pre(() => {
+    void [rpmUrl, rpmGender];
+    untrack(reload);
+  });
+  $effect.pre(() => {
+    const name = animation;
+    untrack(() => triggerAnimation(name));
+  });
+  $effect.pre(() => {
+    const bg = background;
+    untrack(() => setBackground(bg));
+  });
 </script>
 
 {#if !$avatarLoadedStore}
@@ -233,8 +258,8 @@
   style={"background-image: url(" +
     $backgroundImageAndSoundStore.urlImage +
     ");"}
-/>
-<div id="blendshape-controls" />
+></div>
+<div id="blendshape-controls"></div>
 
 <style lang="scss">
   @import "../../variables.scss";

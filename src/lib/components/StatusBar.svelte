@@ -12,7 +12,11 @@
 
     const logger = new Logger("status");
 
-    export let system = "";
+    interface Props {
+        system?: string;
+    }
+
+    let { system = $bindable("") }: Props = $props();
 
     let userSpeaking = false;
 

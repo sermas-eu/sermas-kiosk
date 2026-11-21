@@ -10,17 +10,17 @@
 
   import { emitter, sendStatus } from "@sermas/toolkit/events";
   import { Logger, type PerformanceEvent } from "@sermas/toolkit/utils";
-  import { onDestroy, onMount } from "svelte";
+  import { onDestroy, onMount, untrack } from "svelte";
 
   const logger = new Logger("VideoDetection");
 
   let enableTestFaces: boolean;
   let sessionId: string | undefined;
-  let testFace: string;
-  let enableVideoDetection: boolean;
-  let showVideo = false;
-  let detectorFaceLandmarker: boolean;
-  let qrcode: boolean;
+  let testFace: string = $state()!;
+  let enableVideoDetection: boolean = $state()!;
+  let showVideo = $state(false);
+  let detectorFaceLandmarker: boolean = $state()!;
+  let qrcode: boolean = $state()!;
 
   const S_KEY = "KeyS";
   let blendShapeLog = false;
@@ -35,7 +35,7 @@
   let video: HTMLVideoElement | undefined;
   let canvas: HTMLCanvasElement | undefined;
 
-  let isDevMode = false;
+  let isDevMode = $state(false);
 
   const width = 640;
   const height = 480;
@@ -51,15 +51,9 @@
     qrcode = settings.qrcode;
   };
 
-  $: if ($appSettingsStore) updateSettings($appSettingsStore);
 
-  $: if (showVideo !== undefined && enableVideoDetection && videoDetection)
-    videoDetection.toggleRender(showVideo);
 
-  $: if (detectorFaceLandmarker !== undefined && videoDetection && browser)
-    toggleFaceLandmarker();
 
-  $: if (qrcode !== undefined && videoDetection && browser) toggleQrcode();
 
   const loadFaceLandmarker = async () => {
     if (faceLandmarkerModule) return;
@@ -117,12 +111,8 @@
     emitter.emit("avatar.face", null, testFace);
   };
 
-  $: enableVideoDetection ? start() : stop();
 
-  $: if (enableVideoDetection && detectorFaceLandmarker && isDevMode)
-    handleSaveFaceLandmarks();
 
-  $: if (testFace) setTestFace(testFace);
 
   const start = async () => {
     if (!browser) return;
@@ -217,11 +207,42 @@
     if (ev.code !== S_KEY) return;
     blendShapeLog = !blendShapeLog;
   };
+  // each effect depends only on the values named before untrack(), as the
+  // former `$:` statements did
+  $effect.pre(() => {
+    const settings = $appSettingsStore;
+    if (settings) untrack(() => updateSettings(settings));
+  });
+  $effect.pre(() => {
+    if (showVideo !== undefined && enableVideoDetection && videoDetection) {
+      const show = showVideo;
+      untrack(() => videoDetection.toggleRender(show));
+    }
+  });
+  $effect.pre(() => {
+    if (detectorFaceLandmarker !== undefined && videoDetection && browser)
+      untrack(toggleFaceLandmarker);
+  });
+  $effect.pre(() => {
+    if (qrcode !== undefined && videoDetection && browser) untrack(toggleQrcode);
+  });
+  $effect.pre(() => {
+    const on = enableVideoDetection;
+    untrack(() => (on ? start() : stop()));
+  });
+  $effect.pre(() => {
+    if (enableVideoDetection && detectorFaceLandmarker && isDevMode)
+      untrack(handleSaveFaceLandmarks);
+  });
+  $effect.pre(() => {
+    const face = testFace;
+    if (face) untrack(() => setTestFace(face));
+  });
 </script>
 
 <div id="main-content" class={!showVideo ? "invisible" : ""}>
-  <video id="inputVideo" autoplay muted {width} {height} />
-  <canvas id="overlay" {width} {height} />
+  <video id="inputVideo" autoplay muted {width} {height}></video>
+  <canvas id="overlay" {width} {height}></canvas>
 </div>
 
 <style>

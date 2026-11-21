@@ -29,10 +29,6 @@ export default tseslint.config(
       parserOptions: { parser: tseslint.parser },
     },
     rules: {
-      // `$: dep, fn()` is how legacy (pre-runes) components declare dependencies
-      "@typescript-eslint/no-unused-expressions": "off",
-      // functions declared after the `$:` statements that call them
-      "no-useless-assignment": "off",
       // to settle with the runes migration of the components
       "svelte/require-each-key": "warn",
       "svelte/infinite-reactive-loop": "warn",

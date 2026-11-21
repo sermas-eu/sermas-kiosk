@@ -9,7 +9,7 @@
     backgroundImageAndSoundStore,
     sessionIdStore,
   } from "#lib/store.ts";
-  import { toBase64 } from "#lib/util.ts";
+  import { preventDefault, toBase64 } from "#lib/util.ts";
   import { type PlatformAppDto, type TextUIContentDto } from "@sermas/toolkit";
   import type {
     ChatMessage,
@@ -20,7 +20,7 @@
   } from "@sermas/toolkit/dto";
   import { emitter } from "@sermas/toolkit/events";
   import { Logger, getChunkId } from "@sermas/toolkit/utils";
-  import { createEventDispatcher, onDestroy, onMount } from "svelte";
+  import { onDestroy, onMount, untrack } from "svelte";
   import AvatarName from "./AvatarName.svelte";
   import RenderContent from "./contents/RenderContent.svelte";
   import Loader from "./Loader.svelte";
@@ -40,68 +40,62 @@
 
   const ui = toolkit.getUI();
 
-  let history: ChatMessage[] = [];
+  let history: ChatMessage[] = $state([]);
 
-  let lastMessage: ChatMessage | undefined;
-  let lastUserMessage: ChatMessage | undefined;
+  let lastMessage: ChatMessage | undefined = $state();
+  let lastUserMessage: ChatMessage | undefined = $state();
 
-  let showStopButton = false;
-  let sessionOpened: boolean = false;
-  let navigationFrameEnabled = false;
+  let showStopButton = $state(false);
+  let sessionOpened: boolean = $state(false);
+  let navigationFrameEnabled = $state(false);
 
-  let chatMessage = "";
-  let sendingMessage = false;
+  let chatMessage = $state("");
+  let sendingMessage = $state(false);
 
-  let language: string | undefined;
-  let llm: Record<string, string | undefined> | undefined;
-  let enableMic: boolean;
-  let enableAudio: boolean;
+  interface Props {
+    /** voice capture should resume (push to talk pressed) */
+    onstart?: () => void;
+    /** voice capture should pause (push to talk released) */
+    onstop?: () => void;
+  }
 
-  let app: PlatformAppDto;
+  let { onstart, onstop }: Props = $props();
 
-  let showHomepage = true;
+  let enableAudio: boolean | undefined = $derived($appSettingsStore?.enableAudio);
+
+  let app: PlatformAppDto | undefined = $derived($appConfigStore);
+
+  let showHomepage = $state(true);
 
   const SPINNER_TIMEOUT = 10 * 1000;
 
-  let interactionSpinner: InteractionSpinner = {
+  let interactionSpinner: InteractionSpinner = $state({
     type: "voice",
-  };
+  });
 
-  let pageContentSpinnerTimeout: ReturnType<typeof setTimeout>;
+  let pageContentSpinnerTimeout: ReturnType<typeof setTimeout> = $state()!;
 
-  let showVirtualKeyboard = false;
-  let inputValue = "";
-  let placeholder = "";
+  let showVirtualKeyboard = $state(false);
+  let inputValue = $state("");
+  let placeholder = $state("");
   let callbackFunc: (res: string) => void;
 
   let messageId = getChunkId();
 
-  let lastClearScreenMessageId = getChunkId();
+  let lastClearScreenMessageId = $state(getChunkId());
 
-  let subtitle: SubtitleMessage;
-  let showSubtitlesBlock: boolean = false;
+  let subtitle: SubtitleMessage = $state()!;
+  let showSubtitlesBlock: boolean = $state(false);
 
-  $: if ($appConfigStore) {
-    app = $appConfigStore;
-  }
-
-  $: if ($appSettingsStore) {
-    llm = $appSettingsStore.llm;
-    language = $appSettingsStore.language;
-    enableMic = $appSettingsStore.enableMic;
-    enableAudio = $appSettingsStore.enableAudio;
-  }
 
   // subtitles follow the avatar speech: without an avatar, show the chat history
-  $: showSubtitles = $appSettingsStore?.subtitlesEnabled && !$avatarFailedStore;
-
-  const dispatch = createEventDispatcher();
+  let showSubtitles = $derived($appSettingsStore?.subtitlesEnabled && !$avatarFailedStore);
 
   function onStart() {
-    dispatch("start");
+    onstart?.();
   }
   function onStop() {
-    dispatch("stop");
+    onstop?.();
   }
 
   const scrollChat = () => {
@@ -118,24 +112,30 @@
     toolkit?.triggerInteraction("ui", "start");
   };
 
-  $: if ($sessionIdStore) {
-    sessionOpened = $sessionIdStore ? true : false;
+  // depends on the session id only: sessionOpened is also set by
+  // ui.session.changed and must not re-trigger this
+  $effect.pre(() => {
+    if ($sessionIdStore) untrack(() => {
+      sessionOpened = $sessionIdStore ? true : false;
 
-    if (sessionOpened) {
-      pageContentSpinnerTimeout = setTimeout(() => {
-        if (lastMessage) return;
-        // show empty right block instead of an infinite spinner
-        lastMessage = {
-          actor: "agent",
-          ts: new Date(),
-          messages: [],
-        };
-      }, 2500);
-    } else {
-      lastMessage = undefined;
-    }
-  }
-  $: if (!sessionOpened && (!history || !history?.length)) showHomepage = true;
+      if (sessionOpened) {
+        pageContentSpinnerTimeout = setTimeout(() => {
+          if (lastMessage) return;
+          // show empty right block instead of an infinite spinner
+          lastMessage = {
+            actor: "agent",
+            ts: new Date(),
+            messages: [],
+          };
+        }, 2500);
+      } else {
+        lastMessage = undefined;
+      }
+    });
+  });
+  $effect.pre(() => {
+    if (!sessionOpened && (!history || !history?.length)) showHomepage = true;
+  });
 
   const showInteractionSpinner = (
     show: boolean,
@@ -213,7 +213,8 @@
       if (history.length) {
         lastMessage = history[history.length - 1];
         if (lastMessage && lastMessage?.actor === "user") {
-          lastUserMessage = structuredClone(lastMessage);
+          // lastMessage is $state (a proxy): structuredClone cannot copy it
+          lastUserMessage = $state.snapshot(lastMessage) as ChatMessage;
         }
       }
 
@@ -336,9 +337,9 @@
     showVirtualKeyboard = true;
   };
 
-  const onVirtualKeyboardInput = (ev: CustomEvent) => {
+  const onVirtualKeyboardInput = (text: string) => {
     showVirtualKeyboard = false;
-    callbackFunc(ev.detail.text);
+    callbackFunc(text);
   };
 
   const sendChatMessage = async () => {
@@ -536,7 +537,7 @@
         {#if $appSettingsStore?.interactionStart == "touch"}
           <button
             class="button mt-4 is-large is-primary sermas-button"
-            on:click={() => startInteraction()}
+            onclick={() => startInteraction()}
           >
             <span>Press here to start</span>
           </button>
@@ -559,19 +560,19 @@
           <button
             disabled={(enableAudio && !showStopButton) || !enableAudio}
             class="button is-medium is-primary ml-2 sermas-button"
-            on:click={() => ui.stopAvatarSpeech()}
+            onclick={() => ui.stopAvatarSpeech()}
           >
             <span class="icon is-medium">
               <i class="fas fa-stop"></i>
             </span>
           </button>
         {/if}
-        <form on:submit|preventDefault={sendChatMessage} class="input-form">
+        <form onsubmit={preventDefault(sendChatMessage)} class="input-form">
           <input
             id="user-input"
             class="input is-medium"
             bind:value={chatMessage}
-            on:focus={(_e) =>
+            onfocus={(_e) =>
               openVirtualKeyboard(
                 chatMessage,
                 "Type something to ask",
@@ -592,14 +593,14 @@
             </button>
           {/if}
         </form>
-        <PushToTalk on:start={onStart} on:stop={onStop} />
+        <PushToTalk onstart={onStart} onstop={onStop} />
       </div>
     {/if}
     {#if navigationFrameEnabled}
       <div class="navigation-frame">
         <button
           class="delete is-large is-primary"
-          on:click={() => hideNavigation()}
+          onclick={() => hideNavigation()}
         ></button>
         <iframe
           id="navigation-frame"
@@ -612,7 +613,7 @@
       {placeholder}
       showKeyboard={showVirtualKeyboard}
       {inputValue}
-      on:virtual-keyboard-input={onVirtualKeyboardInput}
+      ondone={onVirtualKeyboardInput}
     />
   </div>
 </span>

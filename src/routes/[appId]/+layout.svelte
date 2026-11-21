@@ -22,12 +22,17 @@
   import "../../app.scss";
   import type { PageData } from "./$types";
 
-  export let data: PageData;
+  interface Props {
+    data: PageData;
+    children?: import('svelte').Snippet;
+  }
+
+  let { data, children }: Props = $props();
 
   let toolkit: SermasToolkit;
-  let hasError: ErrorEventDto;
+  let hasError: ErrorEventDto = $state()!;
 
-  let theme = {};
+  let theme = $state({});
   let toggle = false;
   const loadTheme = (settings: AppSettings | undefined) => {
     if (settings && settings?.theme) {
@@ -164,7 +169,7 @@
   };
 </script>
 
-<svelte:window on:beforeunload={beforeUnload} />
+<svelte:window onbeforeunload={beforeUnload} />
 
 <!-- <PrivacyPopup /> -->
 
@@ -192,9 +197,9 @@
     </div>
   {:else}
     <Theme {...theme}>
-      <!-- <button class="test" on:click={loadTheme}>Toggle theme</button> -->
+      <!-- <button class="test" onclick={loadTheme}>Toggle theme</button> -->
       <main>
-        <slot />
+        {@render children?.()}
       </main>
     </Theme>
   {/if}

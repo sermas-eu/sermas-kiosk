@@ -10,10 +10,9 @@
   import { appReadyStore } from "#lib/store.ts";
   import { browser } from "$app/env";
 
-  let loading = true;
-  $: if (browser && $appReadyStore) loading = !$appReadyStore;
+  let loading = $derived(!(browser && $appReadyStore));
 
-  let childComponent: Microphone;
+  let childComponent: Microphone = $state()!;
 
  function onStart() { console.log('start voice capture'); childComponent.restore()}
   function onStop()  { console.log('stop voice capture'); childComponent.pause() }
@@ -28,7 +27,7 @@
     <Microphone bind:this={childComponent}/>
     <VideoDetection />
     <WebAvatar />
-    <UiContent on:start={onStart} on:stop={onStop}/>
+    <UiContent onstart={onStart} onstop={onStop}/>
     <StatusBar />
   </Auth>
 {/if}

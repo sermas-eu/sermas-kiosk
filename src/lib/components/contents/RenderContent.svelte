@@ -26,9 +26,13 @@
     options?: UIContentOptionsDto & Record<string, any>;
   } & UIContentDto;
 
-  export let content: UIContent;
-  export let subtitle: boolean = false;
-  export let actor: DialogueActor | null = null;
+  interface Props {
+    content: UIContent;
+    subtitle?: boolean;
+    actor?: DialogueActor | null;
+  }
+
+  let { content, subtitle = false, actor = null }: Props = $props();
 </script>
 
 <div

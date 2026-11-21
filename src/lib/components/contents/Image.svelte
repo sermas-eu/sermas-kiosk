@@ -1,19 +1,27 @@
 <script lang="ts">
   import { backgroundImageAndSoundStore } from "#lib/store.ts";
   import { type ImageContentDto } from "@sermas/toolkit";
-  import { get } from "svelte/store";
+  import { untrack } from "svelte";
 
-  export let img: ImageContentDto;
-  $: if (img.isBackground) {
-    if (get(backgroundImageAndSoundStore).image !== "stream") {
-      $backgroundImageAndSoundStore.defaultImage = get(
-        backgroundImageAndSoundStore
-      ).image;
-    }
-    $backgroundImageAndSoundStore.image = "stream";
-    $backgroundImageAndSoundStore.messageImage = true;
-    $backgroundImageAndSoundStore.urlImage = img.src;
+  interface Props {
+    img: ImageContentDto;
   }
+
+  let { img }: Props = $props();
+  $effect(() => {
+    if (!img.isBackground) return;
+    const src = img.src;
+    // write only: the store is not a dependency of this effect
+    untrack(() =>
+      backgroundImageAndSoundStore.update((bg) => {
+        if (bg.image !== "stream") bg.defaultImage = bg.image;
+        bg.image = "stream";
+        bg.messageImage = true;
+        bg.urlImage = src;
+        return bg;
+      }),
+    );
+  });
 </script>
 
 {#if !img.isBackground}

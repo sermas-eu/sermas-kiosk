@@ -22,7 +22,7 @@
 
                 <p class="">
                     <br />
-                    <button class="button is-primary" on:click={() => reset()}
+                    <button class="button is-primary" onclick={() => reset()}
                         >Homepage</button
                     >
                 </p>

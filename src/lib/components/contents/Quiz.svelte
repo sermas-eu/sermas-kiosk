@@ -7,8 +7,12 @@
     type UIInteractionEventDto,
   } from "@sermas/toolkit";
 
-  export let content: QuizContentDto;
-  export let metadata: Record<string, any> | undefined;
+  interface Props {
+    content: QuizContentDto;
+    metadata: Record<string, any> | undefined;
+  }
+
+  let { content, metadata }: Props = $props();
   let selected = -1;
 
   const clicked = (answer: QuizAnswerDto, idx: number) => {
@@ -37,7 +41,7 @@
   <span class={content.answers[0].answerImage ? "image-wrap" : ""}>
     {#each content.answers as a, idx}
       {#if a.answerImage}
-        <button on:click={() => clicked(a, idx)} class="image-button">
+        <button onclick={() => clicked(a, idx)} class="image-button">
           <img
             src={a.answerImage.src}
             alt={a.answerImage.alt}
@@ -47,7 +51,7 @@
       {:else}
         <div class="quiz-answer">
           <button
-            on:click={() => clicked(a, idx)}
+            onclick={() => clicked(a, idx)}
             class="button is-multiline is-primary sermas-button"
           >
             {a.answer}

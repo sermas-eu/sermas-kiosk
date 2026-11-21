@@ -5,9 +5,14 @@
   import { onMount } from "svelte";
   import Loader from "./Loader.svelte";
   import Login from "./Login.svelte";
+  interface Props {
+    children?: import('svelte').Snippet;
+  }
 
-  let loginRequired: boolean | undefined;
-  let authWait = true;
+  let { children }: Props = $props();
+
+  let loginRequired: boolean | undefined = $state();
+  let authWait = $state(true);
 
   const logger = new Logger("auth");
 
@@ -38,5 +43,5 @@
 {:else if loginRequired}
   <Login {onSubmit} />
 {:else}
-  <slot />
+  {@render children?.()}
 {/if}

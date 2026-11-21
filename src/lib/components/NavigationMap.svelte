@@ -7,8 +7,12 @@
   import { onMount } from "svelte";
   import * as THREE from "three";
 
-  export let status: StatusDto;
-  export let robot: RepositoryRobotModelDto;
+  interface Props {
+    status: StatusDto;
+    robot: RepositoryRobotModelDto;
+  }
+
+  let { status, robot }: Props = $props();
 
   let imageUrl = `https://${window.location.hostname}/${robot.map?.imageUrl}`;
   let agvImageUrl = `https://${window.location.hostname}/agv.png`;
@@ -24,11 +28,11 @@
   const agvW = 30; //cm
   const agvRatio = 0.75;
 
-  let imgWidthPerc = 100;
-  let ratio = 1;
+  let imgWidthPerc = $state(100);
+  let ratio = $state(1);
 
-  let agvWidthPerc = 1;
-  let agvHeightPerc = 1;
+  let agvWidthPerc = $state(1);
+  let agvHeightPerc = $state(1);
 
   const resizeImage = () => {
     const curMaAreaW = (window.innerWidth / 3) * 2;

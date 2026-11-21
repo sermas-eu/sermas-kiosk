@@ -1,16 +1,16 @@
 <script lang="ts">
-    import { browser } from "$app/environment";
-        import { createToolkit } from "$lib";
+    import { browser } from "$app/env";
+        import { createToolkit } from "#lib";
     import { SermasToolkit } from "@sermas/toolkit";
     import { onDestroy, onMount } from "svelte";
     import * as THREE from "three";
     import { OrbitControls } from "three/addons/controls/OrbitControls.js";
     import { XRButton } from "three/addons/webxr/XRButton.js";
     import { XRControllerModelFactory } from "three/addons/webxr/XRControllerModelFactory.js";
-    // import backpack from '$lib/assets/models/backpack.glb';
-    // import scissors from '$lib/assets/models/scissors.glb';
-    import qrcode1 from "$lib/assets/images/qrcode1.png";
-    import qrcode2 from "$lib/assets/images/qrcode2.png";
+    // import backpack from '#lib/assets/models/backpack.glb';
+    // import scissors from '#lib/assets/models/scissors.glb';
+    import qrcode1 from "#lib/assets/images/qrcode1.png";
+    import qrcode2 from "#lib/assets/images/qrcode2.png";
     import { type PlatformAppDto } from "@sermas/toolkit";
     import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 

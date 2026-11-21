@@ -4,13 +4,13 @@
 
   import newGithubIssueUrl from "new-github-issue-url";
 
-  import { toolkit } from "$lib";
-  import { appConfigStore, sessionIdStore } from "$lib/store";
+  import { toolkit } from "#lib";
+  import { appConfigStore, sessionIdStore } from "#lib/store.ts";
   import { type RepositoryConfigDto } from "@sermas/toolkit";
   import { AppSettings, supportedLanguages } from "@sermas/toolkit/dto";
   import { Logger } from "@sermas/toolkit/utils";
   import { onMount } from "svelte";
-  import { browser } from "$app/environment";
+  import { browser } from "$app/env";
 
   const logger = new Logger("settings");
 

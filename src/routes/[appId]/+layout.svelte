@@ -1,15 +1,15 @@
 <script lang="ts">
-  import { page } from "$app/stores";
-  import { createToolkit } from "$lib";
+  import { page } from "$app/state";
+  import { createToolkit } from "#lib";
   import {
     appConfigStore,
     appReadyStore,
     appSettingsStore,
     sessionIdStore,
-  } from "$lib/store";
+  } from "#lib/store.ts";
   import { AppSettings, type SessionStatusEvent } from "@sermas/toolkit/dto";
 
-  import Theme from "$lib/components/Theme.svelte";
+  import Theme from "#lib/components/Theme.svelte";
   import {
     DefaultBackground,
     DefaultModel,
@@ -111,7 +111,7 @@
   };
 
   onMount(async () => {
-    const appId = $page.params.appId;
+    const appId = page.params.appId;
     let token: string | null = null;
 
     if (data && data.accessToken) {
@@ -119,9 +119,9 @@
       token = data.accessToken;
     }
 
-    if ($page.url.searchParams.get("token")) {
+    if (page.url.searchParams.get("token")) {
       logger.debug(`Found query token`);
-      token = $page.url.searchParams.get("token");
+      token = page.url.searchParams.get("token");
     }
 
     toolkit = createToolkit({
@@ -177,7 +177,7 @@
         <div class="subtitle">
           {#if hasError.reason === ErrorReason.MISSING_APP}
             Failed to load app <span class="tag is-info is-size-5"
-              >{$page.params.appId}</span
+              >{page.params.appId}</span
             >
           {:else}
             An internal error occured
@@ -185,7 +185,7 @@
         </div>
 
         <div class="has-text-centered">
-          <a href="/{$page.params.appId}" target="_top">Retry</a> |
+          <a href="/{page.params.appId}" target="_top">Retry</a> |
           <a href="/">Homepage</a>
         </div>
       </div>

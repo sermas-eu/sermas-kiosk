@@ -1,6 +1,6 @@
 <script lang="ts">
-  import { browser } from "$app/environment";
-  import { appSettingsStore } from "$lib/store";
+  import { browser } from "$app/env";
+  import { appSettingsStore } from "#lib/store.ts";
   import type {
     AudioDetection,
     SpeechSampleResult,
@@ -8,7 +8,7 @@
   import { Logger } from "@sermas/toolkit/utils";
   import { onDestroy, onMount } from "svelte";
 
-  import { toolkit } from "$lib";
+  import { toolkit } from "#lib";
 
   const logger = new Logger("microphone");
 

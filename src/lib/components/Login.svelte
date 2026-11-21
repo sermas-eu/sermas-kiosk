@@ -1,5 +1,5 @@
 <script lang="ts">
-    import loginImage from "$lib/assets/images/sermas-logo-white.svg";
+    import loginImage from "#lib/assets/images/sermas-logo-white.svg";
 
     export let logoUrl = loginImage;
     export let title = "Sign-in to continue";

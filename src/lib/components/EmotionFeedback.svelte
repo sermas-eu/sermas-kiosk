@@ -1,7 +1,7 @@
 <script lang="ts">
     import { type Emotion } from "@sermas/toolkit/dto";
 
-    import { toolkit } from "$lib";
+    import { toolkit } from "#lib";
     import { type UserCharacterizationEventDto } from "@sermas/api-client";
     import { logger } from "@sermas/toolkit/utils";
     import { onDestroy, onMount } from "svelte";

@@ -1,6 +1,6 @@
 <script lang="ts">
-  import { toolkit } from "$lib";
-  import { sessionIdStore } from "$lib/store";
+  import { toolkit } from "#lib";
+  import { sessionIdStore } from "#lib/store.ts";
   import { QrcodeDetector, } from "@sermas/toolkit/detection";
   import { onDestroy, onMount } from "svelte";
     // import VideoDetection from "../VideoDetection.svelte";

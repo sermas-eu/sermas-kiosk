@@ -1,5 +1,5 @@
 import type { LayoutServerLoad } from "./$types";
-import { env as envPrivate } from "$env/dynamic/private";
+import * as envPrivate from "$app/env/private";
 import { getAvatarTokenWithClientSecret } from "@sermas/sermas-toolkit-node-sdk";
 
 export const load: LayoutServerLoad = async ({ params }) => {

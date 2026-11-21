@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { renderMarkdown } from "$lib/util";
+  import { renderMarkdown } from "#lib/util.ts";
   import { type DialogueActor } from "@sermas/toolkit/dto";
 
   export let actor: DialogueActor | null;

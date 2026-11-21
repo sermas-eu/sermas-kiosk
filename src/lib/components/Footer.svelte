@@ -1,5 +1,5 @@
 <script lang="ts">
-    import sermasLogo from "$lib/assets/images/sermas-logo-white.svg";
+    import sermasLogo from "#lib/assets/images/sermas-logo-white.svg";
     const version = PKG_VERSION;
 </script>
 

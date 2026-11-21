@@ -1,6 +1,6 @@
 <script lang="ts">
-  import { browser } from "$app/environment";
-  import { toolkit } from "$lib";
+  import { browser } from "$app/env";
+  import { toolkit } from "#lib";
   import {
     appConfigStore,
     appSettingsStore,
@@ -8,7 +8,7 @@
     avatarLoadedStore,
     avatarModelStore,
     backgroundImageAndSoundStore,
-  } from "$lib/store";
+  } from "#lib/store.ts";
   import { type RepositoryConfigDto } from "@sermas/toolkit";
   import {
     getAvatarDefaultConfig,
@@ -23,7 +23,7 @@
   } from "@sermas/toolkit/utils";
   import { onDestroy, onMount } from "svelte";
   import Loader from "./Loader.svelte";
-  import { toBase64 } from "$lib/util";
+  import { toBase64 } from "#lib/util.ts";
 
   let enableAudio: boolean;
   let enableAvatar: boolean;

@@ -4,7 +4,7 @@ import { tick } from "svelte";
 import { createEventDispatcher } from 'svelte';
 import {
     appSettingsStore,
-  } from "$lib/store";
+  } from "#lib/store.ts";
     import { sleep } from '@sermas/api-client';
 
 const dispatch = createEventDispatcher();

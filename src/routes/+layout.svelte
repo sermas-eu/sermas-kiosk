@@ -1,5 +1,5 @@
 <script lang="ts">
-  import PrivacyPopup from "$lib/components/PrivacyPopup.svelte";
+  import PrivacyPopup from "#lib/components/PrivacyPopup.svelte";
   import "../app.scss";
 </script>
 

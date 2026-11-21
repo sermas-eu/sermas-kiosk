@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { backgroundImageAndSoundStore } from "$lib/store";
+  import { backgroundImageAndSoundStore } from "#lib/store.ts";
   import { type BackgroundAudioDto } from "@sermas/api-client";
 
   export let content: BackgroundAudioDto;

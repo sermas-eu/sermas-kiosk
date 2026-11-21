@@ -1,10 +1,10 @@
 <script lang="ts">
-    import { browser } from "$app/environment";
-    import { page } from "$app/stores";
-    import { toolkit } from "$lib";
-    import Loader from "$lib/components/Loader.svelte";
-    import { appReadyStore } from "$lib/store";
-    import { toDateTime, toTime } from "$lib/util";
+    import { browser } from "$app/env";
+    import { page } from "$app/state";
+    import { toolkit } from "#lib";
+    import Loader from "#lib/components/Loader.svelte";
+    import { appReadyStore } from "#lib/store.ts";
+    import { toDateTime, toTime } from "#lib/util.ts";
     import {
         type MonitoringRecordDto,
         type SessionDto,
@@ -39,7 +39,7 @@
     };
 
     const loadMonitoringHistory = async () => {
-        const { appId, sessionId } = $page.params;
+        const { appId, sessionId } = page.params;
         if (!appId || !sessionId) return;
         history = await toolkit.getApiClient().api.platform.monitoringSearch({
             requestBody: {
@@ -61,7 +61,7 @@
     };
 
     const loadSession = async () => {
-        const { appId, sessionId } = $page.params;
+        const { appId, sessionId } = page.params;
         if (!appId || !sessionId) return;
         session = await toolkit.getApiClient().api.session.readSession({
             sessionId,

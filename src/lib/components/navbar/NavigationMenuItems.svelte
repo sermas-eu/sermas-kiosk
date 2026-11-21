@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { toolkit } from "$lib";
+  import { toolkit } from "#lib";
   import type {
     NavigationMenuItemDto,
     UIInteractionEventDto,

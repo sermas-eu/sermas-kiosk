@@ -1,6 +1,6 @@
 <script lang="ts">
-    import { browser } from "$app/environment";
-    import { toolkit } from "$lib";
+    import { browser } from "$app/env";
+    import { toolkit } from "#lib";
     import type {
         RequestProcessing,
         SystemProgressEvent,

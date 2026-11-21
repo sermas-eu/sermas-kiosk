@@ -1,7 +1,7 @@
 <script lang="ts">
-    import { browser } from "$app/environment";
-    import { toolkit } from "$lib";
-      import { appSettingsStore } from "$lib/store";
+    import { browser } from "$app/env";
+    import { toolkit } from "#lib";
+      import { appSettingsStore } from "#lib/store.ts";
 
     import type {
     SystemProgressEvent,

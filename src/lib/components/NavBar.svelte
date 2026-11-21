@@ -9,16 +9,16 @@
   import MdMenu from "svelte-icons/md/MdMenu.svelte";
   import MdSync from "svelte-icons/md/MdSync.svelte";
 
-  import { browser } from "$app/environment";
-  import { toolkit } from "$lib";
-  import sermasLogo from "$lib/assets/images/sermas-logo-white.svg";
+  import { browser } from "$app/env";
+  import { toolkit } from "#lib";
+  import sermasLogo from "#lib/assets/images/sermas-logo-white.svg";
   import {
     appReadyStore,
     appSettingsStore,
     avatarLoadedStore,
     avatarModelStore,
     backgroundImageAndSoundStore,
-  } from "$lib/store";
+  } from "#lib/store.ts";
   import type { SessionChangedDto } from "@sermas/toolkit";
   import { AppSettings } from "@sermas/toolkit/dto";
   import { sendStatus } from "@sermas/toolkit/events";

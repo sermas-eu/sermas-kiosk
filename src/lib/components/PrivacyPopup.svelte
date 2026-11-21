@@ -1,8 +1,8 @@
 <script lang="ts">
-  import { browser } from "$app/environment";
-  import { page } from "$app/stores";
-  import { env } from "$env/dynamic/public";
-  import { toolkit } from "$lib";
+  import { browser } from "$app/env";
+  import { page } from "$app/state";
+  import * as env from "$app/env/public";
+  import { toolkit } from "#lib";
 
   const noPrivacyPage = "/no-privacy";
 
@@ -15,8 +15,8 @@
     radio2 = false;
 
   const checkPrivacy = () => {
-    // console.warn($page.url.pathname);
-    isPrivacyPage = $page.url.pathname.startsWith(noPrivacyPage);
+    // console.warn(page.url.pathname);
+    isPrivacyPage = page.url.pathname.startsWith(noPrivacyPage);
     if (isPrivacyPage) return;
     privacy = localStorage.getItem("privacy") as PrivacyOptions;
   };

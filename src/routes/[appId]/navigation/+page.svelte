@@ -1,10 +1,10 @@
 <script lang="ts">
-    import { browser } from "$app/environment";
-    import { page } from "$app/stores";
-        import { createToolkit } from "$lib";
-    import NavigationMap from "$lib/components/NavigationMap.svelte";
-    import NavigationStatus from "$lib/components/NavigationStatus.svelte";
-    import VideoFeed from "$lib/components/VideoFeed.svelte";
+    import { browser } from "$app/env";
+    import { page } from "$app/state";
+        import { createToolkit } from "#lib";
+    import NavigationMap from "#lib/components/NavigationMap.svelte";
+    import NavigationStatus from "#lib/components/NavigationStatus.svelte";
+    import VideoFeed from "#lib/components/VideoFeed.svelte";
     import type {
         RepositoryRobotModelDto,
         SermasToolkit,
@@ -83,7 +83,7 @@
         if (!browser) return;
         window.addEventListener("message", onMessage, false);
 
-        const appId = $page.params.appId;
+        const appId = page.params.appId;
         let token: string | null = null;
 
         if (data && data.accessToken) {

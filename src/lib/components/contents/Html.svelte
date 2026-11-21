@@ -1,5 +1,5 @@
 <script lang="ts">
-    import { sanitizeHtml } from "$lib/util";
+    import { sanitizeHtml } from "#lib/util.ts";
     import { type HtmlContentDto } from "@sermas/toolkit";
 
     export let content: HtmlContentDto;

@@ -1,5 +1,5 @@
 <script lang="ts">
-    import BackgroundAnimation from "$lib/components/BackgroundAnimation.svelte";
+    import BackgroundAnimation from "#lib/components/BackgroundAnimation.svelte";
 
     const reset = () => {
         document.location = "/";

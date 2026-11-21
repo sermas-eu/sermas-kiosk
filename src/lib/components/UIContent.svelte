@@ -1,6 +1,6 @@
 <script lang="ts">
-  import { browser } from "$app/environment";
-  import { toolkit } from "$lib";
+  import { browser } from "$app/env";
+  import { toolkit } from "#lib";
   import {
     appConfigStore,
     appSettingsStore,
@@ -8,8 +8,8 @@
     avatarLoadedStore,
     backgroundImageAndSoundStore,
     sessionIdStore,
-  } from "$lib/store";
-  import { toBase64 } from "$lib/util";
+  } from "#lib/store.ts";
+  import { toBase64 } from "#lib/util.ts";
   import { type PlatformAppDto, type TextUIContentDto } from "@sermas/toolkit";
   import type {
     ChatMessage,

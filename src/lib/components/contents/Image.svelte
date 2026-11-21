@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { backgroundImageAndSoundStore } from "$lib/store";
+  import { backgroundImageAndSoundStore } from "#lib/store.ts";
   import { type ImageContentDto } from "@sermas/toolkit";
   import { get } from "svelte/store";
 

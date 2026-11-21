@@ -1,6 +1,6 @@
 <script lang="ts">
-    import { browser } from "$app/environment";
-        import { createToolkit } from "$lib";
+    import { browser } from "$app/env";
+        import { createToolkit } from "#lib";
     import { SermasToolkit } from "@sermas/toolkit";
     import { type PlatformAppDto } from "@sermas/toolkit";
     import { onDestroy, onMount } from "svelte";

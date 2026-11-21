@@ -1,9 +1,12 @@
+import adapter from '@sveltejs/adapter-node';
 import { sveltekit } from '@sveltejs/kit/vite';
+import { vitePreprocess } from '@sveltejs/vite-plugin-svelte';
 import { defineConfig } from 'vite';
 import { viteStaticCopy } from 'vite-plugin-static-copy';
 
 import pkg from './package.json' with { type: 'json' };
-import { toolkitDedupe, toolkitDir } from './svelte.config.toolkit.js';
+import { toolkitDedupe, toolkitDir } from './toolkit.config.js';
+import { toolkitAliases } from './toolkit.config.js';
 import { SermasViteConfig, getCopyFiles } from './vite.config.toolkit.ts';
 
 export default defineConfig({
@@ -12,7 +15,11 @@ export default defineConfig({
     viteStaticCopy({
       targets: getCopyFiles(),
     }),
-    sveltekit(),
+    sveltekit({
+      adapter: adapter(),
+      alias: toolkitAliases,
+      preprocess: vitePreprocess(),
+    }),
   ],
   optimizeDeps: {
     exclude: [

@@ -1,8 +1,5 @@
-/// <reference types="@sveltejs/kit" />
-/// <reference no-default-lib="true"/>
-/// <reference lib="esnext" />
-/// <reference lib="webworker" />
-import { build, version } from '$service-worker';
+import { version } from '$app/env';
+import { immutable } from '$app/manifest';
 
 const loggerEnabled = false
 
@@ -17,7 +14,7 @@ const logger = {
 const CACHE = `cache-${version}`;
 
 const ASSETS = [
-	...build, // the app itself
+	...immutable.map((f) => f.path), // the app itself
 ];
 
 // https://kit.svelte.dev/docs/service-workers#type-safety

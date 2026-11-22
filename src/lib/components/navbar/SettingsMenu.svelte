@@ -150,12 +150,7 @@
     const date = new Date();
     const insertDate = `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}`;
 
-    const isPilot = ["poa", "asa", "ra"].includes(toolkit.getAppId());
-    const repo = settings.githubRepository
-      ? settings.githubRepository
-      : isPilot
-        ? `pilots-${toolkit.getAppId()}`
-        : "sermas-kiosk";
+    const repo = settings.githubRepository || "sermas-kiosk";
 
     const url = newGithubIssueUrl({
       user: "sermas-eu",

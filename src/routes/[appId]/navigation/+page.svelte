@@ -71,7 +71,7 @@
     };
 
     const onMessage = async (_event: MessageEvent<any>) => {
-        // if (event.origin.indexOf("https://kiosk.local.sermas.spindoxlabs.it") === -1) {
+        // if (event.origin.indexOf("https://kiosk.example.org") === -1) {
         //     console.warn("Unknown origin ", event.origin)
         //     return
         // }

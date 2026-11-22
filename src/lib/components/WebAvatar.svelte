@@ -99,9 +99,11 @@
     }
   };
 
+  // dev mode: play a gesture picked from the animation list (`waving_0`, …)
   const triggerAnimation = (name: string) => {
-    logger.debug(`Triggered animation [disabled!]: ${name}`);
-    // $avatarModelStore?.getAnimation()?.play("gesture", name);
+    if (!name) return;
+    const played = $avatarModelStore?.getAnimation()?.playGesture(name);
+    logger.debug(`Gesture ${name}: ${played ? "playing" : "not available"}`);
   };
 
   const loadAvatarConfig = async (

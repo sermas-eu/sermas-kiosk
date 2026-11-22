@@ -1,5 +1,6 @@
 <script lang="ts">
   import { toolkit } from "#lib";
+  import { markUsed, usedIndex } from "#lib/used-content.ts";
   import {
     type QuizContentDto,
     UI_INTERACTION_TOPIC,
@@ -10,14 +11,20 @@
   interface Props {
     content: QuizContentDto;
     metadata: Record<string, any> | undefined;
+    // single use, see #lib/used-content
+    usedKey?: string;
   }
 
-  let { content, metadata }: Props = $props();
-  let selected = -1;
+  let { content, metadata, usedKey }: Props = $props();
+  // without a key (no ids) the choice is kept by this instance only
+  let localSelected = $state(-1);
+  // one answer: afterwards only the chosen one stays, disabled
+  let selected = $derived(usedKey ? usedIndex(usedKey) : localSelected);
 
   const clicked = (answer: QuizAnswerDto, idx: number) => {
     if (selected > -1) return;
-    selected = idx;
+    localSelected = idx;
+    markUsed(usedKey, idx);
     // console.warn(`selected answerId=${answer.answerId}`);
     const payload = {
       appId: toolkit.getAppId(),
@@ -40,8 +47,14 @@
   <div class="quiz-question">{content.question}</div>
   <span class={content.answers[0].answerImage ? "image-wrap" : ""}>
     {#each content.answers as a, idx}
-      {#if a.answerImage}
-        <button onclick={() => clicked(a, idx)} class="image-button">
+      {#if selected > -1 && selected !== idx}
+        <!-- answered: only the chosen answer stays -->
+      {:else if a.answerImage}
+        <button
+          onclick={() => clicked(a, idx)}
+          class="image-button"
+          disabled={selected > -1}
+        >
           <img
             src={a.answerImage.src}
             alt={a.answerImage.alt}
@@ -53,6 +66,7 @@
           <button
             onclick={() => clicked(a, idx)}
             class="button is-multiline is-primary sermas-button"
+            disabled={selected > -1}
           >
             {a.answer}
           </button>

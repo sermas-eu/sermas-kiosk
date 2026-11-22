@@ -52,4 +52,33 @@ describe("Buttons content", () => {
       },
     });
   });
+
+  it("hides the block after a click: the API drops its tools after the first one", async () => {
+    render(Buttons, {
+      usedKey: "req-1:1",
+      content: {
+        label: "Menu",
+        list: [
+          { value: "a", label: "Alpha" },
+          { value: "b", label: "Beta" },
+        ],
+      } as any,
+    });
+
+    await fireEvent.click(screen.getByRole("button", { name: "Alpha" }));
+
+    expect(broker.publish).toHaveBeenCalledOnce();
+    expect(screen.queryByRole("button", { name: "Beta" })).toBeNull();
+    expect(screen.queryByText("Menu")).toBeNull();
+  });
+
+  it("stays hidden when rendered again from a cloned history entry", async () => {
+    const content = { list: [{ value: "a", label: "Alpha" }] } as any;
+    const first = render(Buttons, { content, usedKey: "req-2:1" });
+    await fireEvent.click(screen.getByRole("button", { name: "Alpha" }));
+    first.unmount();
+
+    render(Buttons, { content: structuredClone(content), usedKey: "req-2:1" });
+    expect(screen.queryByRole("button", { name: "Alpha" })).toBeNull();
+  });
 });

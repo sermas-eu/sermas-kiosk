@@ -179,10 +179,20 @@
     interactionSpinner = { ...interactionSpinner };
   };
 
+  // the API saw several voice turns dropped (a noisy room) and suggests typing:
+  // focus the text input, which opens the virtual keyboard when it is enabled
+  const onDialogueProgress = (ev: { event?: string; status?: string; error?: string }) => {
+    if (ev?.event !== "stt" || ev.status !== "error" || ev.error !== "noisy") return;
+    document.getElementById("user-input")?.focus();
+  };
+
   onMount(async () => {
     if (!browser) return;
 
     await ui.init();
+
+    // ui.destroy() removes the listeners added with ui.on
+    ui.on("dialogue.progress", onDialogueProgress);
 
     ui.on("ui.user.request-processing", (ev: RequestProcessing) => {
       showInteractionSpinner(ev.status === "started", "request");

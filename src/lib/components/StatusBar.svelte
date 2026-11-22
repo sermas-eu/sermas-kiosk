@@ -32,19 +32,29 @@
 
     // shown for a few seconds when a turn ends without an answer
     const NOTICE_MS = 4000;
+    const NOISY_NOTICE_MS = 10000;
     let noticeTimer: ReturnType<typeof setTimeout> | undefined;
-    const showNotice = (message: string) => {
+    const showNotice = (message: string, ms = NOTICE_MS) => {
         setSystemMessage(message);
         clearTimeout(noticeTimer);
         noticeTimer = setTimeout(() => {
             if (system === message) system = "";
-        }, NOTICE_MS);
+        }, ms);
     };
 
     const onProgress = (ev: SystemProgressEvent) => {
-        // a dropped voice turn: `stt` error (no-speech, other-speaker), or `stt`
-        // ended from an API that does not send the reason yet
-        if (ev.event === "stt" && (ev.status === "error" || ev.status === "ended")) {
+        // several voice turns dropped in a row: the agent suggests typing, and
+        // UIContent opens the keyboard
+        if (ev.event === "stt" && ev.status === "error" && ev.error === "noisy") {
+            showNotice("It's noisy here: you can type your message instead.", NOISY_NOTICE_MS);
+            return;
+        }
+        // a dropped voice turn: `stt` error (no-speech, other-speaker), `llm`
+        // skipped (chatter or a fragment), or `stt` ended from an older API
+        if (
+            (ev.event === "stt" && (ev.status === "error" || ev.status === "ended")) ||
+            (ev.event === "llm" && ev.status === "error" && ev.error === "skipped")
+        ) {
             logger.debug(`Voice turn dropped: ${ev.error || ev.status}`);
             showNotice("Sorry, I didn't catch that. Please try again.");
             return;

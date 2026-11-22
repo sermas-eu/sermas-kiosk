@@ -12,6 +12,7 @@
   import { type RepositoryConfigDto } from "@sermas/toolkit";
   import {
     getAvatarDefaultConfig,
+    isDirectModelPath,
     type AvatarModelConfig,
   } from "@sermas/toolkit/avatar";
   import { AppSettings } from "@sermas/toolkit/dto";
@@ -85,7 +86,11 @@
     let config = await toolkit.getAssetConfig("backgrounds", background);
 
     if (!config) return;
-    const blob = await toolkit.getApi().getAsset(config.type, config.id);
+    // a URL or a path on the kiosk's origin (the built-in background) needs no API
+    const direct = isDirectModelPath(config.path);
+    const blob = direct
+      ? undefined
+      : await toolkit.getApi().getAsset(config.type, config.id);
 
     $backgroundImageAndSoundStore = {
       ...$backgroundImageAndSoundStore,
@@ -94,7 +99,9 @@
       messageImage: false,
     };
 
-    if (blob) {
+    if (direct) {
+      $backgroundImageAndSoundStore.urlImage = config.path;
+    } else if (blob) {
       $backgroundImageAndSoundStore.urlImage = `${await toBase64(blob)}`;
     }
   };

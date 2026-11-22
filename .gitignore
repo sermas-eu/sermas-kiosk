@@ -14,7 +14,9 @@ static/models*
 # static/animations*
 static/*.onnx
 static/*.wasm
-static/backgrounds
+static/backgrounds/*
+!static/backgrounds/default.jpg
+!static/backgrounds/README.md
 static/sermas-repository*
 static/repository*
 static.*/

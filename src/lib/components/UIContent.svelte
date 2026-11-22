@@ -11,6 +11,7 @@
   } from "#lib/store.ts";
   import { preventDefault, toBase64 } from "#lib/util.ts";
   import { stickToBottom } from "#lib/stick-to-bottom.ts";
+  import { contentKey, isUsed } from "#lib/used-content.ts";
   import { type PlatformAppDto, type TextUIContentDto } from "@sermas/toolkit";
   import type {
     ChatMessage,
@@ -19,6 +20,7 @@
     SubtitleMessage,
     UserSpeaking,
   } from "@sermas/toolkit/dto";
+  import { isDirectModelPath } from "@sermas/toolkit/avatar";
   import { emitter } from "@sermas/toolkit/events";
   import { Logger, getChunkId } from "@sermas/toolkit/utils";
   import { onDestroy, onMount, untrack } from "svelte";
@@ -285,6 +287,10 @@
     const setBackground = async (background: string) => {
       let config = await toolkit.getAssetConfig("backgrounds", background);
       if (!config) return;
+      if (isDirectModelPath(config.path)) {
+        $backgroundImageAndSoundStore.urlImage = config.path;
+        return;
+      }
 
       const blob = await toolkit.getApi().getAsset(config.type, config.id);
       if (blob) {
@@ -468,7 +474,7 @@
         <span class="scroll-span" use:stickToBottom>
           {#each history as chatMessage, _index}
             {#each chatMessage.messages as message, _i}
-              {#if chatMessage.actor === "agent" && message.contentType !== "dialogue-message" && message.messageId && message.messageId >= lastClearScreenMessageId}
+              {#if chatMessage.actor === "agent" && message.contentType !== "dialogue-message" && message.messageId && message.messageId >= lastClearScreenMessageId && !(message.contentType === "buttons" && isUsed(contentKey(message)))}
                 <div
                   class="subtitle-div {chatMessage.actor === 'agent' &&
                   message.contentType == 'buttons'

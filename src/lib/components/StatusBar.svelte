@@ -100,9 +100,7 @@
                 message = "Listening";
                 userSpeaking = true;
                 break;
-            case "noise":
-                if (!userSpeaking) message = "Noise detected";
-                break;
+            // background noise is not worth a message: it reads as a fault
             case "completed":
                 userSpeaking = false;
                 message = "";

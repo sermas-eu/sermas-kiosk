@@ -3,6 +3,7 @@ import {
   appSettingsStore,
   avatarFailedStore,
   avatarLoadedStore,
+  avatarModelStore,
   sessionIdStore,
 } from "#lib/store.ts";
 import { emitter } from "@sermas/toolkit/events";
@@ -103,5 +104,72 @@ describe("UIContent", () => {
         "Plain history",
       ),
     );
+  });
+  describe("the visitor's dots", () => {
+    const voiceDots = (c: HTMLElement) => c.querySelector("#chat-history .bounce1");
+    const requestDots = (c: HTMLElement) => c.querySelector("#chat-history .double-bounce1");
+    const withHistory = async () => {
+      const view = await openSession({ subtitlesEnabled: false });
+      ui.emit("ui.dialogue.history", [agentSays("Hello")]);
+      await vi.waitFor(() => expect(view.container.querySelector("#chat-history")).toBeTruthy());
+      return view;
+    };
+
+    it("background noise shows no dots; speech does, until it ends", async () => {
+      const { container } = await withHistory();
+      ui.emit("ui.user.speaking", { status: "noise" });
+      await tick();
+      expect(voiceDots(container)).toBeNull();
+
+      ui.emit("ui.user.speaking", { status: "speaking" });
+      await tick();
+      expect(voiceDots(container)).toBeTruthy();
+      // ended right away: deferred, not dropped
+      ui.emit("ui.user.speaking", { status: "completed" });
+      await vi.waitFor(() => expect(voiceDots(container)).toBeNull());
+    });
+
+    it("a dropped turn ends the processing dots", async () => {
+      const { container } = await withHistory();
+      ui.emit("ui.user.request-processing", { status: "started" });
+      await tick();
+      expect(requestDots(container)).toBeTruthy();
+      ui.emit("dialogue.progress", { event: "stt", status: "error", error: "other-speaker" });
+      await vi.waitFor(() => expect(requestDots(container)).toBeNull());
+    });
+
+    it("the agent's answer ends the processing dots", async () => {
+      const { container } = await withHistory();
+      ui.emit("ui.user.request-processing", { status: "started" });
+      await tick();
+      expect(requestDots(container)).toBeTruthy();
+      ui.emit("ui.dialogue.history", [agentSays("Hello"), agentSays("An answer")]);
+      await vi.waitFor(() => expect(requestDots(container)).toBeNull());
+    });
+  });
+  it("shrugs after two voice turns in a row not heard, once until the visitor gets through", async () => {
+    const playGesture = vi.fn(() => true);
+    avatarModelStore.set({ getAnimation: () => ({ playGesture }) } as any);
+    await openSession({ subtitlesEnabled: false });
+    const miss = (error: string) =>
+      ui.emit("dialogue.progress", { event: "stt", status: "error", error });
+
+    miss("no-speech");
+    // chatter the LLM skipped was heard: it does not count
+    ui.emit("dialogue.progress", { event: "llm", status: "error", error: "skipped" });
+    expect(playGesture).not.toHaveBeenCalled();
+    miss("other-speaker");
+    expect(playGesture).toHaveBeenCalledTimes(1);
+    expect(playGesture).toHaveBeenCalledWith("donotknow");
+    miss("no-speech");
+    miss("no-speech");
+    expect(playGesture).toHaveBeenCalledTimes(1);
+
+    ui.emit("ui.dialogue.history", [{ ...agentSays("hi"), actor: "user" }]);
+    await tick();
+    miss("no-speech");
+    miss("no-speech");
+    expect(playGesture).toHaveBeenCalledTimes(2);
+    avatarModelStore.set(undefined);
   });
 });

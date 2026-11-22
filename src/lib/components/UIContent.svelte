@@ -6,12 +6,14 @@
     appSettingsStore,
     avatarFailedStore,
     avatarLoadedStore,
+    avatarModelStore,
     backgroundImageAndSoundStore,
     sessionIdStore,
   } from "#lib/store.ts";
   import { preventDefault, toBase64 } from "#lib/util.ts";
   import { stickToBottom } from "#lib/stick-to-bottom.ts";
   import { contentKey, isUsed } from "#lib/used-content.ts";
+  import { HEARING_FAILURES, MissedTurns } from "#lib/missed-turns.ts";
   import { type PlatformAppDto, type TextUIContentDto } from "@sermas/toolkit";
   import type {
     ChatMessage,
@@ -70,7 +72,11 @@
 
   let showHomepage = $state(true);
 
-  const SPINNER_TIMEOUT = 10 * 1000;
+  // the dots beside the visitor: "voice" while they speak, "request" while the
+  // API works on their turn. Each ends on its own signal, or after its timeout.
+  const SPINNER_TIMEOUT = { voice: 10 * 1000, request: 15 * 1000 };
+  // shown at least this long, so a short blip does not flicker
+  const SPINNER_MIN_MS = 600;
 
   let interactionSpinner: InteractionSpinner = $state({
     type: "voice",
@@ -140,50 +146,66 @@
     if (!sessionOpened && (!history || !history?.length)) showHomepage = true;
   });
 
+  const hideNow = () => {
+    clearTimeout(interactionSpinner.timeout);
+    interactionSpinner = { type: interactionSpinner.type };
+  };
+
+  /**
+   * Shows or hides the dots. Hiding one type leaves the other alone; hiding with no
+   * type ends whatever is shown (the turn is over). A hide right after the show is
+   * deferred to SPINNER_MIN_MS, never dropped.
+   */
   const showInteractionSpinner = (
     show: boolean,
     type?: "voice" | "request",
   ) => {
-    type = type || "voice";
-
-    if (type !== interactionSpinner.type) {
-      showInteractionSpinner(false, interactionSpinner.type);
-    }
-
-    interactionSpinner.type = type;
-
-    if (show && interactionSpinner.enabled) {
-      return;
-    }
-
-    // avoid flickering
-    if (
-      interactionSpinner.enabled &&
-      Date.now() - interactionSpinner.enabled < 1000
-    ) {
-      return;
-    }
-
-    if (interactionSpinner.timeout) {
-      clearTimeout(interactionSpinner.timeout);
-      interactionSpinner.timeout = undefined;
-    }
-
-    interactionSpinner.enabled = show ? Date.now() : 0;
-
     if (show) {
-      // remove after timeout
-      interactionSpinner.timeout = setTimeout(() => {
-        interactionSpinner.enabled = 0;
-      }, SPINNER_TIMEOUT);
+      const t = type || "voice";
+      const same = interactionSpinner.enabled && interactionSpinner.type === t;
+      clearTimeout(interactionSpinner.timeout);
+      interactionSpinner = {
+        type: t,
+        enabled: same ? interactionSpinner.enabled : Date.now(),
+        timeout: setTimeout(hideNow, SPINNER_TIMEOUT[t]),
+      };
+      return;
     }
 
-    interactionSpinner = { ...interactionSpinner };
+    if (!interactionSpinner.enabled) return;
+    if (type && type !== interactionSpinner.type) return;
+
+    const left = SPINNER_MIN_MS - (Date.now() - interactionSpinner.enabled);
+    if (left <= 0) return hideNow();
+    clearTimeout(interactionSpinner.timeout);
+    interactionSpinner = {
+      ...interactionSpinner,
+      timeout: setTimeout(hideNow, left),
+    };
   };
+
+  // a turn ended without an answer (dropped, skipped, failed) or the pipeline ended
+  const turnEnded = (ev: { event?: string; status?: string }) =>
+    ev?.status === "error" ||
+    ev?.event === "ended" ||
+    (ev?.event === "stt" && ev?.status === "ended");
 
   // the API saw several voice turns dropped (a noisy room) and suggests typing:
   // focus the text input, which opens the virtual keyboard when it is enabled
+  // a few voice turns in a row not heard: the avatar shrugs, once per run
+  const missedTurns = new MissedTurns(2);
+
   const onDialogueProgress = (ev: { event?: string; status?: string; error?: string }) => {
+    if (turnEnded(ev)) showInteractionSpinner(false);
+    if (
+      ev?.event === "stt" &&
+      ev.status === "error" &&
+      HEARING_FAILURES.includes(ev.error || "") &&
+      missedTurns.miss()
+    ) {
+      const played = $avatarModelStore?.getAnimation()?.playGesture("donotknow");
+      logger.debug(`Turns not heard: don't-know gesture ${played ? "played" : "not available"}`);
+    }
     if (ev?.event !== "stt" || ev.status !== "error" || ev.error !== "noisy") return;
     document.getElementById("user-input")?.focus();
   };
@@ -202,6 +224,7 @@
 
     ui.on("ui.session.changed", (status: SessionStatus) => {
       sessionOpened = status === "started";
+      missedTurns.heard();
       if (!sessionOpened) history = [];
     });
 
@@ -256,6 +279,12 @@
         });
       }
 
+      const last = history.length ? history[history.length - 1] : undefined;
+      // the agent answered: the visitor's turn is over
+      if (last?.actor === "agent") showInteractionSpinner(false);
+      // the visitor got through (heard or typed)
+      if (last?.actor === "user") missedTurns.heard();
+
       scrollChat();
       // messageId must change every time the avatar "interrupts" the conversation
       messageId = getChunkId();
@@ -298,19 +327,16 @@
       }
     };
 
-    ui.on("ui.user.request-processing", (_req: RequestProcessing) => {
-      showInteractionSpinner(false, "request");
-    });
-
     ui.on("ui.avatar.speaking", (isSpeaking: boolean) => {
       showStopButton = isSpeaking;
-      showInteractionSpinner(false, "voice");
+      // the agent answers: the visitor's turn is over
+      if (isSpeaking) showInteractionSpinner(false);
     });
 
+    // dots while the visitor speaks; background noise shows nothing
     ui.on("ui.user.speaking", (speaking: UserSpeaking) => {
-      const showDots = speaking.status !== "completed";
-      showInteractionSpinner(showDots, "voice");
-      // showSubtitlesBlock = false;
+      if (speaking.status === "speaking") showInteractionSpinner(true, "voice");
+      if (speaking.status === "completed") showInteractionSpinner(false, "voice");
     });
 
     // TODO open navigation iframe on robot action

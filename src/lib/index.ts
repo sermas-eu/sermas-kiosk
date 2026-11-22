@@ -15,7 +15,7 @@ export const createToolkit = (config: Partial<SermasToolkitOptions>) => {
         clientId: '',
         realm: '',
     }
-    auth.url = auth.url || env.PUBLIC_AUTH_URL || "/keycloak"
+    auth.url = auth.url || env.PUBLIC_AUTH_URL || "/api/auth/oidc"
     auth.realm = auth.realm || env.PUBLIC_AUTH_REALM || "sermas-local"
 
     if (!config.auth?.clientId) {

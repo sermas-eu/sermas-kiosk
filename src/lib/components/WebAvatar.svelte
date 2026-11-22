@@ -9,7 +9,7 @@
     avatarModelStore,
     backgroundImageAndSoundStore,
   } from "#lib/store.ts";
-  import { type RepositoryConfigDto } from "@sermas/toolkit";
+  import { DefaultBackground, type RepositoryConfigDto } from "@sermas/toolkit";
   import {
     getAvatarDefaultConfig,
     isDirectModelPath,
@@ -83,9 +83,12 @@
 
   const setBackground = async (background: string) => {
     logger.debug(`Set background: ${background}`);
-    let config = await toolkit.getAssetConfig("backgrounds", background);
-
-    if (!config) return;
+    // an id the app does not list (none set, or an old stored value) falls back to
+    // the built-in background, as a missing avatar falls back to the default one
+    const config =
+      (await toolkit.getAssetConfig("backgrounds", background)) ||
+      (await toolkit.getAssetConfig("backgrounds", DefaultBackground.id)) ||
+      DefaultBackground;
     // a URL or a path on the kiosk's origin (the built-in background) needs no API
     const direct = isDirectModelPath(config.path);
     const blob = direct

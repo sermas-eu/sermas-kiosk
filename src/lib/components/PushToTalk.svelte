@@ -48,8 +48,11 @@
     let processingAudio = false;
 
     const onProgress = (ev: SystemProgressEvent) => {
-        if (ev.status == 'error'){
-            console.warn(`Unrecognized speech: ${ev.error}`);
+        // the turn is over: dropped (stt error or ended) or failed
+        if (
+            ev.status === "error" ||
+            (ev.event === "stt" && ev.status === "ended")
+        ) {
             processingAudio = false;
             return;
         }

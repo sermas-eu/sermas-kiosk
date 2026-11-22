@@ -488,196 +488,97 @@
 
 <style lang="scss">
   @use "../../../variables.scss" as *;
+  // Svelte scopes these to this component. They used to be nested under
+  // `.nav-container nav`, which NavBar renders, so every rule was dropped (T-07);
+  // NavBar styles its own toggle, buttons and credits.
   aside {
     margin: 1em 0 0 1em;
   }
 
-  .nav-container {
-    position: absolute;
-    z-index: 999;
-
-    .hidden {
-      display: none;
+  .menu-list {
+    li a {
+      color: white;
     }
-
-    .navbar-button {
-      color: rgba($secondary, 0.8);
+    a:hover,
+    a.is-active {
+      background-color: rgba($secondary, 0.8);
     }
-
-    --navbar-toggle-height: 2.5em;
-    --credits-height: 2em;
-
-    .navbar-toggle {
-      cursor: pointer;
-      font-size: 1em;
-      text-align: center;
-      position: relative;
-      height: var(--navbar-toggle-height);
-      border-radius: 0.5em;
-      padding: 0.2em;
+    .list {
+      height: 100%;
       display: flex;
-      flex-direction: row;
-      .navbar-button:hover,
-      .navbar-button.is-active {
-        color: rgba($primary, 1);
-      }
-    }
-
-    .is-opened {
-      margin-top: 1em;
-      margin-left: 1em;
-
-      .navbar-button:hover,
-      .navbar-button.is-active {
-        color: rgba($secondary, 0.8);
-      }
-      .navbar-button {
-        color: white;
-      }
-    }
-
-    .is-closed {
-      left: 1em;
-      top: 1em;
-      background-color: rgba(255, 255, 255, 0.6);
-      backdrop-filter: blur(10px);
-    }
-
-    nav {
-      color: #eee;
-      left: 0;
-      top: 0;
-      width: 18em;
-      height: 100vh;
-      overflow-y: hidden;
-
-      .nav-content {
-        height: calc(
-          100vh - (var(--navbar-toggle-height) + var(--credits-height) + 1em)
-        );
-        overflow-y: auto;
-      }
-
-      .menu {
-        margin-top: 1em;
-        margin-left: 1em;
-
-        .menu-list {
-          li a {
-            color: white;
-          }
-          a:hover {
-            background-color: rgba($secondary, 0.8);
-          }
-          a.is-active {
-            background-color: rgba($secondary, 0.8);
-          }
-          .list {
-            height: 100%;
-            display: flex;
-            flex-direction: column;
-          }
-        }
-        .menu-item-w-icon {
-          display: inline-flex;
-          width: 100%;
-        }
-      }
-
-      .controls {
-        align-content: center;
-        flex: 1;
-        overflow: auto;
-        select {
-          color: $dark-blue;
-          width: 100%;
-        }
-
-        span {
-          display: block;
-          .a-no-padding {
-            padding-right: 0px;
-            padding-left: 0px;
-          }
-        }
-
-        ul li {
-          padding: 0.5em;
-          border-bottom: 1pt solid #efefef;
-        }
-
-        li:last-child {
-          border-bottom: none;
-        }
-
-        .li-item {
-          margin-top: 10px;
-          margin-bottom: 10px;
-          font-size: 14px;
-
-          span {
-            margin-bottom: 5px;
-          }
-
-          select {
-            margin-bottom: 5px;
-          }
-        }
-
-        .row-container {
-          display: flex;
-          width: 100%;
-          max-width: 100%;
-          flex-direction: row;
-          justify-content: space-between;
-
-          .rpm-url {
-            max-width: 55%;
-          }
-
-          .load-button {
-            width: 20%;
-            color: black;
-            background-color: $palette4;
-            border: none;
-            border-radius: 3px;
-          }
-
-          .gender {
-            width: 20%;
-            align-content: center;
-            margin-bottom: 0px;
-          }
-        }
-      }
-      .credits {
-        margin-bottom: 1em;
-        margin-left: 1em;
-        color: white;
-        display: flex;
-        height: var(--credits-height);
-        justify-content: center;
-        text-align: center;
-        align-items: center;
-        color: white;
-
-        .logo {
-          width: 35px;
-          height: 35px;
-        }
-        a {
-          color: white;
-          margin-right: 10px;
-          display: flex;
-          align-items: center;
-        }
-        a:hover {
-          color: rgba($secondary, 0.8);
-        }
-      }
+      flex-direction: column;
     }
   }
-  .is-show {
-    background-color: $dark-blue;
+
+  .menu-item-w-icon {
+    display: inline-flex;
+    width: 100%;
+  }
+
+  .controls {
+    align-content: center;
+    flex: 1;
+    overflow: auto;
+    select {
+      color: $dark-blue;
+      width: 100%;
+    }
+
+    span {
+      display: block;
+      .a-no-padding {
+        padding-right: 0px;
+        padding-left: 0px;
+      }
+    }
+
+    ul li {
+      padding: 0.5em;
+      border-bottom: 1pt solid #efefef;
+    }
+
+    li:last-child {
+      border-bottom: none;
+    }
+
+    .li-item {
+      margin-top: 10px;
+      margin-bottom: 10px;
+      font-size: 14px;
+
+      span {
+        margin-bottom: 5px;
+      }
+
+      select {
+        margin-bottom: 5px;
+      }
+    }
+
+    .row-container {
+      display: flex;
+      width: 100%;
+      max-width: 100%;
+      flex-direction: row;
+      justify-content: space-between;
+
+      .rpm-url {
+        max-width: 55%;
+      }
+
+      .load-button {
+        width: 20%;
+        color: black;
+        background-color: $palette4;
+        border: none;
+        border-radius: 3px;
+      }
+
+      .gender {
+        width: 20%;
+        align-content: center;
+        margin-bottom: 0px;
+      }
+    }
   }
 </style>

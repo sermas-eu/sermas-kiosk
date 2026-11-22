@@ -30,10 +30,28 @@
         setSystemMessage(ev.message);
     };
 
+    // shown for a few seconds when a turn ends without an answer
+    const NOTICE_MS = 4000;
+    let noticeTimer: ReturnType<typeof setTimeout> | undefined;
+    const showNotice = (message: string) => {
+        setSystemMessage(message);
+        clearTimeout(noticeTimer);
+        noticeTimer = setTimeout(() => {
+            if (system === message) system = "";
+        }, NOTICE_MS);
+    };
+
     const onProgress = (ev: SystemProgressEvent) => {
-        if (ev.status == 'error'){
-            console.warn(`Unrecognized speech: ${ev.error}`);
-            system = `Unrecognized speech`;
+        // a dropped voice turn: `stt` error (no-speech, other-speaker), or `stt`
+        // ended from an API that does not send the reason yet
+        if (ev.event === "stt" && (ev.status === "error" || ev.status === "ended")) {
+            logger.debug(`Voice turn dropped: ${ev.error || ev.status}`);
+            showNotice("Sorry, I didn't catch that. Please try again.");
+            return;
+        }
+        if (ev.status === "error") {
+            logger.warn(`${ev.event} failed: ${ev.error}`);
+            showNotice("Sorry, something went wrong. Please try again.");
             return;
         }
         // system = "";
@@ -106,6 +124,7 @@
     });
 
     onDestroy(() => {
+        clearTimeout(noticeTimer);
         // toolkit.getBroker().off("ui.status", onStatus);
         // toolkit.getUI().off("dialogue.progress", onProgress);
     });

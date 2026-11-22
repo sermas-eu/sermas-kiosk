@@ -23,11 +23,6 @@
   let started = false;
   let mounted = false;
 
-  let avatarSpeaking = false;
-
-
-
-
   let detection: AudioDetection | undefined;
 
   export const pause = () => {
@@ -42,35 +37,16 @@
     }
   };
 
-  const onAvatarSpeakingChanged = async (isSpeaking: boolean) => {
-    avatarSpeaking = isSpeaking;
-  };
-
-  const onUserSpeechClassification = (detection: { speech: boolean }) => {
-    if (detection.speech) {
-      if (!avatarSpeaking) {
-        // pause the avatar and await for a STOP/CONTINUE depending on the backend audio detection
-        logger.debug(`User speech detected, pausing avatar`);
-        toolkit.getAvatar()?.getHandler()?.pauseSpeech();
-      }
-    } else {
-      logger.debug(`User not speaking, resuming avatar`);
-      toolkit.getAvatar()?.getHandler()?.resumeSpeech();
-    }
-
-    // notify UI of speaking status
+  // talking over the avatar (barge-in) is handled by the toolkit's audio
+  // detection: it lowers the avatar's voice and the API answers STOP or CONTINUE.
+  // Here only the UI is told.
+  const onUserSpeechClassification = () => {
     toolkit?.getUI()?.userSpeaking({
       status: "completed",
     });
   };
 
   const onUserSpeaking = (sample: SpeechSampleResult) => {
-    if (sample.isSpeaking && avatarSpeaking) {
-      logger.debug("Possible user speaking, pause avatar");
-      toolkit.getAvatar()?.getHandler()?.pauseSpeech();
-    }
-
-    // notify UI of speaking status
     toolkit?.getUI()?.userSpeaking({
       status: sample.isSpeaking ? "speaking" : "noise",
     });
@@ -97,7 +73,6 @@
     started = true;
     
     toolkit.on("detection.speech", onUserSpeechClassification);
-    toolkit.on("ui.avatar.speaking", onAvatarSpeakingChanged);
   };
 
   export const stop = async () => {
@@ -107,7 +82,6 @@
     detection?.stop();
     detection = undefined;
 
-    toolkit.off("ui.avatar.speaking", onAvatarSpeakingChanged);
     toolkit.off("detection.speech", onUserSpeechClassification);
 
     started = false;

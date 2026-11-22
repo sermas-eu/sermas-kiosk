@@ -18,6 +18,11 @@
         }
     });
 
+    // the address as a visitor would type it: no scheme, no trailing slash
+    let address = $derived(
+        (content.url || "").replace(/^https?:\/\//, "").replace(/\/$/, ""),
+    );
+
     let qr = $state("");
     $effect(() => {
         const url = content.url;
@@ -33,17 +38,20 @@
 
 <span class="link-card">
     <span class="link-label">{content.label || host}</span>
-    {#if content.label}<span class="link-host">{host}</span>{/if}
     {#if qr}
         <!-- the SVG is generated locally by the qrcode library from the URL -->
         <!-- eslint-disable-next-line svelte/no-at-html-tags -->
         <span class="link-qr" role="img" aria-label="QR code for {host}">{@html qr}</span>
-        <span class="link-hint">Scan to open it on your phone</span>
     {/if}
+    <!-- plain text, not a link: the kiosk never navigates away -->
+    <span class="link-address">{address}</span>
+    {#if qr}<span class="link-hint">Scan to open it on your phone</span>{/if}
 </span>
 
 <style>
     .link-card {
+        /* the agent's message wrapper is a Bulma .button: not clickable here */
+        cursor: default;
         display: flex;
         flex-direction: column;
         align-items: center;
@@ -56,10 +64,12 @@
         font-weight: 600;
         text-align: center;
     }
-    .link-host {
-        font-size: 0.85em;
-        opacity: 0.8;
+    .link-address {
+        font-family: monospace;
+        font-size: 0.95em;
         word-break: break-all;
+        text-align: center;
+        user-select: text;
     }
     .link-qr {
         display: block;

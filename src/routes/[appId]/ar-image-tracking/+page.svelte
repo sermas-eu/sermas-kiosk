@@ -1,21 +1,20 @@
 <script lang="ts">
-    import { browser } from "$app/environment";
-    import { env } from "$env/dynamic/public";
-    import { createToolkit } from "$lib";
+    import { browser } from "$app/env";
+        import { createToolkit } from "#lib";
     import { SermasToolkit } from "@sermas/toolkit";
     import { onDestroy, onMount } from "svelte";
     import * as THREE from "three";
-    import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
-    import { XRButton } from "three/examples/jsm/webxr/XRButton";
-    import { XRControllerModelFactory } from "three/examples/jsm/webxr/XRControllerModelFactory";
-    // import backpack from '$lib/assets/models/backpack.glb';
-    // import scissors from '$lib/assets/models/scissors.glb';
-    import qrcode1 from "$lib/assets/images/qrcode1.png";
-    import qrcode2 from "$lib/assets/images/qrcode2.png";
-    import { PlatformAppDto } from "@sermas/toolkit";
+    import { OrbitControls } from "three/addons/controls/OrbitControls.js";
+    import { XRButton } from "three/addons/webxr/XRButton.js";
+    import { XRControllerModelFactory } from "three/addons/webxr/XRControllerModelFactory.js";
+    // import backpack from '#lib/assets/models/backpack.glb';
+    // import scissors from '#lib/assets/models/scissors.glb';
+    import qrcode1 from "#lib/assets/images/qrcode1.png";
+    import qrcode2 from "#lib/assets/images/qrcode2.png";
+    import { type PlatformAppDto } from "@sermas/toolkit";
     import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 
-    export let data;
+    let { data } = $props();
 
     let toolkit: SermasToolkit;
     let apps: PlatformAppDto[] = [];
@@ -110,7 +109,7 @@
                 group.add(mesh1);
                 console.log("mesh1: ", mesh1);
             },
-            function (xhr) {},
+            function (_xhr) {},
             function (error) {
                 console.log(error);
             },
@@ -128,20 +127,21 @@
                 group.add(mesh2);
                 console.log("mesh2: ", mesh2);
             },
-            function (xhr) {},
+            function (_xhr) {},
             function (error) {
                 console.log(error);
             },
         );
 
         const qr1 = document.getElementById("qr1");
-        const qr1Bitmap = await createImageBitmap(qr1);
+        const qr1Bitmap = await createImageBitmap(qr1 as HTMLImageElement);
 
         const qr2 = document.getElementById("qr2");
-        const qr2Bitmap = await createImageBitmap(qr2);
+        const qr2Bitmap = await createImageBitmap(qr2 as HTMLImageElement);
 
         document.body.appendChild(
-            XRButton.createButton(renderer, {
+            // image tracking is not in the XRSessionInit typings yet
+            XRButton.createButton(renderer, <any>{
                 requiredFeatures: ["image-tracking"], // notice a new required feature
                 trackedImages: [
                     {
@@ -297,7 +297,8 @@
         renderer.setAnimationLoop(render);
     }
 
-    function render(t, frame) {
+    // image tracking (getImageTrackingResults) is not in the WebXR typings
+    function render(_t: number, frame: any) {
         cleanIntersected();
 
         //  intersectObjects( controller1 );

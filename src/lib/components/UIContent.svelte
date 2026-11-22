@@ -1,14 +1,19 @@
 <script lang="ts">
-  import { browser } from "$app/environment";
-  import { toolkit } from "$lib";
+  import { browser } from "$app/env";
+  import { toolkit } from "#lib";
   import {
     appConfigStore,
     appSettingsStore,
+    avatarFailedStore,
     avatarLoadedStore,
+    avatarModelStore,
     backgroundImageAndSoundStore,
     sessionIdStore,
-  } from "$lib/store";
-  import { toBase64 } from "$lib/util";
+  } from "#lib/store.ts";
+  import { preventDefault, toBase64 } from "#lib/util.ts";
+  import { stickToBottom } from "#lib/stick-to-bottom.ts";
+  import { contentKey, isUsed } from "#lib/used-content.ts";
+  import { HEARING_FAILURES, MissedTurns } from "#lib/missed-turns.ts";
   import { type PlatformAppDto, type TextUIContentDto } from "@sermas/toolkit";
   import type {
     ChatMessage,
@@ -17,10 +22,10 @@
     SubtitleMessage,
     UserSpeaking,
   } from "@sermas/toolkit/dto";
+  import { isDirectModelPath } from "@sermas/toolkit/avatar";
   import { emitter } from "@sermas/toolkit/events";
   import { Logger, getChunkId } from "@sermas/toolkit/utils";
-  import { deepCopy } from "deep-copy-ts";
-  import { createEventDispatcher, onDestroy, onMount } from "svelte";
+  import { onDestroy, onMount, untrack } from "svelte";
   import AvatarName from "./AvatarName.svelte";
   import RenderContent from "./contents/RenderContent.svelte";
   import Loader from "./Loader.svelte";
@@ -33,72 +38,73 @@
   type InteractionSpinner = {
     type: "voice" | "request";
     enabled?: number;
-    timeout?: NodeJS.Timeout;
+    timeout?: ReturnType<typeof setTimeout>;
   };
 
   const logger = new Logger("ui");
 
   const ui = toolkit.getUI();
 
-  let history: ChatMessage[] = [];
+  let history: ChatMessage[] = $state([]);
 
-  let lastMessage: ChatMessage | undefined;
-  let lastUserMessage: ChatMessage | undefined;
+  let lastMessage: ChatMessage | undefined = $state();
+  let lastUserMessage: ChatMessage | undefined = $state();
 
-  let showStopButton = false;
-  let sessionOpened: boolean = false;
-  let navigationFrameEnabled = false;
+  let showStopButton = $state(false);
+  let sessionOpened: boolean = $state(false);
+  let navigationFrameEnabled = $state(false);
 
-  let chatMessage = "";
-  let sendingMessage = false;
+  let chatMessage = $state("");
+  let sendingMessage = $state(false);
 
-  let language: string | undefined;
-  let llm: Record<string, string | undefined> | undefined;
-  let enableMic: boolean;
-  let enableAudio: boolean;
+  interface Props {
+    /** voice capture should resume (push to talk pressed) */
+    onstart?: () => void;
+    /** voice capture should pause (push to talk released) */
+    onstop?: () => void;
+  }
 
-  let app: PlatformAppDto;
+  let { onstart, onstop }: Props = $props();
 
-  let showHomepage = true;
+  let enableAudio: boolean | undefined = $derived($appSettingsStore?.enableAudio);
 
-  const SPINNER_TIMEOUT = 10 * 1000;
+  let app: PlatformAppDto | undefined = $derived($appConfigStore);
 
-  let interactionSpinner: InteractionSpinner = {
+  let showHomepage = $state(true);
+
+  // the dots beside the visitor: "voice" while they speak, "request" while the
+  // API works on their turn. Each ends on its own signal, or after its timeout.
+  const SPINNER_TIMEOUT = { voice: 10 * 1000, request: 15 * 1000 };
+  // shown at least this long, so a short blip does not flicker
+  const SPINNER_MIN_MS = 600;
+
+  let interactionSpinner: InteractionSpinner = $state({
     type: "voice",
-  };
+  });
 
-  let pageContentSpinnerTimeout: NodeJS.Timeout;
+  let pageContentSpinnerTimeout: ReturnType<typeof setTimeout> = $state()!;
 
-  let showVirtualKeyboard = false;
-  let inputValue = "";
-  let placeholder = "";
+  let showVirtualKeyboard = $state(false);
+  let inputValue = $state("");
+  let placeholder = $state("");
   let callbackFunc: (res: string) => void;
 
   let messageId = getChunkId();
 
-  let lastClearScreenMessageId = getChunkId();
+  let lastClearScreenMessageId = $state(getChunkId());
 
-  let subtitle: SubtitleMessage;
-  let showSubtitlesBlock: boolean = false;
+  let subtitle: SubtitleMessage = $state()!;
+  let showSubtitlesBlock: boolean = $state(false);
 
-  $: if ($appConfigStore) {
-    app = $appConfigStore;
-  }
 
-  $: if ($appSettingsStore) {
-    llm = $appSettingsStore.llm;
-    language = $appSettingsStore.language;
-    enableMic = $appSettingsStore.enableMic;
-    enableAudio = $appSettingsStore.enableAudio;
-  }
-
-  const dispatch = createEventDispatcher();
+  // subtitles follow the avatar speech: without an avatar, show the chat history
+  let showSubtitles = $derived($appSettingsStore?.subtitlesEnabled && !$avatarFailedStore);
 
   function onStart() {
-    dispatch("start");
+    onstart?.();
   }
   function onStop() {
-    dispatch("stop");
+    onstop?.();
   }
 
   const scrollChat = () => {
@@ -115,64 +121,93 @@
     toolkit?.triggerInteraction("ui", "start");
   };
 
-  $: if ($sessionIdStore) {
-    sessionOpened = $sessionIdStore ? true : false;
+  // depends on the session id only: sessionOpened is also set by
+  // ui.session.changed and must not re-trigger this
+  $effect.pre(() => {
+    if ($sessionIdStore) untrack(() => {
+      sessionOpened = $sessionIdStore ? true : false;
 
-    if (sessionOpened) {
-      pageContentSpinnerTimeout = setTimeout(() => {
-        if (lastMessage) return;
-        // show empty right block instead of an infinite spinner
-        lastMessage = {
-          actor: "agent",
-          ts: new Date(),
-          messages: [],
-        };
-      }, 2500);
-    } else {
-      lastMessage = undefined;
-    }
-  }
-  $: if (!sessionOpened && (!history || !history?.length)) showHomepage = true;
+      if (sessionOpened) {
+        pageContentSpinnerTimeout = setTimeout(() => {
+          if (lastMessage) return;
+          // show empty right block instead of an infinite spinner
+          lastMessage = {
+            actor: "agent",
+            ts: new Date(),
+            messages: [],
+          };
+        }, 2500);
+      } else {
+        lastMessage = undefined;
+      }
+    });
+  });
+  $effect.pre(() => {
+    if (!sessionOpened && (!history || !history?.length)) showHomepage = true;
+  });
 
+  const hideNow = () => {
+    clearTimeout(interactionSpinner.timeout);
+    interactionSpinner = { type: interactionSpinner.type };
+  };
+
+  /**
+   * Shows or hides the dots. Hiding one type leaves the other alone; hiding with no
+   * type ends whatever is shown (the turn is over). A hide right after the show is
+   * deferred to SPINNER_MIN_MS, never dropped.
+   */
   const showInteractionSpinner = (
     show: boolean,
     type?: "voice" | "request",
   ) => {
-    type = type || "voice";
-
-    if (type !== interactionSpinner.type) {
-      showInteractionSpinner(false, interactionSpinner.type);
-    }
-
-    interactionSpinner.type = type;
-
-    if (show && interactionSpinner.enabled) {
-      return;
-    }
-
-    // avoid flickering
-    if (
-      interactionSpinner.enabled &&
-      Date.now() - interactionSpinner.enabled < 1000
-    ) {
-      return;
-    }
-
-    if (interactionSpinner.timeout) {
-      clearTimeout(interactionSpinner.timeout);
-      interactionSpinner.timeout = undefined;
-    }
-
-    interactionSpinner.enabled = show ? Date.now() : 0;
-
     if (show) {
-      // remove after timeout
-      interactionSpinner.timeout = setTimeout(() => {
-        interactionSpinner.enabled = 0;
-      }, SPINNER_TIMEOUT);
+      const t = type || "voice";
+      const same = interactionSpinner.enabled && interactionSpinner.type === t;
+      clearTimeout(interactionSpinner.timeout);
+      interactionSpinner = {
+        type: t,
+        enabled: same ? interactionSpinner.enabled : Date.now(),
+        timeout: setTimeout(hideNow, SPINNER_TIMEOUT[t]),
+      };
+      return;
     }
 
-    interactionSpinner = { ...interactionSpinner };
+    if (!interactionSpinner.enabled) return;
+    if (type && type !== interactionSpinner.type) return;
+
+    const left = SPINNER_MIN_MS - (Date.now() - interactionSpinner.enabled);
+    if (left <= 0) return hideNow();
+    clearTimeout(interactionSpinner.timeout);
+    interactionSpinner = {
+      ...interactionSpinner,
+      timeout: setTimeout(hideNow, left),
+    };
+  };
+
+  // a turn ended without an answer (dropped, skipped, failed) or the pipeline ended
+  const turnEnded = (ev: { event?: string; status?: string }) =>
+    ev?.status === "error" ||
+    ev?.event === "ended" ||
+    (ev?.event === "stt" && ev?.status === "ended");
+
+  // the API saw several voice turns dropped (a noisy room) and suggests typing:
+  // focus the text input, which opens the virtual keyboard when it is enabled
+  // a few voice turns in a row not heard: the avatar shrugs, once per run
+  const missedTurns = new MissedTurns(2);
+
+  const onDialogueProgress = (ev: { event?: string; status?: string; error?: string }) => {
+    if (turnEnded(ev)) showInteractionSpinner(false);
+    if (
+      ev?.event === "stt" &&
+      ev.status === "error" &&
+      HEARING_FAILURES.includes(ev.error || "") &&
+      missedTurns.miss()
+    ) {
+      const played = $avatarModelStore?.getAnimation()?.playGesture("donotknow");
+      logger.debug(`Turns not heard: don't-know gesture ${played ? "played" : "not available"}`);
+    }
+    if (ev?.event !== "stt" || ev.status !== "error" || ev.error !== "noisy") return;
+    document.getElementById("user-input")?.focus();
   };
 
   onMount(async () => {
@@ -180,12 +215,16 @@
 
     await ui.init();
 
+    // ui.destroy() removes the listeners added with ui.on
+    ui.on("dialogue.progress", onDialogueProgress);
+
     ui.on("ui.user.request-processing", (ev: RequestProcessing) => {
       showInteractionSpinner(ev.status === "started", "request");
     });
 
     ui.on("ui.session.changed", (status: SessionStatus) => {
       sessionOpened = status === "started";
+      missedTurns.heard();
       if (!sessionOpened) history = [];
     });
 
@@ -203,14 +242,15 @@
 
       showHomepage = false;
 
-      history = [...deepCopy(chatHistory)];
+      history = [...structuredClone(chatHistory)];
 
       // console.warn("history", history);
 
       if (history.length) {
         lastMessage = history[history.length - 1];
         if (lastMessage && lastMessage?.actor === "user") {
-          lastUserMessage = deepCopy(lastMessage);
+          // lastMessage is $state (a proxy): structuredClone cannot copy it
+          lastUserMessage = $state.snapshot(lastMessage) as ChatMessage;
         }
       }
 
@@ -238,6 +278,12 @@
           }
         });
       }
+
+      const last = history.length ? history[history.length - 1] : undefined;
+      // the agent answered: the visitor's turn is over
+      if (last?.actor === "agent") showInteractionSpinner(false);
+      // the visitor got through (heard or typed)
+      if (last?.actor === "user") missedTurns.heard();
 
       scrollChat();
       // messageId must change every time the avatar "interrupts" the conversation
@@ -270,6 +316,10 @@
     const setBackground = async (background: string) => {
       let config = await toolkit.getAssetConfig("backgrounds", background);
       if (!config) return;
+      if (isDirectModelPath(config.path)) {
+        $backgroundImageAndSoundStore.urlImage = config.path;
+        return;
+      }
 
       const blob = await toolkit.getApi().getAsset(config.type, config.id);
       if (blob) {
@@ -277,19 +327,16 @@
       }
     };
 
-    ui.on("ui.user.request-processing", (req: RequestProcessing) => {
-      showInteractionSpinner(false, "request");
-    });
-
     ui.on("ui.avatar.speaking", (isSpeaking: boolean) => {
       showStopButton = isSpeaking;
-      showInteractionSpinner(false, "voice");
+      // the agent answers: the visitor's turn is over
+      if (isSpeaking) showInteractionSpinner(false);
     });
 
+    // dots while the visitor speaks; background noise shows nothing
     ui.on("ui.user.speaking", (speaking: UserSpeaking) => {
-      const showDots = speaking.status !== "completed";
-      showInteractionSpinner(showDots, "voice");
-      // showSubtitlesBlock = false;
+      if (speaking.status === "speaking") showInteractionSpinner(true, "voice");
+      if (speaking.status === "completed") showInteractionSpinner(false, "voice");
     });
 
     // TODO open navigation iframe on robot action
@@ -333,9 +380,9 @@
     showVirtualKeyboard = true;
   };
 
-  const onVirtualKeyboardInput = (ev: CustomEvent) => {
+  const onVirtualKeyboardInput = (text: string) => {
     showVirtualKeyboard = false;
-    callbackFunc(ev.detail.text);
+    callbackFunc(text);
   };
 
   const sendChatMessage = async () => {
@@ -372,7 +419,7 @@
 </script>
 
 <span>
-  {#if (subtitle || interactionSpinner.enabled) && $appSettingsStore.subtitlesEnabled && sessionOpened}
+  {#if (subtitle || interactionSpinner.enabled) && showSubtitles && sessionOpened}
     <span id="ui-content-agent" class="ui-content-agent">
       <div
         class="is-flex chat-history chat-history-subs chat-history-agent-subs"
@@ -397,9 +444,9 @@
     with-input-bar
     : ''} {$avatarLoadedStore ? '' : 'is-hidden'}"
   >
-    {#if history.length && !$appSettingsStore.subtitlesEnabled && sessionOpened}
+    {#if history.length && !showSubtitles && sessionOpened}
       <div class="chat-history" id="chat-history">
-        {#each history as chatMessage, i}
+        {#each history as chatMessage, _i}
           <div class="chat-message actor-{chatMessage.actor}">
             <div class="actor sermas-actor with-neumorphism">
               {#if chatMessage.actor === "agent"}
@@ -448,12 +495,12 @@
           </div>
         {/if}
       </div>
-    {:else if (lastMessage || lastUserMessage) && $appSettingsStore.subtitlesEnabled && sessionOpened}
+    {:else if (lastMessage || lastUserMessage) && showSubtitles && sessionOpened}
       <div class="is-flex chat-history chat-history-subs">
-        <span class="scroll-span">
-          {#each history as chatMessage, index}
-            {#each chatMessage.messages as message, i}
-              {#if chatMessage.actor === "agent" && message.contentType !== "dialogue-message" && message.messageId && message.messageId >= lastClearScreenMessageId}
+        <span class="scroll-span" use:stickToBottom>
+          {#each history as chatMessage, _index}
+            {#each chatMessage.messages as message, _i}
+              {#if chatMessage.actor === "agent" && message.contentType !== "dialogue-message" && message.messageId && message.messageId >= lastClearScreenMessageId && !(message.contentType === "buttons" && isUsed(contentKey(message)))}
                 <div
                   class="subtitle-div {chatMessage.actor === 'agent' &&
                   message.contentType == 'buttons'
@@ -477,7 +524,7 @@
                     >
                       <RenderContent
                         content={message}
-                        subtitle={$appSettingsStore.subtitlesEnabled}
+                        subtitle={showSubtitles}
                         actor={chatMessage.actor}
                       />
                     </span>
@@ -506,7 +553,7 @@
                     <span class="subtitle-span">
                       <RenderContent
                         content={message}
-                        subtitle={$appSettingsStore.subtitlesEnabled}
+                        subtitle={showSubtitles}
                         actor={lastUserMessage.actor}
                       />
                     </span>
@@ -533,7 +580,7 @@
         {#if $appSettingsStore?.interactionStart == "touch"}
           <button
             class="button mt-4 is-large is-primary sermas-button"
-            on:click={() => startInteraction()}
+            onclick={() => startInteraction()}
           >
             <span>Press here to start</span>
           </button>
@@ -556,19 +603,19 @@
           <button
             disabled={(enableAudio && !showStopButton) || !enableAudio}
             class="button is-medium is-primary ml-2 sermas-button"
-            on:click={() => ui.stopAvatarSpeech()}
+            onclick={() => ui.stopAvatarSpeech()}
           >
             <span class="icon is-medium">
               <i class="fas fa-stop"></i>
             </span>
           </button>
         {/if}
-        <form on:submit|preventDefault={sendChatMessage} class="input-form">
+        <form onsubmit={preventDefault(sendChatMessage)} class="input-form">
           <input
             id="user-input"
             class="input is-medium"
             bind:value={chatMessage}
-            on:focus={(e) =>
+            onfocus={(_e) =>
               openVirtualKeyboard(
                 chatMessage,
                 "Type something to ask",
@@ -589,14 +636,14 @@
             </button>
           {/if}
         </form>
-        <PushToTalk on:start={onStart} on:stop={onStop} />
+        <PushToTalk onstart={onStart} onstop={onStop} />
       </div>
     {/if}
     {#if navigationFrameEnabled}
       <div class="navigation-frame">
         <button
           class="delete is-large is-primary"
-          on:click={() => hideNavigation()}
+          onclick={() => hideNavigation()}
         ></button>
         <iframe
           id="navigation-frame"
@@ -609,14 +656,14 @@
       {placeholder}
       showKeyboard={showVirtualKeyboard}
       {inputValue}
-      on:virtual-keyboard-input={onVirtualKeyboardInput}
+      ondone={onVirtualKeyboardInput}
     />
   </div>
 </span>
 
 <style lang="scss">
   @use "bulma/sass/utilities/mixins";
-  @import "../../variables.scss";
+  @use "../../variables.scss" as *;
   $breakpoint: 1201px;
 
   .subtitle-div {

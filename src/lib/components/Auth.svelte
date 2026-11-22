@@ -1,13 +1,18 @@
 <script lang="ts">
-  import { browser } from "$app/environment";
-  import { toolkit } from "$lib";
+  import { browser } from "$app/env";
+  import { toolkit } from "#lib";
   import { Logger } from "@sermas/toolkit/utils";
   import { onMount } from "svelte";
   import Loader from "./Loader.svelte";
   import Login from "./Login.svelte";
+  interface Props {
+    children?: import('svelte').Snippet;
+  }
 
-  let loginRequired: boolean | undefined;
-  let authWait = true;
+  let { children }: Props = $props();
+
+  let loginRequired: boolean | undefined = $state();
+  let authWait = $state(true);
 
   const logger = new Logger("auth");
 
@@ -38,5 +43,5 @@
 {:else if loginRequired}
   <Login {onSubmit} />
 {:else}
-  <slot />
+  {@render children?.()}
 {/if}

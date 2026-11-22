@@ -1,35 +1,32 @@
 <script lang="ts">
-  import { browser } from "$app/environment";
-  import { appSettingsStore } from "$lib/store";
+  import { browser } from "$app/env";
+  import { appSettingsStore } from "#lib/store.ts";
   import type {
     AudioDetection,
     SpeechSampleResult,
   } from "@sermas/toolkit/detection";
   import { Logger } from "@sermas/toolkit/utils";
-  import { onDestroy, onMount } from "svelte";
+  import { onDestroy, onMount, untrack } from "svelte";
 
-  import { toolkit } from "$lib";
+  import { toolkit } from "#lib";
 
   const logger = new Logger("microphone");
 
-  let enableMic: boolean;
-  let pushToTalkEnabled: boolean;
+  // undefined until the app settings are loaded
+  let enableMic: boolean | undefined = $derived(
+    $appSettingsStore ? !!$appSettingsStore.enableMic : undefined,
+  );
+  let pushToTalkEnabled: boolean | undefined = $derived(
+    $appSettingsStore ? !!$appSettingsStore.pushToTalkEnabled : undefined,
+  );
 
   let started = false;
   let mounted = false;
 
   let avatarSpeaking = false;
 
-  $: enableMic ? start(): stop();
 
-  $: if ($appSettingsStore && $appSettingsStore.enableMic !== enableMic) {
-    enableMic = $appSettingsStore.enableMic ? true : false;
-  }
 
-  $: if ($appSettingsStore && $appSettingsStore.pushToTalkEnabled !== pushToTalkEnabled) {
-    pushToTalkEnabled = $appSettingsStore.pushToTalkEnabled ? true : false;
-    if (pushToTalkEnabled) pause();
-  }
 
   let detection: AudioDetection | undefined;
 
@@ -123,5 +120,14 @@
   onMount(() => {
     mounted = true;
     start();
+  });
+  // pre: like the former `$:`, the first run happens before onMount (a no-op
+  // there, since start() needs `mounted`); only enableMic is a dependency
+  $effect.pre(() => {
+    const on = enableMic;
+    untrack(() => (on ? start() : stop()));
+  });
+  $effect.pre(() => {
+    if (pushToTalkEnabled) untrack(pause);
   });
 </script>

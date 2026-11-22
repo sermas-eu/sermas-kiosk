@@ -1,10 +1,14 @@
 <script lang="ts">
     import { type WebpageContentDto } from "@sermas/toolkit";
-    export let content: WebpageContentDto;
+    interface Props {
+        content: WebpageContentDto;
+    }
+
+    let { content }: Props = $props();
 </script>
 
 <span class="webpage">
-    <iframe title="webpage" src={content.url} />
+    <iframe title="webpage" src={content.url}></iframe>
 </span>
 
 <style>

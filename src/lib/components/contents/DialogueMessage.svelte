@@ -1,16 +1,22 @@
 <script lang="ts">
-    import { renderMarkdown } from "$lib/util";
+    import { renderMarkdown } from "#lib/util.ts";
     import { type DialogueMessageDto } from "@sermas/toolkit";
 
-    export let message: DialogueMessageDto;
+    interface Props {
+        message: DialogueMessageDto;
+    }
 
-    let content: string;
+    let { message }: Props = $props();
+
+    let content: string = $state()!;
 
     const renderText = async (text: string) => {
         content = await renderMarkdown(text);
     };
 
-    $: if (message && message.text) renderText(message.text);
+    $effect(() => {
+        if (message && message.text) renderText(message.text);
+    });
 </script>
 
 <span title={message.emotion} class="text emotion-{message.emotion || 'none'}">

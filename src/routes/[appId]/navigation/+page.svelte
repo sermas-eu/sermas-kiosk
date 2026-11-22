@@ -1,11 +1,10 @@
 <script lang="ts">
-    import { browser } from "$app/environment";
-    import { page } from "$app/stores";
-    import { env } from "$env/dynamic/public";
-    import { createToolkit } from "$lib";
-    import NavigationMap from "$lib/components/NavigationMap.svelte";
-    import NavigationStatus from "$lib/components/NavigationStatus.svelte";
-    import VideoFeed from "$lib/components/VideoFeed.svelte";
+    import { browser } from "$app/env";
+    import { page } from "$app/state";
+        import { createToolkit } from "#lib";
+    import NavigationMap from "#lib/components/NavigationMap.svelte";
+    import NavigationStatus from "#lib/components/NavigationStatus.svelte";
+    import VideoFeed from "#lib/components/VideoFeed.svelte";
     import type {
         RepositoryRobotModelDto,
         SermasToolkit,
@@ -14,20 +13,25 @@
     } from "@sermas/toolkit";
     import { logger } from "@sermas/toolkit/utils";
     import { onDestroy, onMount } from "svelte";
-    // import { PageData } from "../$types";
+    
 
-    export let data;
+    interface Props {
+        // import { PageData } from "../$types";
+        data: any;
+    }
+
+    let { data }: Props = $props();
 
     let toolkit: SermasToolkit;
     let lastDataTimestamp = 0;
-    let dataAvailable = false;
+    let dataAvailable = $state(false);
     let dataCheckInterval: any = undefined;
     const DATA_VALIDITY_SEC = 10;
-    let videoUrl = "";
+    let videoUrl = $state("");
     // let mapUrl = "../map.png"
-    let robot: RepositoryRobotModelDto;
+    let robot: RepositoryRobotModelDto = $state()!;
 
-    let status: StatusDto = {
+    let status: StatusDto = $state({
         actualPosition: {
             position: { x: 0.0, y: 0.0, z: 0.0 },
             orientation: { x: 0.0, y: 0.0, z: 0.0, w: 1 },
@@ -36,7 +40,7 @@
             angular: { x: 0.0, y: 0.0, z: 0.0 },
             linear: { x: 0.0, y: 0.0, z: 0.0 },
         },
-    };
+    });
 
     const onRobotStatus = (st: StatusEventDto) => {
         status = st.status;
@@ -66,8 +70,8 @@
         await loadRobotData();
     };
 
-    const onMessage = async (event: MessageEvent<any>) => {
-        // if (event.origin.indexOf("https://kiosk.local.sermas.spindoxlabs.it") === -1) {
+    const onMessage = async (_event: MessageEvent<any>) => {
+        // if (event.origin.indexOf("https://kiosk.example.org") === -1) {
         //     console.warn("Unknown origin ", event.origin)
         //     return
         // }
@@ -84,7 +88,7 @@
         if (!browser) return;
         window.addEventListener("message", onMessage, false);
 
-        const appId = $page.params.appId;
+        const appId = page.params.appId;
         let token: string | null = null;
 
         if (data && data.accessToken) {
@@ -92,7 +96,9 @@
             token = data.accessToken;
         }
 
-        setTimeout(() => initToolkit(appId, data.accessToken), 3000);
+        const accessToken = data.accessToken;
+        if (appId && accessToken)
+            setTimeout(() => initToolkit(appId, accessToken), 3000);
     });
 
     onDestroy(async () => {

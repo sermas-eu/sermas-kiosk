@@ -1,9 +1,9 @@
 <script lang="ts">
-    import { browser } from "$app/environment";
+    import { browser } from "$app/env";
     import { goto } from "$app/navigation";
-    import { createToolkit } from "$lib";
-    import BackgroundAnimation from "$lib/components/BackgroundAnimation.svelte";
-  import Footer from "$lib/components/Footer.svelte";
+    import { createToolkit } from "#lib";
+    import BackgroundAnimation from "#lib/components/BackgroundAnimation.svelte";
+  import Footer from "#lib/components/Footer.svelte";
     import type { PlatformAppDto, SermasToolkit } from "@sermas/toolkit";
     import { onMount } from "svelte";
 
@@ -70,7 +70,7 @@
 </div>
 
 <style lang="scss">
-    @import "../variables.scss";
+    @use "../variables.scss" as *;
 
     .note {
         max-width: 35em;

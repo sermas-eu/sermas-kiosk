@@ -1,16 +1,18 @@
 <script lang="ts">
-  import { browser } from "$app/environment";
-  import { toolkit } from "$lib";
+  import { browser } from "$app/env";
+  import { toolkit } from "#lib";
   import {
     appConfigStore,
     appSettingsStore,
+    avatarFailedStore,
     avatarLoadedStore,
     avatarModelStore,
     backgroundImageAndSoundStore,
-  } from "$lib/store";
+  } from "#lib/store.ts";
   import { type RepositoryConfigDto } from "@sermas/toolkit";
   import {
     getAvatarDefaultConfig,
+    isDirectModelPath,
     type AvatarModelConfig,
   } from "@sermas/toolkit/avatar";
   import { AppSettings } from "@sermas/toolkit/dto";
@@ -20,27 +22,28 @@
     addGlobal,
     type PerformanceEvent,
   } from "@sermas/toolkit/utils";
-  import { onDestroy, onMount } from "svelte";
+  import { onDestroy, onMount, untrack } from "svelte";
   import Loader from "./Loader.svelte";
-  import { toBase64 } from "$lib/util";
+  import { toBase64 } from "#lib/util.ts";
 
-  let enableAudio: boolean;
-  let enableAvatar: boolean;
-  let enableAnimation: boolean;
-  let enableMirrorMode: boolean;
-  let avatar: string;
-  let animation: string;
+  let enableAudio: boolean = $state()!;
+  let enableAvatar: boolean = $state()!;
+  let enableAnimation: boolean = $state()!;
+  let avatar: string = $state()!;
+  let animation: string = $state()!;
   let animationList: string[] = [];
 
   let mounted = false;
   let started = false;
 
-  let rpmUrl: string | undefined = undefined;
-  let rpmGender: string | undefined = undefined;
+  let rpmUrl: string | undefined = $state(undefined);
+  let rpmGender: string | undefined = $state(undefined);
 
-  let repository: RepositoryConfigDto;
+  let repository: RepositoryConfigDto | undefined = $derived(
+    $appConfigStore?.repository,
+  );
 
-  let background: string = "";
+  let background: string = $state("");
 
   const logger = new Logger("WebAvatar");
 
@@ -50,7 +53,6 @@
 
     enableAvatar = settings.enableAvatar;
     enableAnimation = settings.enableAnimation;
-    enableMirrorMode = settings.enableMirrorMode;
     rpmUrl = settings.rpmUrl;
     rpmGender = settings.rpmGender;
     avatar = settings.avatar;
@@ -59,21 +61,8 @@
     enableAudio = settings.enableAudio;
   };
 
-  $: if ($appSettingsStore) updateSettings($appSettingsStore);
 
-  $: enableAudio, $avatarModelStore?.toggleAudio(enableAudio);
-  $: enableAvatar ? start() : stop();
-  $: enableAnimation ? enableAnim(true) : enableAnim();
-  $: enableMirrorMode ? enableMirror(true) : enableMirror();
-  $: avatar && repository, reload();
-  $: rpmUrl || rpmGender, reload();
-  $: animation, triggerAnimation(animation);
-  $: background, setBackground(background);
 
-  $: if ($appConfigStore) {
-    // logger.debug("app config", $appConfigStore);
-    repository = $appConfigStore.repository;
-  }
 
   const onPerformance = (ev: PerformanceEvent) => {
     if (!$avatarModelStore) return;
@@ -97,7 +86,11 @@
     let config = await toolkit.getAssetConfig("backgrounds", background);
 
     if (!config) return;
-    const blob = await toolkit.getApi().getAsset(config.type, config.id);
+    // a URL or a path on the kiosk's origin (the built-in background) needs no API
+    const direct = isDirectModelPath(config.path);
+    const blob = direct
+      ? undefined
+      : await toolkit.getApi().getAsset(config.type, config.id);
 
     $backgroundImageAndSoundStore = {
       ...$backgroundImageAndSoundStore,
@@ -106,19 +99,18 @@
       messageImage: false,
     };
 
-    if (blob) {
+    if (direct) {
+      $backgroundImageAndSoundStore.urlImage = config.path;
+    } else if (blob) {
       $backgroundImageAndSoundStore.urlImage = `${await toBase64(blob)}`;
     }
   };
 
-  const enableMirror = (enable = false) => {
-    logger.debug(`Enable mirror mode: ${enable}`);
-    $avatarModelStore?.setMirrorModeEnabled(enable);
-  };
-
+  // dev mode: play a gesture picked from the animation list (`waving_0`, …)
   const triggerAnimation = (name: string) => {
-    logger.debug(`Triggered animation [disabled!]: ${name}`);
-    // $avatarModelStore?.getAnimation()?.play("gesture", name);
+    if (!name) return;
+    const played = $avatarModelStore?.getAnimation()?.playGesture(name);
+    logger.debug(`Gesture ${name}: ${played ? "playing" : "not available"}`);
   };
 
   const loadAvatarConfig = async (
@@ -183,6 +175,11 @@
     }
 
     $avatarModelStore = await toolkit.createWebAvatar(avatarConfig);
+    if (!$avatarModelStore.getModel()) {
+      // no model (unreachable or missing): keep the UI usable, show the dialogue as text
+      logger.warn(`Avatar model not loaded, running text-only`);
+      avatarFailedStore.set(true);
+    }
 
     toolkit?.emit("avatar.status", "ready");
 
@@ -214,6 +211,7 @@
     }
     emitter.off("performance", onPerformance);
     started = false;
+    avatarFailedStore.set(false);
     avatarLoadedStore.set(false);
   };
 
@@ -222,6 +220,41 @@
     start();
   });
   onDestroy(stop);
+  // each effect depends only on the values read before untrack(), as the
+  // former `$:` statements did
+  $effect.pre(() => {
+    const settings = $appSettingsStore;
+    if (settings) untrack(() => updateSettings(settings));
+  });
+  $effect.pre(() => {
+    const model = $avatarModelStore;
+    const on = enableAudio;
+    untrack(() => model?.toggleAudio(on));
+  });
+  $effect.pre(() => {
+    const on = enableAvatar;
+    untrack(() => (on ? start() : stop()));
+  });
+  $effect.pre(() => {
+    const on = enableAnimation;
+    untrack(() => (on ? enableAnim(true) : enableAnim()));
+  });
+  $effect.pre(() => {
+    void [avatar, repository];
+    untrack(reload);
+  });
+  $effect.pre(() => {
+    void [rpmUrl, rpmGender];
+    untrack(reload);
+  });
+  $effect.pre(() => {
+    const name = animation;
+    untrack(() => triggerAnimation(name));
+  });
+  $effect.pre(() => {
+    const bg = background;
+    untrack(() => setBackground(bg));
+  });
 </script>
 
 {#if !$avatarLoadedStore}
@@ -234,11 +267,11 @@
   style={"background-image: url(" +
     $backgroundImageAndSoundStore.urlImage +
     ");"}
-/>
-<div id="blendshape-controls" />
+></div>
+<div id="blendshape-controls"></div>
 
 <style lang="scss">
-  @import "../../variables.scss";
+  @use "../../variables.scss" as *;
 
   #blendshape-controls {
     position: absolute;

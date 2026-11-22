@@ -1,8 +1,8 @@
 <script lang="ts">
   import {  onMount } from "svelte";
 
-  let ticketNumber: string | null = ''
-  let appointmentId: string | null = ''
+  let ticketNumber: string | null = $state('')
+  let appointmentId: string | null = $state('')
 
   onMount(() => {
     const urlParams = new URLSearchParams(window.location.search);
@@ -11,7 +11,7 @@
   })
 
   const goHome = () => {
-    window.location = window.location.origin
+    window.location.href = window.location.origin
   }
 
 </script>
@@ -24,7 +24,7 @@
   Your appointment number is: <span>{appointmentId}</span>
 {/if}
 <div class="mt-5">
-  <button  class="button is-text" on:click={()  => goHome()}>Go home</button>
+  <button  class="button is-text" onclick={()  => goHome()}>Go home</button>
 </div>
 </div>
 

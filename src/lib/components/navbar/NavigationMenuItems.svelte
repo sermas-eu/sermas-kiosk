@@ -1,20 +1,25 @@
 <script lang="ts">
-  import { toolkit } from "$lib";
+  import NavigationMenuItems from './NavigationMenuItems.svelte';
+  import { toolkit } from "#lib";
   import type {
     NavigationMenuItemDto,
     UIInteractionEventDto,
   } from "@sermas/api-client";
   import { UI_INTERACTION_TOPIC } from "@sermas/toolkit";
 
-  export let items: NavigationMenuItemDto[];
+  interface Props {
+    items: NavigationMenuItemDto[];
+  }
 
-  let isOpen: Record<string, boolean> = items.reduce(
+  let { items }: Props = $props();
+
+  let isOpen: Record<string, boolean> = $state(items.reduce(
     (obj, item) => ({
       ...obj,
       [item.id]: false,
     }),
     {}
-  );
+  ));
 
   const sendEvent = (item: NavigationMenuItemDto) => {
     const payload: UIInteractionEventDto = {
@@ -42,7 +47,7 @@
           title={item.label}
           href="#{item.id}"
           class={item.selected ? "selected" : ""}
-          on:click={(ev) => {
+          onclick={(ev) => {
             isOpen[item.id] = !isOpen[item.id];
             sendEvent({
               ...item,
@@ -55,7 +60,7 @@
         </a>
 
         {#if isOpen[item.id] && item.items?.length}
-          <svelte:self items={item.items} />
+          <NavigationMenuItems items={item.items} />
         {/if}
       </li>
     {/each}
@@ -63,7 +68,7 @@
 {/if}
 
 <style lang="scss">
-  @import "../../../variables.scss";
+  @use "../../../variables.scss" as *;
 
   .list {
     a {

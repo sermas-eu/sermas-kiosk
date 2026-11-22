@@ -1,7 +1,5 @@
 <script lang="ts">
   import type {
-    ImageContentDto,
-    TextContentDto,
     UIContentDto,
     UIContentMetadataDto,
     UIContentOptionsDto,
@@ -21,6 +19,7 @@
   import Text from "./Text.svelte";
   import Video from "./Video.svelte";
   import Webpage from "./Webpage.svelte";
+  import { contentKey } from "#lib/used-content.ts";
 
   type UIContent = {
     content: any;
@@ -28,9 +27,13 @@
     options?: UIContentOptionsDto & Record<string, any>;
   } & UIContentDto;
 
-  export let content: UIContent;
-  export let subtitle: boolean = false;
-  export let actor: DialogueActor | null = null;
+  interface Props {
+    content: UIContent;
+    subtitle?: boolean;
+    actor?: DialogueActor | null;
+  }
+
+  let { content, subtitle = false, actor = null }: Props = $props();
 </script>
 
 <div
@@ -67,9 +70,17 @@
   {:else if content.contentType === "object"}
     <Object content={content.content} />
   {:else if content.contentType === "buttons"}
-    <Buttons content={content.content} metadata={content.metadata} />
+    <Buttons
+      content={content.content}
+      metadata={content.metadata}
+      usedKey={contentKey(content)}
+    />
   {:else if content.contentType === "quiz"}
-    <Quiz content={content.content} metadata={content.metadata} />
+    <Quiz
+      content={content.content}
+      metadata={content.metadata}
+      usedKey={contentKey(content)}
+    />
   {:else if content.contentType === "qrcode-scanner"}
     <QrCodeScanner />
   {:else if content.contentType === "background-audio"}

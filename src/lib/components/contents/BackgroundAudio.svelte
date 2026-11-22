@@ -1,12 +1,24 @@
 <script lang="ts">
-  import { backgroundImageAndSoundStore } from "$lib/store";
+  import { backgroundImageAndSoundStore } from "#lib/store.ts";
+  import { untrack } from "svelte";
   import { type BackgroundAudioDto } from "@sermas/api-client";
 
-  export let content: BackgroundAudioDto;
-
-  $: if (content.src && content.type) {
-    $backgroundImageAndSoundStore.backgroundAudioUrl = content.src;
-    $backgroundImageAndSoundStore.backgroundAudioType = content.type;
-    $backgroundImageAndSoundStore.isBackgroundAudioPlaying = true;
+  interface Props {
+    content: BackgroundAudioDto;
   }
+
+  let { content }: Props = $props();
+
+  $effect(() => {
+    const { src, type } = content;
+    if (!src || !type) return;
+    untrack(() =>
+      backgroundImageAndSoundStore.update((bg) => ({
+        ...bg,
+        backgroundAudioUrl: src,
+        backgroundAudioType: type,
+        isBackgroundAudioPlaying: true,
+      })),
+    );
+  });
 </script>

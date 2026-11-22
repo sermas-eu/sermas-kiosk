@@ -1,5 +1,5 @@
-import { env } from "$env/dynamic/public"
-import { SermasToolkit, SermasToolkitOptions } from "@sermas/toolkit"
+import * as env from "$app/env/public"
+import { SermasToolkit, type SermasToolkitOptions } from "@sermas/toolkit"
 
 export let toolkit: SermasToolkit
 
@@ -15,7 +15,7 @@ export const createToolkit = (config: Partial<SermasToolkitOptions>) => {
         clientId: '',
         realm: '',
     }
-    auth.url = auth.url || env.PUBLIC_AUTH_URL || "/keycloak"
+    auth.url = auth.url || env.PUBLIC_AUTH_URL || "/api/auth/oidc"
     auth.realm = auth.realm || env.PUBLIC_AUTH_REALM || "sermas-local"
 
     if (!config.auth?.clientId) {

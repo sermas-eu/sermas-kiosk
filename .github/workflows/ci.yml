@@ -1,0 +1,131 @@
+name: CI
+
+on:
+  push:
+    branches: ['main', 'feat/**']
+  pull_request:
+
+permissions:
+  contents: read
+
+# The kiosk compiles the toolkit, the API client and the node SDK's auth helpers
+# from their sources: they are checked out beside it (main), as in local
+# development and the image's build contexts.
+defaults:
+  run:
+    working-directory: sermas-kiosk
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          path: sermas-kiosk
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: ${{ github.repository_owner }}/sermas-toolkit-web
+          ref: main
+          path: sermas-toolkit-web
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: ${{ github.repository_owner }}/sermas-api-client
+          ref: main
+          path: sermas-api-client
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: ${{ github.repository_owner }}/sermas-toolkit-node-sdk
+          ref: main
+          path: sermas-toolkit-node-sdk
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: sermas-kiosk/.nvmrc
+          cache: npm
+          cache-dependency-path: |
+            sermas-kiosk/package-lock.json
+            sermas-toolkit-web/package-lock.json
+            sermas-api-client/package-lock.json
+            sermas-toolkit-node-sdk/package-lock.json
+      - run: npm ci --no-audit --no-fund
+        working-directory: sermas-toolkit-web
+      - run: npm ci --no-audit --no-fund
+        working-directory: sermas-api-client
+      - run: npm ci --no-audit --no-fund
+        working-directory: sermas-toolkit-node-sdk
+      - run: npm ci --no-audit --no-fund
+      - run: npm run lint
+      - run: npm test
+      - run: npx svelte-kit sync && npx svelte-check --tsconfig ./tsconfig.json --threshold error
+      - run: npm run build
+      - name: Audit (report only)
+        if: always()
+        run: npm audit --omit=dev || true
+
+  # On main: semantic-release reads the conventional commits since the last tag,
+  # tags the next version and writes the GitHub release; the image is pushed
+  # with that version and `latest`. Nothing happens when no commit calls for a release.
+  release:
+    needs: check
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      packages: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          path: sermas-kiosk
+          fetch-depth: 0
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: ${{ github.repository_owner }}/sermas-toolkit-web
+          ref: main
+          path: sermas-toolkit-web
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: ${{ github.repository_owner }}/sermas-api-client
+          ref: main
+          path: sermas-api-client
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: ${{ github.repository_owner }}/sermas-toolkit-node-sdk
+          ref: main
+          path: sermas-toolkit-node-sdk
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: sermas-kiosk/.nvmrc
+          package-manager-cache: false
+      - name: Release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        # --before pins every transitive package to what was published by then
+        run: >-
+          npx --yes --before=2026-11-08
+          -p semantic-release@25.0.9
+          -p conventional-changelog-conventionalcommits@9.3.1
+          semantic-release
+      - name: Released version
+        id: version
+        run: |
+          tag=$(git tag --points-at HEAD --list 'v*' | head -n 1)
+          echo "version=${tag#v}" >> "$GITHUB_OUTPUT"
+      - if: steps.version.outputs.version != ''
+        uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4.4.1
+      - if: steps.version.outputs.version != ''
+        uses: docker/login-action@8aa5831fb8d48d8f76594c7ddde61ae58019f550 # v4.8.0
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - if: steps.version.outputs.version != ''
+        uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
+        with:
+          context: sermas-kiosk
+          build-contexts: |
+            toolkit=sermas-toolkit-web
+            api-client=sermas-api-client
+            node-sdk=sermas-toolkit-node-sdk
+          push: true
+          tags: |
+            ghcr.io/${{ github.repository_owner }}/kiosk:${{ steps.version.outputs.version }}
+            ghcr.io/${{ github.repository_owner }}/kiosk:latest

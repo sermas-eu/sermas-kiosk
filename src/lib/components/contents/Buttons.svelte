@@ -1,23 +1,38 @@
 <script lang="ts">
-  import { toolkit } from "$lib";
+  import { toolkit } from "#lib";
+  import { isUsed, markUsed } from "#lib/used-content.ts";
   import {
     UI_INTERACTION_TOPIC,
     type ButtonDto,
     type ButtonsContentDto,
     type UIInteractionEventDto,
   } from "@sermas/toolkit";
-  // import { stringSimilarity } from "string-similarity-js";
+  
 
-  export let content: ButtonsContentDto;
-  export let metadata: Record<string, any> = {};
+  interface Props {
+    // import { stringSimilarity } from "string-similarity-js";
+    content: ButtonsContentDto;
+    metadata?: Record<string, any>;
+    // single use, see #lib/used-content
+    usedKey?: string;
+  }
+
+  let { content, metadata = {}, usedKey }: Props = $props();
 
   let selected = -1;
+  // without a key (no ids) the block is hidden by this instance only
+  let localUsed = $state(false);
+  let used = $derived(usedKey ? isUsed(usedKey) : localUsed);
   // let waitUserMessage = true
   // const SIMILARITY_TH = 0.7
 
   const ui = toolkit.getUI();
 
   const clicked = (button: ButtonDto, idx: number) => {
+    // single use: the API drops the block's tools after the first click
+    if (used) return;
+    localUsed = true;
+    markUsed(usedKey, idx);
     selected = idx;
     const payload: UIInteractionEventDto = {
       appId: toolkit.getAppId(),
@@ -50,6 +65,7 @@
   // });
 </script>
 
+{#if !used}
 <span class="buttons-widget">
   <ul>
     {#if content.label}
@@ -58,7 +74,7 @@
     {#each content.list as b, idx}
       <li class="mb-2 is-flex is-flex-direction-row is-justify-content-center">
         <button
-          on:click={() => clicked(b, idx)}
+          onclick={() => clicked(b, idx)}
           class="button sermas-button is-multiline {b.classes &&
           b.classes.length
             ? b.classes.join(' ')
@@ -70,6 +86,7 @@
     {/each}
   </ul>
 </span>
+{/if}
 
 <style>
   .is-primary,

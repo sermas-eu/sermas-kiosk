@@ -1,32 +1,37 @@
 <script lang="ts">
-    import { browser } from "$app/environment";
-    import { toolkit } from "$lib";
-      import { appSettingsStore } from "$lib/store";
+    import { browser } from "$app/env";
+    import { toolkit } from "#lib";
+      import { appSettingsStore } from "#lib/store.ts";
 
     import type {
     SystemProgressEvent,
         UserSpeaking,
     } from "@sermas/toolkit/dto";
-    import { createEventDispatcher, onDestroy, onMount } from "svelte";
+    import { onMount } from "svelte";
 
-    const dispatch = createEventDispatcher();
+    interface Props {
+        onstart?: () => void;
+        onstop?: () => void;
+    }
 
-    $: listening = status.toLowerCase().includes("listening");
+    let { onstart, onstop }: Props = $props();
 
-    let status = "Push to talk";
+
+    let status = $state("Push to talk");
 
     let userSpeaking = false;
 
-    let pushToTalkEnabled: boolean;
-    let enableMic: boolean;
+    // undefined until the app settings are loaded
+    let enableMic: boolean | undefined = $derived(
+        $appSettingsStore ? !!$appSettingsStore.enableMic : undefined,
+    );
+    let pushToTalkEnabled: boolean | undefined = $derived(
+        $appSettingsStore
+            ? !!($appSettingsStore.pushToTalkEnabled && $appSettingsStore.enableMic)
+            : undefined,
+    );
 
-    $: if ($appSettingsStore && $appSettingsStore.enableMic !== enableMic) {
-        enableMic = $appSettingsStore.enableMic ? true : false;
-    }
 
-    $: if ($appSettingsStore && $appSettingsStore.pushToTalkEnabled !== pushToTalkEnabled) {
-        pushToTalkEnabled = $appSettingsStore.pushToTalkEnabled && $appSettingsStore.enableMic ? true : false;
-    }
 
     const onUserSpeaking = (ev: UserSpeaking) => {
         switch (ev.status) {
@@ -43,8 +48,11 @@
     let processingAudio = false;
 
     const onProgress = (ev: SystemProgressEvent) => {
-        if (ev.status == 'error'){
-            console.warn(`Unrecognized speech: ${ev.error}`);
+        // the turn is over: dropped (stt error or ended) or failed
+        if (
+            ev.status === "error" ||
+            (ev.event === "stt" && ev.status === "ended")
+        ) {
             processingAudio = false;
             return;
         }
@@ -61,14 +69,14 @@
             return
         }
         status = "Listening..."
-        dispatch('start');
+        onstart?.();
         active = true;
     }
 
     const stopMic = () => {
         if (!pushToTalkEnabled) return
         console.log('stopMic');
-        dispatch('stop');
+        onstop?.();
         active = false;
     }
 
@@ -78,11 +86,12 @@
         toolkit.getUI().on("ui.user.speaking", onUserSpeaking);
     });
 
+    let listening = $derived(status.toLowerCase().includes("listening"));
 </script>
 
 {#if pushToTalkEnabled && enableMic}
 <div class="push-to-talk" id="push-to-talk">
-    <button class="push-to-talk-btn sermas-button is-large  {listening ? 'listening' : ''}" on:mouseup={startMic}>
+    <button class="push-to-talk-btn sermas-button is-large  {listening ? 'listening' : ''}" onmouseup={startMic}>
         <div class="ptt-icon"><i class="fas fa-microphone"></i></div>
         <div class="ptt-status">{status}</div>
     </button>
@@ -90,7 +99,7 @@
 {/if}
 
 <style lang="scss">
-    @import "../../variables.scss";
+    @use "../../variables.scss" as *;
 
 
     .ptt-status {

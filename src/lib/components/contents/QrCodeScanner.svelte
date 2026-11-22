@@ -1,7 +1,7 @@
 <script lang="ts">
-  import { toolkit } from "$lib";
-  import { sessionIdStore } from "$lib/store";
-  import { QrcodeDetector, VideoDetection } from "@sermas/toolkit/detection";
+  import { toolkit } from "#lib";
+  import { sessionIdStore } from "#lib/store.ts";
+  import { QrcodeDetector, } from "@sermas/toolkit/detection";
   import { onDestroy, onMount } from "svelte";
     // import VideoDetection from "../VideoDetection.svelte";
 
@@ -55,7 +55,7 @@
 </script>
 
 <div id="main-content-qr">
-  <video id="qrcode-scanner" autoplay muted width={"100%"} height={"100%"} />
+  <video id="qrcode-scanner" autoplay muted width="100%" height="100%" />
   <canvas id="qrcode-scanner-overlay" width={0} height={0} />
 </div>
 

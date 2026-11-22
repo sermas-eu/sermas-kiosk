@@ -9,36 +9,37 @@
   import MdMenu from "svelte-icons/md/MdMenu.svelte";
   import MdSync from "svelte-icons/md/MdSync.svelte";
 
-  import { browser } from "$app/environment";
-  import { toolkit } from "$lib";
-  import sermasLogo from "$lib/assets/images/sermas-logo-white.svg";
+  import { browser } from "$app/env";
+  import { toolkit } from "#lib";
+  import { preventDefault } from "#lib/util.ts";
+  import sermasLogo from "#lib/assets/images/sermas-logo-white.svg";
   import {
     appReadyStore,
     appSettingsStore,
     avatarLoadedStore,
     avatarModelStore,
     backgroundImageAndSoundStore,
-  } from "$lib/store";
+  } from "#lib/store.ts";
   import type { SessionChangedDto } from "@sermas/toolkit";
   import { AppSettings } from "@sermas/toolkit/dto";
   import { sendStatus } from "@sermas/toolkit/events";
   import { Logger, addGlobal, setDefaultLogLevel } from "@sermas/toolkit/utils";
-  import { onDestroy, onMount } from "svelte";
+  import { onDestroy, onMount, untrack } from "svelte";
   import Impressum from "./navbar/Impressum.svelte";
   import NavigationMenu from "./navbar/NavigationMenu.svelte";
   import SettingsMenu from "./navbar/SettingsMenu.svelte";
 
   const logger = new Logger("navbar");
 
-  let settings: AppSettings;
-  let loaded = false;
-  let showMenu = false;
+  let settings: AppSettings = $state()!;
+  let loaded = $state(false);
+  let showMenu = $state(false);
 
-  let sessionId: string | undefined = undefined;
+  let sessionId: string | undefined = $state(undefined);
   const version = PKG_VERSION;
-  let xrSupported: boolean = false;
+  let xrSupported: boolean = $state(false);
 
-  let audio: any;
+  let audio: any = $state()!;
 
   const setLogLevel = (devMode: boolean) =>
     setDefaultLogLevel(devMode ? "DEBUG" : "WARN");
@@ -48,29 +49,44 @@
     setLogLevel(settings.devMode);
   });
 
-  $: if ($appReadyStore && $appSettingsStore && !loaded) {
-    settings = $appSettingsStore;
-    logger.debug(`Settings loaded`, settings);
-    loaded = true;
-    setLogLevel(settings.devMode);
-  }
+  // settings are taken from the store once; later changes flow back through
+  // SettingsMenu (bound), which saves them and so updates the store
+  $effect.pre(() => {
+    if ($appReadyStore && $appSettingsStore && !loaded) {
+      untrack(() => {
+        settings = $appSettingsStore;
+        logger.debug(`Settings loaded`, settings);
+        loaded = true;
+        setLogLevel(settings.devMode);
+      });
+    }
+  });
 
-  $: if (
-    $backgroundImageAndSoundStore.isBackgroundAudioPlaying &&
-    settings.enableAudio
-  ) {
-    audio.play();
-  }
+  $effect(() => {
+    if (
+      $backgroundImageAndSoundStore.isBackgroundAudioPlaying &&
+      settings.enableAudio
+    ) {
+      untrack(() => audio.play());
+    }
+  });
 
-  $: if (
-    !$backgroundImageAndSoundStore.isBackgroundAudioPlaying &&
-    settings.enableAudio &&
-    $backgroundImageAndSoundStore.backgroundAudioUrl
-  ) {
-    audio.pause();
-    $backgroundImageAndSoundStore.backgroundAudioUrl = undefined;
-    $backgroundImageAndSoundStore.backgroundAudioType = undefined;
-  }
+  $effect(() => {
+    if (
+      !$backgroundImageAndSoundStore.isBackgroundAudioPlaying &&
+      settings.enableAudio &&
+      $backgroundImageAndSoundStore.backgroundAudioUrl
+    ) {
+      untrack(() => {
+        audio.pause();
+        backgroundImageAndSoundStore.update((bg) => ({
+          ...bg,
+          backgroundAudioUrl: undefined,
+          backgroundAudioType: undefined,
+        }));
+      });
+    }
+  });
 
   const onSessionChanged = (ev: SessionChangedDto) => {
     if (ev.operation === "updated" && ev.record.closedAt) {
@@ -87,12 +103,17 @@
     toolkit.getBroker().on("session.session", onSessionChanged);
   });
 
-  $: if ($avatarModelStore) {
-    $avatarModelStore
-      .getXR()
-      .isSupported()
-      .then((res) => (xrSupported = res));
-  }
+  $effect(() => {
+    const model = $avatarModelStore;
+    if (model) {
+      untrack(() =>
+        model
+          .getXR()
+          .isSupported()
+          .then((res) => (xrSupported = res)),
+      );
+    }
+  });
 
   onDestroy(async () => {
     loaded = false;
@@ -123,7 +144,7 @@
   src={$backgroundImageAndSoundStore.backgroundAudioUrl}
   bind:this={audio}
   loop
-/>
+></audio>
 
 {#if settings}
   <div class="nav-container {showMenu ? 'is-show' : ''}">
@@ -137,8 +158,8 @@
           title="Open settings"
           href="#"
           class="navbar-button"
-          on:click|preventDefault={() => (showMenu = !showMenu)}
-          on:keydown|preventDefault={() => (showMenu = !showMenu)}
+          onclick={preventDefault(() => (showMenu = !showMenu))}
+          onkeydown={preventDefault(() => (showMenu = !showMenu))}
         >
           <MdMenu />
         </a>
@@ -147,8 +168,8 @@
           title="Close menu"
           href="#"
           class="navbar-button"
-          on:click|preventDefault={() => (showMenu = !showMenu)}
-          on:keydown|preventDefault={() => (showMenu = !showMenu)}
+          onclick={preventDefault(() => (showMenu = !showMenu))}
+          onkeydown={preventDefault(() => (showMenu = !showMenu))}
         >
           <MdClose />
         </a>
@@ -157,7 +178,7 @@
         title="Reload Page"
         href="#"
         class="navbar-button"
-        on:click={() => window.location.reload()}
+        onclick={() => window.location.reload()}
       >
         <MdSync />
       </a>
@@ -166,7 +187,7 @@
           title="End Session"
           href="#"
           class="navbar-button"
-          on:click={() => closeSession()}
+          onclick={() => closeSession()}
         >
           <IoMdCloseCircleOutline />
         </a>
@@ -176,10 +197,10 @@
         title="Toggle microphone"
         href="#"
         class="navbar-button {settings.enableMic ? 'is-active' : ''}"
-        on:click|preventDefault={() =>
-          (settings.enableMic = !settings.enableMic)}
-        on:keydown|preventDefault={() =>
-          (settings.enableMic = !settings.enableMic)}
+        onclick={preventDefault(() =>
+          (settings.enableMic = !settings.enableMic))}
+        onkeydown={preventDefault(() =>
+          (settings.enableMic = !settings.enableMic))}
       >
         {#if settings.enableMic}
           <IoMdMic />
@@ -191,8 +212,8 @@
         title="Toggle audio"
         href="#"
         class="navbar-button {settings.enableAudio ? 'is-active' : ''}"
-        on:click|preventDefault={() => toggleAudio()}
-        on:keydown|preventDefault={() => toggleAudio()}
+        onclick={preventDefault(() => toggleAudio())}
+        onkeydown={preventDefault(() => toggleAudio())}
       >
         {#if settings.enableAudio}
           <IoMdVolumeHigh />
@@ -207,7 +228,7 @@
         class="navbar-button {xrSupported && avatarLoadedStore
           ? ''
           : 'is-hidden'}"
-        on:click|preventDefault={onStartAR}
+        onclick={preventDefault(onStartAR)}
       >
         <FaVrCardboard />
       </a>
@@ -219,7 +240,7 @@
         <!-- <hr class="navbar-divider" /> -->
         <Impressum />
         {#if settings}
-          <SettingsMenu {settings} />
+          <SettingsMenu bind:settings />
         {/if}
       </div>
 
@@ -235,7 +256,7 @@
 {/if}
 
 <style lang="scss">
-  @import "../../variables.scss";
+  @use "../../variables.scss" as *;
 
   .nav-container {
     position: absolute;

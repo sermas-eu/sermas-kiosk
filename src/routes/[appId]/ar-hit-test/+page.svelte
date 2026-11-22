@@ -1,16 +1,15 @@
 <script lang="ts">
-    import { browser } from "$app/environment";
-    import { env } from "$env/dynamic/public";
-    import { createToolkit } from "$lib";
+    import { browser } from "$app/env";
+        import { createToolkit } from "#lib";
     import { SermasToolkit } from "@sermas/toolkit";
-    import { PlatformAppDto } from "@sermas/toolkit";
+    import { type PlatformAppDto } from "@sermas/toolkit";
     import { onDestroy, onMount } from "svelte";
     import * as THREE from "three";
-    import { ARButton } from "three/examples/jsm//webxr/ARButton";
-    import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
-    import { XRControllerModelFactory } from "three/examples/jsm/webxr/XRControllerModelFactory";
+    import { ARButton } from "three/addons/webxr/ARButton.js";
+    import { OrbitControls } from "three/addons/controls/OrbitControls.js";
+    import { XRControllerModelFactory } from "three/addons/webxr/XRControllerModelFactory.js";
 
-    export let data;
+    let { data } = $props();
 
     let toolkit: SermasToolkit;
     let apps: PlatformAppDto[] = [];
@@ -256,8 +255,8 @@
                     ?.requestReferenceSpace("viewer")
                     .then((referenceSpace: any) => {
                         session
-                            ?.requestHitTestSource({ space: referenceSpace })
-                            .then((source: any) => {
+                            ?.requestHitTestSource?.({ space: referenceSpace })
+                            ?.then((source: any) => {
                                 hitTestSource = source;
                             });
                     });

@@ -1,11 +1,16 @@
 <script lang="ts">
+    import { sanitizeHtml } from "#lib/util.ts";
     import { type HtmlContentDto } from "@sermas/toolkit";
 
-    export let content: HtmlContentDto;
+    interface Props {
+        content: HtmlContentDto;
+    }
+
+    let { content }: Props = $props();
 </script>
 
 <span class="html">
-    {@html content.html}
+    {@html sanitizeHtml(content.html)}
 </span>
 
 <style>

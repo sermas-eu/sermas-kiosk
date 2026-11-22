@@ -1,0 +1,66 @@
+version: "3"
+
+# sermas-kiosk tasks. Run standalone, or from sermas-dev, which sets SERMAS_DEV_ROOT so
+# that `dev` reads the stack's config/kiosk/.env.
+
+vars:
+  ENV_FILE: '{{if .SERMAS_DEV_ROOT}}{{.SERMAS_DEV_ROOT}}/config/kiosk/.env{{else}}{{.ROOT_DIR}}/.env{{end}}'
+
+tasks:
+
+  default:
+    cmds:
+      - task --list
+
+  setup:
+    desc: "Install dependencies (npm ci), and those of the toolkit, API client and node SDK sources the kiosk compiles"
+    cmds:
+      - npm ci --no-audit --no-fund
+      # the bundle resolves their packages through the kiosk's own copy; their
+      # node_modules serve type checking (svelte-check) of their sources
+      - |
+        for dir in "${TOOLKIT_DIR:-../sermas-toolkit-web}" "${API_CLIENT_DIR:-../sermas-api-client}" "${NODE_SDK_DIR:-../sermas-toolkit-node-sdk}"; do
+          [ -f "$dir/package-lock.json" ] || { echo "  ! $dir: not checked out"; continue; }
+          (cd "$dir" && npm ci --no-audit --no-fund)
+        done
+
+  dev:
+    desc: "Run with hot reload on :3001; compiles the toolkit from TOOLKIT_DIR (default ../sermas-toolkit-web)"
+    cmds:
+      - |
+        export NVM_DIR="${NVM_DIR:-$HOME/.nvm}"
+        if [ -s "$NVM_DIR/nvm.sh" ] && [ -f .nvmrc ]; then
+          . "$NVM_DIR/nvm.sh"
+          # No `nvm install` here: two services installing at once race.
+          nvm use || { echo "Node $(cat .nvmrc) is not installed: nvm install $(cat .nvmrc)" >&2; exit 1; }
+        fi
+        set -a
+        [ -f '{{.ENV_FILE}}' ] && . '{{.ENV_FILE}}'
+        set +a
+        export NODE_ENV=development
+        npx vite dev --host 0.0.0.0 --port 3001 --strictPort
+
+  build:
+    desc: "Production build"
+    cmds:
+      - npm run build
+
+  check:
+    desc: "svelte-check"
+    cmds:
+      - npm run check
+
+  lint:
+    desc: "Lint"
+    cmds:
+      - npm run lint
+
+  test:
+    desc: "Component tests (task test -- <pattern>)"
+    cmds:
+      - npm test -- {{.CLI_ARGS}}
+
+  docker:build:
+    desc: "Build the image locally (never pushed)"
+    cmds:
+      - docker compose build kiosk

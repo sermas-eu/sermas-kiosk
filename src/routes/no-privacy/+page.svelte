@@ -1,5 +1,5 @@
 <script lang="ts">
-    import BackgroundAnimation from "$lib/components/BackgroundAnimation.svelte";
+    import BackgroundAnimation from "#lib/components/BackgroundAnimation.svelte";
 
     const reset = () => {
         document.location = "/";
@@ -22,7 +22,7 @@
 
                 <p class="">
                     <br />
-                    <button class="button is-primary" on:click={() => reset()}
+                    <button class="button is-primary" onclick={() => reset()}
                         >Homepage</button
                     >
                 </p>
@@ -36,7 +36,7 @@
 </div>
 
 <style lang="scss">
-    @import "../../variables.scss";
+    @use "../../variables.scss" as *;
 
     .note {
         max-width: 35em;

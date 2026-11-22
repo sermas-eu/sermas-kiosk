@@ -4,8 +4,12 @@
   import { interactivity } from "@threlte/extras";
 
   interactivity();
-  export let type;
-  export let url: string;
+  interface Props {
+    type: any;
+    url: string;
+  }
+
+  let { type, url }: Props = $props();
 </script>
 
 <T.PerspectiveCamera

@@ -1,40 +1,69 @@
-//https://bulma.io/documentation/customize/with-sass-cli/
+// Bulma 1.0 with the Sass module system:
+// https://bulma.io/documentation/customize/with-sass/
 @charset "utf-8";
 
-// Import a Google Font
-@import url('https://fonts.googleapis.com/css?family=Nunito:400,700');
+@use "./variables.scss" as v;
 
-@import './variables.scss';
+// Bulma's variables, configured on first load
+@use "bulma/sass/utilities" with (
+  $family-sans-serif: v.$family-sans-serif,
+  $grey-dark: v.$grey-dark,
+  $grey-light: v.$grey-light,
+  $primary: v.$primary,
+  $link: v.$link,
+  $widescreen-enabled: false,
+  $fullhd-enabled: false,
+  $control-border-width: 2px
+);
+@use "bulma/sass/base/generic" with (
+  $body-background-color: v.$grey-dark
+);
+@use "bulma/sass/form/shared" with (
+  $input-border-color: transparent,
+  $input-shadow: none
+);
 
-$widescreen-enabled: false;
-$fullhd-enabled: false;
+// light theme only: the full build follows the system's dark mode, which the
+// kiosk's own colours do not
+@use "bulma/versions/bulma-no-dark-mode";
 
-// Update some of Bulma's component variables
-$body-background-color: $grey-dark;
-$control-border-width: 2px;
-$input-border-color: transparent;
-$input-shadow: none;
+// Google Font
+@import url("https://fonts.googleapis.com/css?family=Nunito:400,700");
 
-@import "../node_modules/bulma/bulma.sass";
+// Bulma 1.0 derives text on primary from the primary's own hue (dark blue
+// text on the kiosk's near-black primary); keep it white as in 0.9
+:root {
+  --bulma-primary-invert-l: 100%;
+}
+
+// Bulma 1.0 paints menu items with the page background and resets buttons in a
+// menu list; the kiosk's menus sit on the dark navbar and keep native buttons
+.menu-list a:not(.is-active) {
+  background-color: transparent;
+}
+.menu-list button {
+  all: revert;
+  font-family: inherit;
+}
 
 html {
-    overflow-y: hidden !important;
+  overflow-y: hidden !important;
 }
 
 body {
-    --footer-height: 75px;
-    width: 100vw;
-    height: 100vh;
-    padding: 0px;
-    margin: 0px;
-    position: fixed;
-    bottom: 0px;
-    left: 0px;
-    top: 0px;
+  --footer-height: 75px;
+  width: 100vw;
+  height: 100vh;
+  padding: 0px;
+  margin: 0px;
+  position: fixed;
+  bottom: 0px;
+  left: 0px;
+  top: 0px;
 }
 
-@include mobile-view {
-    body {
-        --footer-height: 50px !important;
-    }
+@include v.mobile-view {
+  body {
+    --footer-height: 50px !important;
+  }
 }

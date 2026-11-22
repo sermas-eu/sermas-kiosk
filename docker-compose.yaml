@@ -1,23 +1,23 @@
-networks:
-  sermas_dev:
-    external: true
+# The kiosk as a container, on :3001. Started by sermas-dev's `task docker:start`.
+#
+# Host networking, so that the kiosk's server side reaches the same URLs as the
+# browser: PUBLIC_AUTH_URL is http://localhost:8080/keycloak, and localhost inside a
+# bridged container is not the host.
 
 services:
   kiosk:
-    entrypoint: npm
-    command: run dev
+    build:
+      context: .
+      additional_contexts:
+        toolkit: ${TOOLKIT_DIR:-../sermas-toolkit-web}
+        api-client: ${API_CLIENT_DIR:-../sermas-api-client}
+        node-sdk: ${NODE_SDK_DIR:-../sermas-toolkit-node-sdk}
+    image: sermas-kiosk:local
+    restart: unless-stopped
+    network_mode: host
+    env_file:
+      - path: ${SERMAS_DEV_ROOT:-.}/config/kiosk/.env
+        required: false
     environment:
-      - BUILD_FROM_TS=${BUILD_FROM_TS}
-    networks:
-      default:
-        aliases:
-          - kiosk
-          - sermas-toolkit-api-kiosk-1
-      sermas_dev:
-    build: .
-    image: ghcr.io/sermas-eu/kiosk:dev
-    volumes:
-      - ./:/app
-      - ../sermas-toolkit-web:/sermas-toolkit-web
-    ports:
-      - 9228:9228
+      PORT: "3001"
+      HOST: 0.0.0.0

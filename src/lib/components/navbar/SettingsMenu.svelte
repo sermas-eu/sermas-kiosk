@@ -4,17 +4,22 @@
 
   import newGithubIssueUrl from "new-github-issue-url";
 
-  import { toolkit } from "$lib";
-  import { appConfigStore, sessionIdStore } from "$lib/store";
+  import { toolkit } from "#lib";
+  import { preventDefault } from "#lib/util.ts";
+  import { appConfigStore, sessionIdStore } from "#lib/store.ts";
   import { type RepositoryConfigDto } from "@sermas/toolkit";
   import { AppSettings, supportedLanguages } from "@sermas/toolkit/dto";
   import { Logger } from "@sermas/toolkit/utils";
-  import { onMount } from "svelte";
-  import { browser } from "$app/environment";
+  import { onMount, untrack } from "svelte";
+  import { browser } from "$app/env";
 
   const logger = new Logger("settings");
 
-  export let settings: AppSettings;
+  interface Props {
+    settings: AppSettings;
+  }
+
+  let { settings = $bindable() }: Props = $props();
 
   const facesList = [
     "sad",
@@ -26,27 +31,38 @@
     "surprise",
   ];
 
-  let login: boolean;
-  let repository: RepositoryConfigDto;
-  let showSettings = false;
-  let rpmUrl = "";
-  let rpmGender = "M";
-  let hasCopied = "";
+  let login: boolean = $state()!;
+  let repository: RepositoryConfigDto = $state()!;
+  let showSettings = $state(false);
+  let rpmUrl = $state("");
+  let rpmGender = $state("M");
+  let hasCopied = $state("");
+  // loading an avatar from a Ready Player Me URL is for admins only
+  let isAdmin = $state(false);
 
   onMount(async () => {
     if (!browser) return;
+    isAdmin = toolkit.getUserAuth()?.isAdmin() ?? false;
     const app = await toolkit.getApp();
     login = app?.settings?.login || false;
   });
 
-  $: if (settings) {
-    logger.debug(`Settings changed`, settings);
-    toolkit.getSettings().save(settings || {});
-  }
+  // saves on every (deep) change of the settings, as the former `$:` did on
+  // each invalidation; the snapshot is the dependency and what gets saved
+  $effect.pre(() => {
+    if (!settings) return;
+    const changed = $state.snapshot(settings) as AppSettings;
+    untrack(() => {
+      logger.debug(`Settings changed`, changed);
+      toolkit.getSettings().save(changed);
+    });
+  });
 
-  $: if ($appConfigStore) {
-    repository = $appConfigStore.repository;
-  }
+  $effect.pre(() => {
+    if ($appConfigStore) {
+      repository = $appConfigStore.repository;
+    }
+  });
 
   const copyClipboard = (text: string) => {
     navigator?.clipboard
@@ -134,12 +150,7 @@
     const date = new Date();
     const insertDate = `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}`;
 
-    const isPilot = ["poa", "asa", "ra"].includes(toolkit.getAppId());
-    const repo = settings.githubRepository
-      ? settings.githubRepository
-      : isPilot
-        ? `pilots-${toolkit.getAppId()}`
-        : "sermas-kiosk";
+    const repo = settings.githubRepository || "sermas-kiosk";
 
     const url = newGithubIssueUrl({
       user: "sermas-eu",
@@ -186,8 +197,8 @@
         <a
           title="Open settings"
           href="#"
-          on:click|preventDefault={() => (showSettings = !showSettings)}
-          on:keydown|preventDefault={() => (showSettings = !showSettings)}
+          onclick={preventDefault(() => (showSettings = !showSettings))}
+          onkeydown={preventDefault(() => (showSettings = !showSettings))}
           class="menu-item-w-icon {showSettings ? 'is-active' : ''}"
         >
           <span class="icon">
@@ -203,7 +214,7 @@
                   <input
                     type="checkbox"
                     bind:checked={settings.subtitlesEnabled}
-                    on:change={setSubtitlesEnabled}
+                    onchange={setSubtitlesEnabled}
                   />
                   Show subtitles
                 </span>
@@ -211,7 +222,7 @@
                   <input
                     type="checkbox"
                     bind:checked={settings.virtualKeyboardEnabled}
-                    on:change={setVirtualKeyboardEnabled}
+                    onchange={setVirtualKeyboardEnabled}
                   />
                   Enable Virtual keyboard
                 </span>
@@ -219,7 +230,7 @@
                   <input
                     type="checkbox"
                     bind:checked={settings.pushToTalkEnabled}
-                    on:change={setPushToTalkEnabled}
+                    onchange={setPushToTalkEnabled}
                   />
                   Enable Push-To-Talk
                 </span>
@@ -227,7 +238,7 @@
                   <span> Background </span>
                   <select
                     bind:value={settings.background}
-                    on:change={setBackground}
+                    onchange={setBackground}
                   >
                     {#each repository?.backgrounds || {} as background}
                       <option value={background?.id}>{background.name}</option>
@@ -241,7 +252,7 @@
                   <span> Language </span>
                   <select
                     bind:value={settings.language}
-                    on:change={setLanguage}
+                    onchange={setLanguage}
                   >
                     {#each Object.keys(supportedLanguages) as key}
                       <option value={key}>{supportedLanguages[key]}</option>
@@ -254,7 +265,7 @@
                       <span> Large Language Model (LLM)</span>
                       <select
                         bind:value={settings.llm[tag]}
-                        on:change={() => setLLM(tag, llmService)}
+                        onchange={() => setLLM(tag, llmService)}
                       >
                         <option value="" selected={!llmService}>
                           default
@@ -270,13 +281,14 @@
                 {/if}
                 <span class="li-item">
                   <span> Avatar </span>
-                  <select bind:value={settings.avatar} on:change={setModelName}>
+                  <select bind:value={settings.avatar} onchange={setModelName}>
                     {#each repository?.avatars || [].sort() as avatar}
                       <option value={avatar.id}>
                         {avatar.name}
                       </option>
                     {/each}
                   </select>
+                  {#if isAdmin}
                   <div class="row-container mt-1">
                     <input
                       class="rpm-url pl-1 mr-1 {rpmUrl != ''
@@ -297,18 +309,19 @@
                       <button
                         class="load-button"
                         disabled={rpmUrl == ""}
-                        on:click={() => setRPMUrl(rpmUrl)}>Load</button
+                        onclick={() => setRPMUrl(rpmUrl)}>Load</button
                       >
                     {:else}
-                      <button on:click={() => setRPMUrl("")}>Unload</button>
+                      <button onclick={() => setRPMUrl("")}>Unload</button>
                     {/if}
                   </div>
+                  {/if}
                 </span>
                 <span class="li-item">
                   <span> Interaction start </span>
                   <select
                     bind:value={settings.interactionStart}
-                    on:change={setInteractionStart}
+                    onchange={setInteractionStart}
                   >
                     <option value="on-load">On load</option>
                     <option value="touch">On touch</option>
@@ -327,7 +340,7 @@
                       href="#"
                       class="has-text-grey-lighter a-no-padding"
                       title={$sessionIdStore}
-                      on:click={(e) => copyClipboard($sessionIdStore)}
+                      onclick={(_e) => copyClipboard($sessionIdStore)}
                     >
                       Copy Session ID
                       <b class="has-text-white-ter">
@@ -340,7 +353,7 @@
                       href="#"
                       class="has-text-grey-lighter a-no-padding"
                       title="Open Issue"
-                      on:click={(e) => openGithubIssue($sessionIdStore)}
+                      onclick={(_e) => openGithubIssue($sessionIdStore)}
                     >
                       Open Github Issue
                     </a>
@@ -351,7 +364,7 @@
                       class="has-text-grey-ter a-no-padding"
                       title="View stats"
                       target="_blank"
-                      on:click={(e) => copyClipboard($sessionIdStore)}
+                      onclick={(_e) => copyClipboard($sessionIdStore)}
                     >
                       Show statistics
                     </a>
@@ -387,25 +400,6 @@
                       disabled={!settings.enableVideoDetection}
                     />
                     Toggle Video Rendering
-                  </span>
-
-                  <span class="li-item">
-                    <input
-                      type="checkbox"
-                      bind:checked={settings.enableMirrorMode}
-                      disabled={!settings.enableVideoDetection ||
-                        !settings.enableAnimation}
-                    />
-                    Mirror mode (holistic v1)
-                  </span>
-
-                  <span class="li-item">
-                    <input
-                      type="checkbox"
-                      bind:checked={settings.detectorHuman}
-                      disabled={!settings.enableVideoDetection}
-                    />
-                    Toggle Emotion (human)
                   </span>
 
                   <span class="li-item">
@@ -451,7 +445,7 @@
                       <span> Play Animation </span>
                       <select
                         bind:value={settings.animation}
-                        on:change={setAnimation}
+                        onchange={setAnimation}
                         placeholder="Animation"
                       >
                         {#each settings.animationList as name}
@@ -463,7 +457,7 @@
 
                   <span class="li-item">
                     <span> Face </span>
-                    <select bind:value={settings.testFace} on:change={setFace}>
+                    <select bind:value={settings.testFace} onchange={setFace}>
                       {#each facesList as name}
                         <option value={name}>{name}</option>
                       {/each}
@@ -478,7 +472,7 @@
           <a
             title="logout"
             href="#"
-            on:click|preventDefault={logout}
+            onclick={preventDefault(logout)}
             class="menu-item-w-icon"
           >
             <span class="icon">
@@ -493,197 +487,98 @@
 {/if}
 
 <style lang="scss">
-  @import "../../../variables.scss";
+  @use "../../../variables.scss" as *;
+  // Svelte scopes these to this component. They used to be nested under
+  // `.nav-container nav`, which NavBar renders, so every rule was dropped (T-07);
+  // NavBar styles its own toggle, buttons and credits.
   aside {
     margin: 1em 0 0 1em;
   }
 
-  .nav-container {
-    position: absolute;
-    z-index: 999;
-
-    .hidden {
-      display: none;
+  .menu-list {
+    li a {
+      color: white;
     }
-
-    .navbar-button {
-      color: rgba($secondary, 0.8);
+    a:hover,
+    a.is-active {
+      background-color: rgba($secondary, 0.8);
     }
-
-    --navbar-toggle-height: 2.5em;
-    --credits-height: 2em;
-
-    .navbar-toggle {
-      cursor: pointer;
-      font-size: 1em;
-      text-align: center;
-      position: relative;
-      height: var(--navbar-toggle-height);
-      border-radius: 0.5em;
-      padding: 0.2em;
+    .list {
+      height: 100%;
       display: flex;
-      flex-direction: row;
-      .navbar-button:hover,
-      .navbar-button.is-active {
-        color: rgba($primary, 1);
-      }
-    }
-
-    .is-opened {
-      margin-top: 1em;
-      margin-left: 1em;
-
-      .navbar-button:hover,
-      .navbar-button.is-active {
-        color: rgba($secondary, 0.8);
-      }
-      .navbar-button {
-        color: white;
-      }
-    }
-
-    .is-closed {
-      left: 1em;
-      top: 1em;
-      background-color: rgba(255, 255, 255, 0.6);
-      backdrop-filter: blur(10px);
-    }
-
-    nav {
-      color: #eee;
-      left: 0;
-      top: 0;
-      width: 18em;
-      height: 100vh;
-      overflow-y: hidden;
-
-      .nav-content {
-        height: calc(
-          100vh - (var(--navbar-toggle-height) + var(--credits-height) + 1em)
-        );
-        overflow-y: auto;
-      }
-
-      .menu {
-        margin-top: 1em;
-        margin-left: 1em;
-
-        .menu-list {
-          li a {
-            color: white;
-          }
-          a:hover {
-            background-color: rgba($secondary, 0.8);
-          }
-          a.is-active {
-            background-color: rgba($secondary, 0.8);
-          }
-          .list {
-            height: 100%;
-            display: flex;
-            flex-direction: column;
-          }
-        }
-        .menu-item-w-icon {
-          display: inline-flex;
-          width: 100%;
-        }
-      }
-
-      .controls {
-        align-content: center;
-        flex: 1;
-        overflow: auto;
-        select {
-          color: $dark-blue;
-          width: 100%;
-        }
-
-        span {
-          display: block;
-          .a-no-padding {
-            padding-right: 0px;
-            padding-left: 0px;
-          }
-        }
-
-        ul li {
-          padding: 0.5em;
-          border-bottom: 1pt solid #efefef;
-        }
-
-        li:last-child {
-          border-bottom: none;
-        }
-
-        .li-item {
-          margin-top: 10px;
-          margin-bottom: 10px;
-          font-size: 14px;
-
-          span {
-            margin-bottom: 5px;
-          }
-
-          select {
-            margin-bottom: 5px;
-          }
-        }
-
-        .row-container {
-          display: flex;
-          width: 100%;
-          max-width: 100%;
-          flex-direction: row;
-          justify-content: space-between;
-
-          .rpm-url {
-            max-width: 55%;
-          }
-
-          .load-button {
-            width: 20%;
-            color: black;
-            background-color: $palette4;
-            border: none;
-            border-radius: 3px;
-          }
-
-          .gender {
-            width: 20%;
-            align-content: center;
-            margin-bottom: 0px;
-          }
-        }
-      }
-      .credits {
-        margin-bottom: 1em;
-        margin-left: 1em;
-        color: white;
-        display: flex;
-        height: var(--credits-height);
-        justify-content: center;
-        text-align: center;
-        align-items: center;
-        color: white;
-
-        .logo {
-          width: 35px;
-          height: 35px;
-        }
-        a {
-          color: white;
-          margin-right: 10px;
-          display: flex;
-          align-items: center;
-        }
-        a:hover {
-          color: rgba($secondary, 0.8);
-        }
-      }
+      flex-direction: column;
     }
   }
-  .is-show {
-    background-color: $dark-blue;
+
+  .menu-item-w-icon {
+    display: inline-flex;
+    width: 100%;
+  }
+
+  .controls {
+    align-content: center;
+    flex: 1;
+    overflow: auto;
+    select {
+      color: $dark-blue;
+      width: 100%;
+    }
+
+    span {
+      display: block;
+      .a-no-padding {
+        padding-right: 0px;
+        padding-left: 0px;
+      }
+    }
+
+    ul li {
+      padding: 0.5em;
+      border-bottom: 1pt solid #efefef;
+    }
+
+    li:last-child {
+      border-bottom: none;
+    }
+
+    .li-item {
+      margin-top: 10px;
+      margin-bottom: 10px;
+      font-size: 14px;
+
+      span {
+        margin-bottom: 5px;
+      }
+
+      select {
+        margin-bottom: 5px;
+      }
+    }
+
+    .row-container {
+      display: flex;
+      width: 100%;
+      max-width: 100%;
+      flex-direction: row;
+      justify-content: space-between;
+
+      .rpm-url {
+        max-width: 55%;
+      }
+
+      .load-button {
+        width: 20%;
+        color: black;
+        background-color: $palette4;
+        border: none;
+        border-radius: 3px;
+      }
+
+      .gender {
+        width: 20%;
+        align-content: center;
+        margin-bottom: 0px;
+      }
+    }
   }
 </style>

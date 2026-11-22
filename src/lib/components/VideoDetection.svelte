@@ -1,33 +1,26 @@
 <script lang="ts">
-  import { browser } from "$app/environment";
-  import { toolkit } from "$lib";
-  import { appSettingsStore, sessionIdStore } from "$lib/store";
+  import { browser } from "$app/env";
+  import { toolkit } from "#lib";
+  import { appSettingsStore, sessionIdStore } from "#lib/store.ts";
   import {
-    HumanDetector,
     QrcodeDetector,
-    type HumanDetectionResult,
+    type FaceLandmarkDetectorResult,
   } from "@sermas/toolkit/detection";
-  import { AppSettings } from "@sermas/toolkit/dto";
+  import type { AppSettings } from "@sermas/toolkit/dto";
 
-  import type { FaceLandmarkDetectorResult } from "@sermas/toolkit/detection";
-  import { HolisticDetector } from "@sermas/toolkit/detection";
   import { emitter, sendStatus } from "@sermas/toolkit/events";
   import { Logger, type PerformanceEvent } from "@sermas/toolkit/utils";
-  import { onDestroy, onMount } from "svelte";
+  import { onDestroy, onMount, untrack } from "svelte";
 
   const logger = new Logger("VideoDetection");
 
-  const ENABLE_HUMAN_DETECTOR = true;
-
   let enableTestFaces: boolean;
   let sessionId: string | undefined;
-  let testFace: string;
-  let enableVideoDetection: boolean;
-  let showVideo = false;
-  let mirrorMode: boolean;
-  let detectorFaceLandmarker: boolean;
-  let detectorHuman: boolean;
-  let qrcode: boolean;
+  let testFace: string = $state()!;
+  let enableVideoDetection: boolean = $state()!;
+  let showVideo = $state(false);
+  let detectorFaceLandmarker: boolean = $state()!;
+  let qrcode: boolean = $state()!;
 
   const S_KEY = "KeyS";
   let blendShapeLog = false;
@@ -42,7 +35,7 @@
   let video: HTMLVideoElement | undefined;
   let canvas: HTMLCanvasElement | undefined;
 
-  let isDevMode = false;
+  let isDevMode = $state(false);
 
   const width = 640;
   const height = 480;
@@ -54,55 +47,13 @@
     testFace = settings.testFace;
     enableVideoDetection = settings.enableVideoDetection;
     showVideo = settings.showVideo;
-    mirrorMode = settings.enableMirrorMode;
     detectorFaceLandmarker = settings.detectorFaceLandmarker;
-    detectorHuman = settings.detectorHuman;
     qrcode = settings.qrcode;
   };
 
-  $: if ($appSettingsStore) updateSettings($appSettingsStore);
 
-  $: if (showVideo !== undefined && enableVideoDetection && videoDetection)
-    videoDetection.toggleRender(showVideo);
 
-  $: if (mirrorMode !== undefined && videoDetection && browser)
-    toggleMirrorMode();
 
-  $: if (detectorFaceLandmarker !== undefined && videoDetection && browser)
-    toggleFaceLandmarker();
-
-  $: if (detectorHuman !== undefined && videoDetection && browser)
-    toggleHuman();
-
-  $: if (qrcode !== undefined && videoDetection && browser) toggleQrcode();
-
-  const createHuman = () =>
-    new HumanDetector(
-      {
-        detectionThreshold: 1000,
-      },
-      () =>
-        new Worker(
-          new URL("@sermas/toolkit/detectors/human.worker", import.meta.url),
-          { type: "module" },
-        ),
-    );
-
-  const toggleHuman = () => {
-    // let's wait for holistic to be part of @mediapipe/tasks-vision
-    // see https://github.com/google/mediapipe/issues/2506
-
-    if (!ENABLE_HUMAN_DETECTOR) {
-      logger.warn(`Human detector disabled`);
-      return;
-    }
-
-    if (detectorHuman) {
-      videoDetection.add(createHuman());
-    } else {
-      videoDetection.remove("human");
-    }
-  };
 
   const loadFaceLandmarker = async () => {
     if (faceLandmarkerModule) return;
@@ -132,17 +83,7 @@
     }
   };
 
-  const toggleMirrorMode = () => {
-    // let's wait for holistic to be part of @mediapipe/tasks-vision
-    // see https://github.com/google/mediapipe/issues/2506
-    if (mirrorMode) {
-      videoDetection.add(new HolisticDetector());
-    } else {
-      videoDetection.remove("holistic_v1");
-    }
-  };
-
-  const onPerformance = async (ev: PerformanceEvent) => {
+  const onPerformance = async (_ev: PerformanceEvent) => {
     // if (ev.status === "degraded") {
     //   logger.warn("Disabling video detecions");
     //   enableVideoDetection = false;
@@ -170,12 +111,8 @@
     emitter.emit("avatar.face", null, testFace);
   };
 
-  $: enableVideoDetection ? start() : stop();
 
-  $: if (enableVideoDetection && detectorFaceLandmarker && isDevMode)
-    handleSaveFaceLandmarks();
 
-  $: if (testFace) setTestFace(testFace);
 
   const start = async () => {
     if (!browser) return;
@@ -264,21 +201,48 @@
         toolkit.emit("avatar.face", result.faceBlendshapes[0].categories);
       }
     });
-
-    videoDetection.on("holistic_v1", (ev: HumanDetectionResult) => {
-      toolkit.emit("detection.pose", ev);
-    });
   };
 
   const logFaceBlendshapes = (ev: KeyboardEvent) => {
     if (ev.code !== S_KEY) return;
     blendShapeLog = !blendShapeLog;
   };
+  // each effect depends only on the values named before untrack(), as the
+  // former `$:` statements did
+  $effect.pre(() => {
+    const settings = $appSettingsStore;
+    if (settings) untrack(() => updateSettings(settings));
+  });
+  $effect.pre(() => {
+    if (showVideo !== undefined && enableVideoDetection && videoDetection) {
+      const show = showVideo;
+      untrack(() => videoDetection.toggleRender(show));
+    }
+  });
+  $effect.pre(() => {
+    if (detectorFaceLandmarker !== undefined && videoDetection && browser)
+      untrack(toggleFaceLandmarker);
+  });
+  $effect.pre(() => {
+    if (qrcode !== undefined && videoDetection && browser) untrack(toggleQrcode);
+  });
+  $effect.pre(() => {
+    const on = enableVideoDetection;
+    untrack(() => (on ? start() : stop()));
+  });
+  $effect.pre(() => {
+    if (enableVideoDetection && detectorFaceLandmarker && isDevMode)
+      untrack(handleSaveFaceLandmarks);
+  });
+  $effect.pre(() => {
+    const face = testFace;
+    if (face) untrack(() => setTestFace(face));
+  });
 </script>
 
 <div id="main-content" class={!showVideo ? "invisible" : ""}>
-  <video id="inputVideo" autoplay muted {width} {height} />
-  <canvas id="overlay" {width} {height} />
+  <video id="inputVideo" autoplay muted {width} {height}></video>
+  <canvas id="overlay" {width} {height}></canvas>
 </div>
 
 <style>

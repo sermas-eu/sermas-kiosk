@@ -1,5 +1,5 @@
 <script lang="ts">
-    import sermasLogo from "$lib/assets/images/sermas-logo-white.svg";
+    import sermasLogo from "#lib/assets/images/sermas-logo-white.svg";
     const version = PKG_VERSION;
 </script>
 
@@ -24,7 +24,7 @@
 </footer>
 
 <style lang="scss">
-    @import "../../variables.scss";
+    @use "../../variables.scss" as *;
 
     .pre {
         font-family: "Courier New", Courier, monospace;

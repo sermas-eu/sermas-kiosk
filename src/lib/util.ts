@@ -5,6 +5,10 @@ export const renderMarkdown = async (text: string) => {
   return DOMPurify.sanitize(await marked.parse(text));
 };
 
+/** HTML from UI content messages is untrusted: sanitize before {@html}. */
+export const sanitizeHtml = (html: string | undefined) =>
+  html ? DOMPurify.sanitize(html) : "";
+
 const getLanguage = (language?: string) => {
   if (!language) {
     if (typeof navigator !== "undefined") {
@@ -53,3 +57,11 @@ export const toBase64 = (blob: Blob): Promise<string> => {
     };
   });
 };
+
+/** Event handler wrapper calling `preventDefault()` first (replaces `on:x|preventDefault`). */
+export const preventDefault =
+  <E extends Event>(fn: (event: E) => unknown) =>
+  (event: E) => {
+    event.preventDefault();
+    fn(event);
+  };

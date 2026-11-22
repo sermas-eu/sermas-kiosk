@@ -1,29 +1,18 @@
 
 const apiProxy = process.env.API_PROXY || 'http://172.17.0.1:8080'
-const mqttProxy = process.env.MQTT_PROXY || 'http://mqtt:1884'
+const mqttProxy = process.env.MQTT_PROXY || 'http://172.17.0.1:1884'
 
 
-const useAliases = process.env.NODE_ENV === 'development' && process.env.BUILD_FROM_TS === "1"
-
-const nodeModulesBasePath = useAliases ? '../sermas-toolkit-web/' : './'
-
+// assets the browser loads at runtime, served from the site root
 const copyFiles = [
-
-    // @vladmandic/human
-    [`${nodeModulesBasePath}node_modules/@vladmandic/human/models/*.json`, "human/models"],
-    [`${nodeModulesBasePath}node_modules/@vladmandic/human/models/*.bin`, "human/models"],
-    [`${nodeModulesBasePath}node_modules/@tensorflow/tfjs-backend-wasm/wasm-out/*.wasm`, "tfjs-backend-wasm/wasm-out"],
-
-    //ricky0123/vad-web
-    [`${nodeModulesBasePath}node_modules/@ricky0123/vad-web/dist/silero_vad.onnx`, ''],
-    [`${nodeModulesBasePath}node_modules/@ricky0123/vad-web/dist/vad.worklet.bundle.min.js`, ''],
-    //onnxruntime-web
-
-    // [`${nodeModulesBasePath}node_modules/onnxruntime-web/dist/*.wasm`, ''],
-    // [`${nodeModulesBasePath}node_modules/onnxruntime-web/dist/*.mjs`, ''],
-
-    [`${nodeModulesBasePath}node_modules/onnxruntime-web/dist/*`, ''],
-   
+    // @ricky0123/vad-web: the audio worklet and the Silero models
+    ['node_modules/@ricky0123/vad-web/dist/vad.worklet.bundle.min.js', ''],
+    ['node_modules/@ricky0123/vad-web/dist/silero_vad_v5.onnx', ''],
+    // onnxruntime-web: the WASM runtime the VAD loads. vad-web imports
+    // `onnxruntime-web/wasm`, which fetches only this variant; the others
+    // (jsep, jspi, asyncify: WebGPU/WebNN) are ~140 MB more
+    ['node_modules/onnxruntime-web/dist/ort-wasm-simd-threaded.wasm', ''],
+    ['node_modules/onnxruntime-web/dist/ort-wasm-simd-threaded.mjs', ''],
 ]
 
 // vite server options
@@ -47,9 +36,11 @@ export const SermasViteConfig = {
 export const getCopyFiles = () => {
     return copyFiles.map((filepath) => {
         const [src, dest] = filepath
+        // flat: vite-plugin-static-copy 4 keeps the source path otherwise
         return {
             src,
-            dest,
+            dest: dest || '.',
+            rename: { stripBase: true as const },
         }
     })
 }

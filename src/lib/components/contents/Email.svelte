@@ -1,7 +1,11 @@
 <script lang="ts">
     import { type EmailContentDto } from "@sermas/toolkit";
 
-    export let content: EmailContentDto;
+    interface Props {
+        content: EmailContentDto;
+    }
+
+    let { content }: Props = $props();
 </script>
 
 <span class="email">

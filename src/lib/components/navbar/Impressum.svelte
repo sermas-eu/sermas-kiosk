@@ -1,7 +1,7 @@
 <script lang="ts">
-  import { browser } from "$app/environment";
-  import { toolkit } from "$lib";
-  import { renderMarkdown } from "$lib/util";
+  import { browser } from "$app/env";
+  import { toolkit } from "#lib";
+  import { renderMarkdown } from "#lib/util.ts";
   import { onMount } from "svelte";
 
   let impressum: string;

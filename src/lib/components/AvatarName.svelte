@@ -1,11 +1,15 @@
 <script lang="ts">
-    import { toolkit } from "$lib";
+    import { toolkit } from "#lib";
     import { type AvatarModelConfig } from "@sermas/toolkit/avatar";
     import { onMount } from "svelte";
 
-    export let id: string | undefined;
+    interface Props {
+        id: string | undefined;
+    }
 
-    let avatar: AvatarModelConfig | undefined;
+    let { id }: Props = $props();
+
+    let avatar: AvatarModelConfig | undefined = $state();
 
     onMount(async () => {
         avatar = await toolkit.getAvatarConfig(id);

@@ -1,12 +1,17 @@
 <script lang="ts">
-  import PrivacyPopup from "$lib/components/PrivacyPopup.svelte";
+  import PrivacyPopup from "#lib/components/PrivacyPopup.svelte";
   import "../app.scss";
+  interface Props {
+    children?: import('svelte').Snippet;
+  }
+
+  let { children }: Props = $props();
 </script>
 
 <div class="app">
   <PrivacyPopup />
   <main>
-    <slot />
+    {@render children?.()}
   </main>
 </div>
 

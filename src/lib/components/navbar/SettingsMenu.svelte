@@ -37,9 +37,12 @@
   let rpmUrl = $state("");
   let rpmGender = $state("M");
   let hasCopied = $state("");
+  // loading an avatar from a Ready Player Me URL is for admins only
+  let isAdmin = $state(false);
 
   onMount(async () => {
     if (!browser) return;
+    isAdmin = toolkit.getUserAuth()?.isAdmin() ?? false;
     const app = await toolkit.getApp();
     login = app?.settings?.login || false;
   });
@@ -290,6 +293,7 @@
                       </option>
                     {/each}
                   </select>
+                  {#if isAdmin}
                   <div class="row-container mt-1">
                     <input
                       class="rpm-url pl-1 mr-1 {rpmUrl != ''
@@ -316,6 +320,7 @@
                       <button onclick={() => setRPMUrl("")}>Unload</button>
                     {/if}
                   </div>
+                  {/if}
                 </span>
                 <span class="li-item">
                   <span> Interaction start </span>

@@ -10,6 +10,7 @@
     sessionIdStore,
   } from "#lib/store.ts";
   import { preventDefault, toBase64 } from "#lib/util.ts";
+  import { stickToBottom } from "#lib/stick-to-bottom.ts";
   import { type PlatformAppDto, type TextUIContentDto } from "@sermas/toolkit";
   import type {
     ChatMessage,
@@ -454,7 +455,7 @@
       </div>
     {:else if (lastMessage || lastUserMessage) && showSubtitles && sessionOpened}
       <div class="is-flex chat-history chat-history-subs">
-        <span class="scroll-span">
+        <span class="scroll-span" use:stickToBottom>
           {#each history as chatMessage, _index}
             {#each chatMessage.messages as message, _i}
               {#if chatMessage.actor === "agent" && message.contentType !== "dialogue-message" && message.messageId && message.messageId >= lastClearScreenMessageId}
